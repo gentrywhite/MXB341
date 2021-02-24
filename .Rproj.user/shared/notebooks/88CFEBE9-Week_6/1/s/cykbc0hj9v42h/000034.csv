@@ -1,0 +1,24 @@
+"0","##  Load the COVID 19 dataset included in the MXB341 package
+
+data(""covid_19"")
+
+##  Extract the data for Queensland
+
+QLD<-covid_19%>%
+  filter(`Country/Region`==""Australia"" & `Province/State`==""Queensland"")%>%
+    mutate(date=as.Date(date,""%m/%d/%y""))
+
+##  Create tibble with Y(t) and y(t)
+
+QLD<-aggregate(cases~date,QLD,sum)%>%tibble()%>%
+  mutate(Y=cases)%>%
+   filter(date<=""2020-03-31"" & date>""2020-01-28"")%>%
+    mutate(y = c(0,diff(Y)))%>%
+      mutate(tm = 0:62)
+
+ a_star < -mean(QLD$y/QLD$Y)
+"
+"1","[1]"
+"1"," FALSE"
+"1","
+"

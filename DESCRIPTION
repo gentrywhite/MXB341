@@ -1,0 +1,36 @@
+Package: MXB341
+Title: Unit Package for MXB341
+Version: 1.0.0.2021
+Authors@R: 
+    person(given = "Gentry",
+           family = "White",
+           role = c("aut", "cre"),
+           email = "gentry.white@qut.edu.au",
+           comment = c(ORCID = "https://orcid.org/0000-0002-1170-9299"))
+Description: This is a unit specific package for MXB341 containing relevant datasets and loading required packages.
+License: MIT
+Depends: 
+    tidyverse,
+    knitr,
+    ggplot2,
+    magrittr,
+    kableExtra,
+    pander,
+    rmarkdown,
+    gridExtra,
+    ggtext,
+    broom,
+    pracma,
+    ggforce,
+    htmltools,
+    extraDistr,
+    purrr,
+    png,
+    learnr
+Suggests: 
+    testthat 
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+VignetteBuilder: knitr

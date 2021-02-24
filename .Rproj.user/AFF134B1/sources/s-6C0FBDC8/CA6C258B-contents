@@ -1,0 +1,195 @@
+---
+title: "MXB341 Worksheet 06 - Decision Theory"
+output:
+  learnr::tutorial:
+    theme: yeti
+    includes:
+    css: ["css/QUT.css","css/QUTtutorial.css"]
+  progressive: true
+  allow_skip: true
+runtime: shiny_prerendered
+params:
+  show_solutions: TRUE
+---
+
+```{r ws-setup, include=FALSE}
+  # if problems with knitting directory:
+  # set Knit Directory = Document Directory
+
+  # install libraries needed for worksheet
+  library(MXB341)
+
+
+  # Make notes here:
+  # --- chunk `instructions-header` currently turned off. 
+  #     Set `eval = TRUE` to use (and update file).
+  #
+  #
+
+```
+
+```{r, echo = FALSE}
+
+htmltools::includeHTML("header.html")
+
+```
+
+:::{.quote}
+ The researcher hoping to break new ground in the theory of experimental design should involve himself in the design of actual experiments. The investigator who hopes to revolutionize decision theory should observe and take part in the making of important decisions.\
+ 
+--- George E. P. Box (1976)')`^[*Science and Statistics*, 1976, p. 792] 
+:::
+
+# Week 6: Decision Theory 
+
+Decision theory is a broad topic that can encompass ideas from philosophy, psychology, economics, operations research, applied mathematics, and statistics.  Broadly speaking, decision theory is the study of how individuals or agents make choices.  In this unit, we focus on the statistical aspect of how to use data to make decisions under various circumstances.  
+
+:::{.boxed}
+
+## Statsitical Decision Theory  {.tabset .tabset-pills}
+
+Statistical decision theory is the process of making and evaluating decisions under uncertainty in terms of their "cost" or the "loss" incurred by making a given decision.  Statistical decision theory also attempts to create a unifying framework for theoretical statistics and statistical inference beyond classical statistical methods. 
+
+### Risk and Minimax Rules
+
+<p style="margin-bottom:0.3cm;"></p>
+
+The basic elements of decision theory are:
+
+*  Observed **data** $\mathbf{x}$ with probability distribution $X\sim f(x;\theta)$.
+*  The **action** $a$, chosen from the set of all possible actions, i.e.\ $a\in A$.
+*  The **state of nature** represented by the unknown parameter(s) $\theta$. 
+*  The **decision** (or choice of $a$) defined by the function $a=d(\mathbf{x})$
+*  A **loss function** $l(\theta,d(\mathbf{x}))$ used to evaluate decisions and choose actions.
+
+For a given situation, the risk function is defined as the expected value of the loss function with respect to the probability distribution of the data, i.e.\
+$$
+R(\theta,d)=E\left(l(\theta,d(\mathbf{x}))\right)=\int_{\mathbf{X}}l(\theta,d(\mathbf{x})f(\mathbf{x}|\theta)d\mathbf{x}.
+$$
+This definition is both intuitive and straightforward; however, the risk depends on the state of nature $\theta$ and the decision function $d(\cdot)$.  Our goal is not only to evaluate a single decision rule but to choose an optimal decision rule and account for the uncertainty associated with the unknown state of nature. 
+
+The minimax rule is designed to offer a very conservative means of choosing a decision by stating that the optimal decision under the minimax rule is the one which has the smallest (over the decision space) maximum risk (over the state of nature space).  Or in other words, it chooses the option with the best worst outcome. 
+
+**The Minimax Rule**\
+The minimax rule selects the decision $d^*$ in the decision space $D$ that minimises the maximum risk over the possible states of nature $\theta\in\Theta$
+$$
+d^*=d:\min_{d\in D}\left\{\max_{\theta\in\Theta}R(\theta,d)\right\}.
+$$
+The minimax rule focuses on minimising the worst possible outcome rather than optimising some other criteria.  This property makes the minimax rule very conservative in choosing actions.
+
+
+###  Choice of Loss Function
+
+<p style="margin-bottom:0.3cm;"></p>
+
+The loss function is the connection between decisions and their consequences. The loss function form can determine the computational difficulties that might arise in applying a rule for finding the optimal decision rule.  
+
+In cases where the loss incurred is expressed as a utility (e.g.\ profit), the loss function measures the negative of the utility, and we construct the loss function to reflect the level of risk aversion (or risk-seeking) propensity of the decision-maker.
+
+In optimisation, it is desirable to have a loss function that globally continuous and differentiable.  Common choices of loss function in these situations are squared-error loss or $L_2$ loss
+$$
+l(\theta,d(\mathbf{x}))=(\theta_0-\hat{\theta})^2
+$$
+where the true state of nature is $\theta_0$ and the decision rule is $d(\mathbf{x})=\hat{\theta}$.  Squared-error loss has the nice property of being continuous and smooth (differentiable), but outliers can overly influence results.  Alternatively the 
+absolute value loss function.n or $L_1$ loss
+$$
+l(\theta,d(\mathbf{x}))=|\theta_0-\hat{\theta}|
+$$
+avoids the undue influence of outliers but is not differentiable at $\hat{\theta}=0$, and is more difficult to optimise than squared-error loss.  In some cases, it is desirable to use $0-1$ or $L_0$ loss
+$$
+l(\theta,d(\mathbf{x}))=\left\{
+\begin{array}{ll}
+1,&\hat{\theta}=\theta_0\\
+0,&\hat{\theta}\neq\theta_0
+\end{array}
+\right.
+$$
+which requires numerical evaluation.  
+
+###   Paramter Estimation
+
+<p style="margin-bottom:0.3cm;"></p>
+
+We now consider a decision-theoretic approach called *loss function optimality* in which we choose our estimator or decision function based on the minimisation of the loss function. 
+
+We have already seen this when we considered the least-squares estimator, which is the $L_2$ loss function.  Given a random sample of size $n$ $\mathbf{x}=x_1,x_2,\ldots,x_n$ from the probability distribution of the random variable $X$ we define our decision rule as the estimator of the expected value of $X$, under $L_2$ loss the optimal estimator $d^*(\mathbf{x})$ (i.e.\ the one that minimises loss) is
+$$
+\begin{align}
+d^*(\mathbf{x})&=\underset{\theta\in \Theta}{\operatorname{argmin}}\sum_{i}^n\left(x_i-g(\theta)\right)^2\\
+&=\underset{\theta\in \Theta}{\operatorname{argmin}}||\mathbf{x}-g(\theta)||_2
+\end{align}
+$$
+In the case of $L_1$ or median loss 
+$$
+d^*(\mathbf{x})=\underset{\theta\in \Theta}{\operatorname{argmin}}||\mathbf{x}-\theta||_1.
+$$
+the optimal estimator of $\theta_0$ is the sample median. For $L_0$ loss or $0-1$ loss
+$$
+d^*(\mathbf{x})=\underset{\theta\in \Theta}{\operatorname{argmin}}||\mathbf{x}-\theta||_0.
+$$
+the optimal estimator of $\theta_0$ is the sample mode or the most frequently occurring value. 
+
+We can think of the maximum likelihood estimator as a loss function optimality problem where the loss function is the negative of the likelihood function
+$$
+l(\theta,d(\mathbf{x}))=-L(\theta|\mathbf{x{}})
+$$
+in this case, the minimiser of the loss function is the maximum likelihood estimator.  
+
+The loss functions $L_2$, $L_1$, and $L_0$ are some of the more commonly used objective functions in optimisation, but the set of possible loss functions is very large. Using loss function optimality, we can derive estimators for specific situations where concepts like likelihood or least-squares may not apply directly to the problem.  
+
+:::
+
+## Theory questions
+
+### Question 1
+
+:::{.boxed}
+
+```{r theory-question-1, child='../question-bank/id0033-decision-berger-minimax.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler1()")
+
+div(id = "tq1-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0033-decision-berger-minimax.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler1() {
+  var x = document.getElementById('tq1-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+
+
+
+
+
+## Practical questions
+
+:::{.boxed}
+
+### Question 2
+
+```{r theory-question-2, child='../question-bank/id0034-decision-parmigiani-freq.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r theory-solution-2, child='../solution-bank/id0034-decision-parmigiani-freq.Rmd', eval = params$show_solutions}
+  
+```

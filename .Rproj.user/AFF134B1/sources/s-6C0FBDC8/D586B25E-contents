@@ -1,0 +1,301 @@
+---
+title: "MXB341 Worksheet 05 - Asymptotics and confidence intervals"
+output:
+  learnr::tutorial:
+    theme: yeti
+    includes:
+    in_header: www/QUTLogo.html
+    css: ["css/QUT.css","css/QUTtutorial.css"]
+  progressive: true
+  allow_skip: true
+runtime: shiny_prerendered
+params:
+  show_solutions: TRUE
+---
+
+```{r ws-setup, include=FALSE}
+  # if problems with knitting directory:
+  # set Knit Directory = Document Directory
+
+  # install libraries needed for worksheet
+  library(MXB341)
+
+
+  # Make notes here:
+  # --- chunk `instructions-header` currently turned off. 
+  #     Set `eval = TRUE` to use (and update file).
+  #
+  #
+
+```
+
+```{r, echo = FALSE}
+
+htmltools::includeHTML("header.html")
+
+```
+
+:::{.quote}
+
+ [A] role for asymptotic theory arises in the sampling theory approach to statistical inference whenever the problem of concern has no 'exact' solution ... it is then natural and indeed inevitable to look for approximate solutions. \
+ 
+--- DR Cox (1988)^["Some aspects of conditional and asymptotic inference". *Sankhyā* 50(3), 1988, pg 314.] 
+
+:::
+
+# Week 5: Interval Estimation 
+
+Estimators are functions of the data, which arise as realisations of a random variable or process.  As a result, estimators are random variables. Thus,for any estimator $\hat{\theta}$ of the continuous parameter $\theta$ 
+$$
+Pr(\hat{\theta}=\theta)=0.
+$$
+In any given case, this conundrum poses a problem, how confident can we be in our estimators, and how do we measure and communicate that uncertainty? 
+
+:::{.boxed}
+
+## Finding Confidence Intervals {.tabset .tabset-pills}
+
+How do we find intervals for estimators that effectively communicate our confidence in the estimation process?  We can outline three methods: exploiting the asymptotic behaviour of maximum likelihood estimators, inverting test statistics, and using pivotal quantities.  Each of these 
+approaches has its benefits, but we need to consider their limitations against the theoretical 
+minimum width confidence interval. 
+
+### Asymptotic normality of MLEs
+
+<p style="margin-bottom:0.3cm;"></p>
+
+
+When working with maximum likelihood estimators (MLE), we can show that under certain regularity conditions, the distribution of the MLE of a parameter $\hat{\theta}$ converges to a Gaussian distribution as the sample size $n$ approaches infinity
+$$
+\sqrt{\mathcal{I}_n(\theta)}(\hat{\theta}-\theta)\sim N(0,1)\text{ as }n\rightarrow\infty.    
+$$
+
+
+
+Practically speaking, if $n$ is sufficiently large, we can assume for making an inference that the MLE's follows a Gaussian distribution. Thus, we can use this fact to make statements of probability associated with the MLE. 
+
+Note that we parameterise the sampling distribution for $\hat{\theta}$ by $\theta$, the parameter of interest.  This parameterisation can be a source of confusion in interpreting the statement of probability about $\hat{\theta}$ with regards to $\theta$.  
+
+Remember that the parameter $\theta$ is not a random variable; it has a fixed (but unknown) value. Any statements of probability made using the sampling distribution of the MLE apply only to the MLE.
+
+Consider the Central Limit Theorem, which states that the distribution of the MLE will converge to a Gaussian distribution as the sample size $n$ approaches infinity.  
+$$
+\sqrt{n}(\bar{x}-\mu)\rightarrow N\left(0,\sigma_{MLE}^2\right).
+$$
+
+implying that 
+$$
+Z=\frac{\bar{x}-\mu}{\sigma/\sqrt{n}}\sim (N(0,1)
+$$
+then
+$$
+Pr\left(Z_{\alpha/2}\leq\frac{\bar{x}-\mu}{\sigma/\sqrt{n}}\leq Z_{1-\alpha/2}\right)=\alpha
+$$
+and the $(1-\alpha)\%$ Confidence Interval is defined as
+$$
+\bar{x}\pm Z_{1-\alpha/2}\frac{\sigma}{\sqrt{n}}.
+$$
+It is very important to note that the statement of probability that is
+the basis for the confidence interval is *not* a statement of
+probability regarding $\mu$, as $\mu$ is not a random variable.
+
+###  Inverting the Test Statistic
+
+<p style="margin-bottom:0.3cm;"></p>
+
+There is an inherent connection between confidence intervals and
+hypothesis testing.  Both of these procedures rely on the sampling distribution of an estimator $\hat{\theta}$ for making inference about $\theta$ the parameter of interest. We will also see that the two procedures are, in a sense, complementary means of making an inference.  
+
+Specifically, for a given point null hypothesis test with Type I error rate of $\alpha$ and the hypotheses
+$$
+H_0:\theta = \theta_0\qquad H_A:\theta\neq\theta_0
+$$
+a rejection region $R$ is defined based on the sampling distribution of the estimator $\hat{\theta}$, the rejection region is defined as the disjoint region of $\theta\in\Theta$ that is far enough away from $\theta_0$ that the probability of observing the test statistic $\hat{\theta}$ given that $\theta=\theta_0$. The confidence interval $S$ is the complement of the rejection region $R$; in other words, it is a continuous region containing $\bar{x}$ computed assuming that $\theta=\theta_0$ and the decision to reject the null hypothesis occurs when $\theta_0\notin S$. 
+
+We can conceptualise The $1-\alpha\%$ confidence interval as the bounds of the compliment to the rejection region $R$ for the hypothesis test with Type I error rate of $\alpha$,  i.e.\ we would reject the null hypothesis if the confidence interval did not contain $0$. 
+
+#### Wilk's theorem (for confidence intervals)
+
+<p style="margin-bottom:0.3cm;"></p>
+
+Approximate **log-likelhood intervals** are based on the Chi-squared distribution we used for hypothesis testing (Wilk's theorem). For large samples $n$, the log-likelihood ratio has an approximate Chi-squared distribution $$2 \left( \ell(\hat{\boldsymbol{\theta}}) - \ell(\boldsymbol{\theta}) \right) \sim \chi^{2}_{p} $$ where $p$ is the number of parameters estimated. Often it is neccessary to use an taylor approximation on $2 \left( \ell(\hat{\boldsymbol{\theta}}) - \ell(\boldsymbol{\theta}) \right)$ because it is hard to invert. This leads to the approximate distribution
+$$ \left( \hat{\boldsymbol{\theta}} - \boldsymbol{\theta} \right)^{\top}\mathcal{J}  \left( \hat{\boldsymbol{\theta}} - \boldsymbol{\theta} \right) \sim \chi^{2}_{p}$$
+where $\mathcal{J}$ is the observed information matrix.
+
+###   Pivotal Quantities
+
+<p style="margin-bottom:0.3cm;"></p>
+
+The test statistic $Z\sim N(0,1)$
+$$
+Z=\frac{\bar{x}-\mu}{\sigma/\sqrt{n}}.
+$$ 
+ has a probability density function that does not depend on the parameters of the probability density function of the random variable $X$. The quantity $Z$ is called a *pivotal quantity*, a pivotal quantity is defined $Q(\mathbf{x},\theta)$ is a pivotal quantity of $\theta$ if the probability distribution of $Q$ does not depend on $\theta$ the parameters of the probability distribution of $X$.
+
+While the function $Q(\mathbf{x},\theta)$ will in most cases explicitly
+contain both parameters and statistics, for any set $A$,
+$Pr(Q(\mathbf{x},\theta)\in A)$ cannot depend on $\theta$. The technique of
+using pivotal quantities to construct confidence intervals relies on the
+ability to find the set $\{\theta:Q(\mathbf{x},\theta)\in A\}$ such that $A\in\Theta$ where $\Theta$ is the domain of $\theta$.
+
+In the case of location-scale probability distributions (i.e. pdfs that
+are parameterised in terms of location and scale) there are typically
+several pivotal quantities available. If we consider the sample
+$x_1,\ldots,x_n$ from the pdfs in the table below, and the sample mean
+$\bar{x}$ and sample standard deviation $s$ the resulting pivotal
+quantities are available. 
+
+:::{.table}
+
+  Form of pdf                                            Type of pdf      Pivotal quantity
+  ---------------------------                            -----------      ------------------
+  $f(x-\mu)$                                             Location         $\bar{x}-\mu$
+  $\frac{1}{\sigma}f\left(\frac{x}{\sigma}\right)$       Scale            $\frac{\bar{x}}{\sigma}$
+  $\frac{1}{\sigma}f\left(\frac{x-\mu}{\sigma}\right)$   Location-scale   $\frac{\bar{x}-\mu}{\sigma}$
+
+:::
+
+:::
+
+:::{.boxed}
+
+## Minimum Width Confidence Intervals
+
+Suppose we conceive confidence intervals as the complement of hypothesis tests, or specifically as the complement to the rejection region. In that case, as we compare different methods of constructing confidence intervals, it makes sense that the measure of a test, its power, has a complement for confidence intervals.  Power is a measure of a test's ability to detect the difference between the true parameter value and its hypothesised value. For a given Type I error rate $\alpha$, the best or most powerful test is the one with the largest rejection region; conversely, the "best confidence interval for a given confidence level $1-\alpha$ is the narrowest. As we have seen in the previous examples, finding the minimum width confidence interval is not always straightforward.  
+
+The following theorem provides guidance for finding the minimum
+width confidence interval.
+
+**Finding the Minimum Width Confidence Interval:**\
+
+Let $f(x)$ be a unimodal pdf with $f(x)>0\:\forall x\in X$. If the interval $[a,b]$ satisfies the conditions
+
+1.  $\int_a^bf(x)dx = 1-\alpha$
+
+2.  $f(a)=f(b)$
+
+3.  $a\leq x^*\leq b\mbox{ where }x^*\mbox{ is the mode of }f(x)$.
+
+then $[a,b]$ is the shortest interval that satisfies the condition $1$.
+
+These conditions show that for symmetric distributions, like the Gaussian or Student's-$t$, we can show that the minimum width confidence interval is the $\alpha/2$ and $1-\alpha/2$ quantiles, which we can find analytically with little effort.
+
+For asymmetric or skewed distributions finding the points $a$ and $b$ that satisfy the theorem's conditions can be a challenge. In cases where the resulting interval is a non-linear function of $a$ and $b$, the theorem's conditions will not apply, and attempting to do so (as we will see shortly) will not yield the desired results.  
+
+:::
+
+## Theory questions
+
+:::{.boxed}
+
+### Question 1
+
+```{r theory-question-1, child='../question-bank/id0019-confint-binom.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler1()")
+
+div(id = "tq1-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0019-confint-binom.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler1() {
+  var x = document.getElementById('tq1-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+:::{.boxed}
+
+### Question 2
+
+```{r theory-question-2, child='../question-bank/id0021-confint-poisson-simple.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler2()")
+
+div(id = "tq2-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0021-confint-poisson-simple.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler2() {
+  var x = document.getElementById('tq2-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+:::{.boxed}
+
+### Question 3
+
+```{r theory-question-3, child='../question-bank/id0020-confint-poisson-hypotest.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler3()")
+
+div(id = "tq3-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0020-confint-poisson-hypotest.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler3() {
+  var x = document.getElementById('tq3-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+
+## Practical questions
+
+:::{.boxed}
+
+### Question 4
+
+```{r prac-question-4, child='../question-bank/id0022-confint-poisson-prac.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+&thinsp;
+
+```{r prac-solution-4, child='../solution-bank/id0022-confint-poisson-prac.Rmd', eval = params$show_solutions}
+  
+```

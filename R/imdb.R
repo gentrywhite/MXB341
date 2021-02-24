@@ -1,0 +1,21 @@
+#' Data from the Internet Movie Database.
+#'
+#' A data set containing data on over 820,000 titles in the Internet Movie Database (as at 27 August 2020).
+#'
+#'
+#' @format A data frame with 821973 rows and 10 variables:
+#' \describe{
+#'   \item{tconst}{alphanumeric unique identifier of the title}
+#'   \item{titleType}{the type/format of the title (e.g. movie, short, tvseries, tvepisode, video, etc)}
+#'   \item{primaryTitle}{the more popular title / the title used by the filmmakers on promotional materials at the point of release}
+#'   \item{originalTitle}{original title, in the original language}
+#'   \item{startYear}{represents the release year of a title. In the case of TV Series, it is the series start year}
+#'   \item{endYear}{TV Series end year. "\N" for all other title types}
+#'   \item{runTimeMinutes}{primary runtime of the title, in minutes}
+#'   \item{genres}{includes up to three genres associated with the title}
+#'   \item{averageRating}{weighted average of all the individual user ratings}
+#'   \item{numVotes}{number of votes the title has received}
+#'   ...
+#' }
+#' @source \url{https://www.imdb.com/interfaces/}
+"imdb"
