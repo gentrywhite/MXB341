@@ -1,0 +1,29 @@
+
+***
+*Solution*: 
+
+The least squares optimisation can be found by solving
+
+$$
+\min_{b} \sum_{i=1}^{n}\left(y_{i} - b x_{i}^2\right)^{2}
+$$
+
+Let 
+$$
+r(b) = \sum_{i=1}^{n}(y_{i} - b x_{i}^2)^{2}
+$$ 
+then
+$$
+\frac{\partial r}{\partial b} = -2 \sum_{i=1}^{n}x_{i}^2(y_{i} - b x_{i}^2)
+$$
+$$
+\phantom{\frac{\partial r}{\partial b}}= -2 \left(\sum_{i=1}^{n}x_{i}^2 y_{i} - b\sum_{i=1}^{n}x_{i}^4\right)
+$$
+
+Setting $\frac{\partial r}{\partial b} = 0$ results in 
+
+$$
+\hat{b}_{LS} = \frac{\sum_{i=1}^{n}x_{i}^2y_{i}}{\sum_{i=1}^{n}x_{i}^4}
+$$
+
+***

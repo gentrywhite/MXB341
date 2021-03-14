@@ -1,0 +1,13 @@
+
+***
+*Solution*: Solution text here.
+
+```{r unique-id-sols-chunk-1, cache=TRUE, echo=TRUE, eval=TRUE}
+  
+  y <- 1:10
+  x <- sum(y)
+  x
+
+```
+
+***

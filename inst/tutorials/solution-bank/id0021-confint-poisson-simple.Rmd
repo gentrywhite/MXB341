@@ -1,0 +1,85 @@
+
+*Solution*: 
+
+a. The log-likelihood is
+$$
+	L(\lambda) = \prod_{i=1}^n \frac{e^{-\lambda}\lambda^{y_i}}{y_i!}
+$$
+$$
+	= \frac{e^{-n\lambda}\lambda^{n \bar{y}}}{\prod_{i=1}^ny_i!}
+$$
+b. The log-likelihood is
+
+$$
+	\ell(\lambda) = \log  L(\lambda)
+$$
+$$
+	= -n\lambda + (n \bar{y})\log \lambda - \sum_{i=1}^n \log (y_i!)
+$$
+
+The first derivative (score function) is
+
+$$
+\frac{\partial l}{\partial\lambda} = -n + \frac{n\bar{y}}{\lambda}
+$$
+
+Setting this function to zero and solving for $\lambda$ gives the MLE $\hat{\lambda} = \bar{y}$.
+
+c. The second derivative of the log-likelihood is
+
+$$
+\frac{\partial^2 l}{\partial\lambda^2} = -\frac{n\bar{y}}{\lambda^2}
+$$
+
+Noting that the expected value of a Poisson random variable $y_{i}$ is $\lambda$, the expected value of $\bar{y}$ can be found by $\text{E}(\bar{y}) = \frac{1}{n}\sum_{i=1}^n\text{E}(y_{i})= \frac{1}{n}\sum_{i=1}^n\lambda = \lambda$. We will use this in the Fisher information matrix derivation below.
+
+The Fisher information matrix is
+
+$$
+	\mathcal{I}_{n}(\lambda) = -\text{E}\left(\frac{\partial^2 \ell}{\partial\lambda^2}\right)
+$$
+$$
+	= \frac{n\text{E}(\bar{y})}{\lambda^2}
+$$
+$$
+	= \frac{n\lambda}{\lambda^2}
+$$
+$$
+	= \frac{n}{\lambda}.
+$$
+
+The single observation Fisher information is simply: 	
+$$
+\mathcal{I}(\lambda) =	\mathcal{I}_{n}(\lambda)/n = 1/\lambda
+$$
+
+d.  From the asymptoptic normality of the MLE we have 
+$$
+\sqrt{n}(\hat{\lambda} - \lambda) \sim N(0, \mathcal{I}(\hat{\lambda})^{-1})
+$$ 
+in the limit as $n\rightarrow \infty$. We can standardise this as 
+$$
+\sqrt{n}\mathcal{I}(\hat{\lambda})^{1/2}(\hat{\lambda} - \lambda) \sim N(0, 1)
+$$ 
+which can be written different ways (e.g. $\mathcal{I}_{n}(\hat{\lambda})^{1/2}(\hat{\lambda} - \lambda) \sim N(0, 1)$).
+
+The 95% confidence interval bounds for the standard normal, $N(0,1)$, are approximately $[-1.96,1.96]$. So our confidence interval is
+$$
+-1.96 < \sqrt{n}\mathcal{I}(\hat{\lambda})^{1/2}(\hat{\lambda} - \lambda) < 1.96
+$$
+$$
+-1.96 < \frac{\sqrt{n}}{\sqrt{\hat{\lambda}}}(\hat{\lambda} - \lambda) < 1.96
+$$
+$$
+\frac{-1.96\sqrt{\hat{\lambda}}}{\sqrt{n}} < \hat{\lambda} - \lambda < \frac{1.96\sqrt{\hat{\lambda}}}{\sqrt{n}}
+$$
+$$
+\frac{-1.96\sqrt{\hat{\lambda}}}{\sqrt{n}}-\hat{\lambda} <  - \lambda < \frac{1.96\sqrt{\hat{\lambda}}}{\sqrt{n}}-\hat{\lambda}
+$$
+$$
+ \frac{-1.96\sqrt{\hat{\lambda}}}{\sqrt{n}}+\hat{\lambda}  <  \lambda < \frac{1.96\sqrt{\hat{\lambda}}}{\sqrt{n}}+\hat{\lambda}
+$$
+or in other words the 95% confidence interval for $\lambda$ is 
+$$
+\hat{\lambda} \pm \frac{1.96\sqrt{\hat{\lambda}}}{\sqrt{n}}.
+$$

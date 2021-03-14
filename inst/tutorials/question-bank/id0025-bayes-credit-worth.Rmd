@@ -1,0 +1,15 @@
+Let's explore a particular test for credit worthiness^[The same type of problem arises in testing for disease, and another of other scenarios.] using Bayes theorem.
+
+A bank finds that $5\%$ of its customers default on loans within a year. In an effort to reduce this percentage it introduces a questionnaire for customers; they either pass or fail the questionnaire. It is found from the database that
+$$
+\begin{aligned}
+P(\text{fail questionnaire}~\vert~\text{default loan}) &= 0.9\\
+P(\text{pass questionnaire}~\vert~\text{no default loan}) &= 0.95.
+\end{aligned}
+$$
+(a) Is it in the bank's best interest to introduce the questionnaire and only give loans to those customers who pass the questionnaire^[Hint: find $P(\text{no default loan} \vert \text{pass questionnaire})$ and compare with $P(\text{no default loan})$.].
+
+(b) Which of the following has more effect on $P(\text{no default loan} \vert \text{pass questionnaire})$ in terms of improving the questionnaire?
+
+    (i) changing the value of $P(\text{fail questionnaire} ~\vert~ \text{default loan})$ from $0.9$ to $0.95$ or
+    (ii) $P(\text{pass questionnaire}~\vert~\text{no default loan})$ from $0.95$ to $0.99$.

@@ -1,0 +1,1 @@
+Say you have $n$ pairs of data $x_{i},y_{i}$ which appear to approximately follow a quadratic curve that goes through the origin, $y = b x^2$. Find the least squares estimator of $b$.

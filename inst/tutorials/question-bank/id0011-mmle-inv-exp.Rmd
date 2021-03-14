@@ -1,0 +1,12 @@
+Let $x_{1},x_{2},\ldots,x_{n}$ be data distributed according to an inverse exponential distribution with pdf
+$$
+f(x~\vert~\lambda) = \frac{\exp\{-(\lambda x)^{-1}\}}{\lambda x^2} \quad \text{for} \quad x > 0
+$$ 
+
+Note that $\lambda > 0$.
+
+(a) Find the MLE of $\lambda$ for the inverse exponential distribution. What are the score functions for this distribution?
+(b) Show that $T(\boldsymbol{x})= \sum_{i=1}^{n}x_{i}^{-1}$ is the sufficient statistic for the distribution.
+(c) Write the deviance for the inverse exponential distribution in terms of the MLE, $\hat{\lambda}$. What are the AIC and BIC formulae?
+(d) What is the expected^[Hint: The expected value of $x^{-1}$ from an inverse exponential distribution (the given parametrisation) is $\lambda$.] Fisher information, $\mathcal{I}_{n}(\lambda)$, and observed information, $\mathcal{J}_{n}(\lambda)$, for the inverse exponential distributed data? Determine also the observed information, evaluated at the MLE.
+(e) Is the inverse exponential distribution in the exponential family? Why or why not?

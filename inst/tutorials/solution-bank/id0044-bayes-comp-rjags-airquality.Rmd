@@ -1,0 +1,60 @@
+
+***
+*Solution*: 
+
+```{r id0044-prac-, echo = TRUE, eval = F}
+# Change code appriately for each model/prior specification...
+
+# make sure you have JAGS, rjags, coda installed!
+# download JAGS here: https://sourceforge.net/projects/mcmc-jags/
+
+# make sure you have JAGS, rjags, coda installed!
+library(rjags)
+
+data(airquality)
+y <- airquality$Ozone
+x <- airquality$Temp
+n <- nrow(airquality)
+
+##  Gamma Likelihood + priors RJAGS version (change this!)
+jags_model_spec <- textConnection("
+model
+{
+  for(i in 1:n)
+  {
+    y[i] ~ dnorm(alpha + beta * x[i], tau); # data model
+  }
+  alpha ~ dnorm(0,10e-2); # prior for alpha
+  beta  ~ dnorm(0,10e-2); # prior for beta
+  tau ~ dgamma(10e-1,10e-1); # prior for sigma2 (inverse gamma for sigma2, tau = 1/sigma2)
+}
+")
+
+# set up model + MCMC specifications
+jags_model <- jags.model(jags_model_spec, 
+                         data=list("y" = y, "x" = x, "n" = n), 
+                         n.chains = 3, 
+                         n.adapt = 1000)
+
+# run MCMC (Gibbs) burnin
+update(jags_model,10000)
+
+# run MCMC (Gibbs) 
+jags_samples <- coda.samples(jags_model, c("alpha","beta","tau"), 
+                             n.iter = 10000)
+
+# check diagnostics (add more diagnostics here)
+gelman.diag(jags_samples)
+gelman.plot(jags_samples)
+
+effectiveSize(jags_samples)
+
+# DIC
+dic.samples(jags_model, n.iter = 5000)
+
+# plot 
+plot(jags_samples)
+
+```
+
+***

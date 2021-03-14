@@ -1,0 +1,77 @@
+
+***
+*Solution*: 
+
+
+(a) The posterior distribution for $\theta$ is proportional to
+$$
+\pi(\theta~\vert~\boldsymbol{x}) \propto \theta^{n\bar{x}+\alpha -1}\exp\{-(n + \beta)\theta\}
+$$
+therefore the posterior has distribution $(\theta~\vert~\boldsymbol{x}) \sim \text{Gamma}(n\bar{x}+\alpha, n + \beta)$.
+
+The expected loss w.r.t. the posterior is
+$$
+\begin{aligned}
+E[~L(\theta, d)~\vert~\boldsymbol{x}~] &= \int_{0}^{\infty} L(\theta,d) \pi(\theta~\vert~\boldsymbol{x}) \text{ d}\theta \\
+& = \int_{0}^{\infty} (d^2 - 2d\theta + \theta^2)  \pi(\theta~\vert~\boldsymbol{x}) \text{ d}\theta \\
+& = d^2 \int_{0}^{\infty} \pi(\theta~\vert~\boldsymbol{x}) \text{ d}\theta - 2d \int_{0}^{\infty} \theta \pi(\theta~\vert~\boldsymbol{x}) \text{ d}\theta + \int_{0}^{\infty}\theta^2  \pi(\theta~\vert~\boldsymbol{x}) \text{ d}\theta \\
+&= d^2 - 2d~E(\theta~\vert~\boldsymbol{x}) + E(\theta^2~\vert~\boldsymbol{x}) \\
+&=  d^2 - 2d\frac{n\bar{x}+\alpha}{\beta +n} + \frac{(n\bar{x}+\alpha)^2 + n\bar{x}+\alpha}{(\beta +n)^2}
+\end{aligned} 
+$$
+
+The Bayesian decision rule is the minimum $d$ for the above function, which occurs when
+$$
+d^{\star}_{b} = \frac{n\bar{x}+\alpha}{\beta +n}
+$$
+or $a = \alpha/(\beta+n)$ and $b = n/(\beta+n)$. In other words, under quadratic loss the Bayesian decision rule is to choose the posterior mean.
+
+(b) The loss function using the Bayes decision rule is
+$$
+\begin{aligned}
+L(\theta,d^{\star}_{b}) &= \left(\frac{n\bar{x}+\alpha}{\beta +n} - \theta\right)^2 = \left(\frac{Z+\alpha}{\beta +n} - \theta\right)^2 \\
+&= \frac{Z^2 + 2\alpha Z + \alpha^2}{(\beta+n)^2} - 2\theta \frac{Z+\alpha}{\beta +n} + \theta^2\\
+E[L(\theta,d^{\star}_{b})] &= \frac{ E[Z^2] + 2\alpha  E[Z] + \alpha^2}{(\beta+n)^2} - 2\theta \frac{ E[Z]+\alpha}{\beta +n} + \theta^2, \quad E()\text{ w.r.t. to data, Z}\\
+&= \frac{n\theta(1+ n\theta) + 2\alpha n\theta + \alpha^2}{(\beta+n)^2} - 2\theta \frac{ n\theta+\alpha}{\beta +n} + \theta^2 \\
+&= \frac{n^{2}\theta^{2} + (2\alpha +1) n\theta + \alpha^2}{(\beta+n)^2} - 2\theta \frac{ n\theta+\alpha}{\beta +n} + \theta^2 \\
+&= \frac{\theta^{2}}{(\beta+n)^2}n^2 + \left[ \frac{(2\alpha +1) \theta}{(\beta+n)^2} -\frac{2\theta^2}{\beta+n}\right]n + \left(\frac{\alpha^2}{(\beta+n)^2} - \frac{2\theta\alpha}{\beta+n} +\theta^2\right)
+\end{aligned}
+$$
+where $Z$ is the sum of $n$ Poisson random variables with mean $\theta$. Note that $Z \sim \text{Pois}(n\theta)$, therefore $E(Z) = \text{Var}(Z) = n\theta$, and $E(Z^2) =  n\theta(1+ n\theta)$.
+
+The loss function using the MLE decision rule is
+$$
+\begin{aligned}
+L(\theta, \bar{x}) &= \left(\bar{x} - \theta\right)^2 = \frac{Z^2}{n^2} - 2\theta\frac{Z}{n} +\theta^2 \\
+E[L(\theta, \bar{x})] &= \frac{E[Z^2]}{n^2} - 2\theta \frac{E[Z]}{n} + \theta^2 \\
+&= \frac{n\theta(1+ n\theta)}{n^2} - 2\theta \frac{ n\theta}{n} + \theta^2 \\
+&= \frac{\theta}{n}
+\end{aligned}
+$$
+
+(c) The Bayes risk of the Bayes rule is
+$$
+\begin{aligned}
+r(n)=E[~L(\theta, d^{\star}_{b})~\vert~\boldsymbol{x}~]  = 
+&-\frac{(n\bar{x}+\alpha)^2}{(\beta +n)^2} + \frac{(n\bar{x}+\alpha)^2 + n\bar{x}+\alpha}{(\beta +n)^2} \\
+&= \frac{n\bar{x}+\alpha}{(\beta +n)^2}
+\end{aligned}
+$$ 
+Note: Expectation w.r.t. posterior of $\theta$._
+
+therefore $\mathcal{O}[r(n)] = 1/n$, which is decreasing and tends to zero as $n \rightarrow \infty$
+
+(d) The Bayes risk prior to the experiment is $r(0) = \alpha/\beta^2$. Find $n$ such that
+$$
+\begin{aligned}
+r(0) &= 2 r(n)\\
+\frac{\alpha}{\beta^2}&=2\frac{n\bar{x}+\alpha}{(\beta +n)^2} \\
+\alpha(\beta^{2} + 2\beta n +n^2) &= 2 (n\bar{x}+\alpha) \beta^2 \\
+\alpha\beta^{2} + 2\alpha\beta n +\alpha \beta^2n^2 &= 2\bar{x}\beta^2 n+2\alpha \beta^2 \\
+2\alpha\beta n +\alpha \beta^2n^2 &= 2\bar{x}\beta^2 n+\alpha \beta^2 \\
+\alpha \beta^2n^2 + 2(\alpha\beta - \bar{x}\beta^2) n - \alpha \beta^2 &=  0 \\
+\end{aligned}
+$$
+which can be solved using the quadratic equation formula.
+
+***

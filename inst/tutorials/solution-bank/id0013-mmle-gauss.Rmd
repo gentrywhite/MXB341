@@ -1,0 +1,11 @@
+
+*Solution*: None provided -- self check.
+
+The likelihood is
+$$
+L(\mu,\sigma^2|\mathbf{x})=\left(\frac{1}{2\pi\sigma^2}\right)^{n/2}\exp\left(-\frac{\sum_{i=1}^n(x_i-\mu)^2}{2\sigma^2}\right)
+$$
+and the log-likelihood is 
+$$
+l(\mu,\sigma^2|\mathbf{x})=-\frac{n}{2}\log\left(2\pi\sigma^2\right)-\frac{\sum_{i=1}^n(x_i-\mu)^2}{2\sigma^2}.
+$$

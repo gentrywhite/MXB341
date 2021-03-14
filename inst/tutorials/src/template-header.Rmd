@@ -1,0 +1,12 @@
+\addtolength{\headheight}{1.0cm} 
+\pagestyle{fancyplain} 
+\lhead{\includegraphics[height=1.2cm]{../figures/QUT_Logo_2Lines_CMYK.pdf}} 
+\renewcommand{\headrulewidth}{0pt} 
+
+```{r tint-setup, include=FALSE}
+  library(tint)
+  # invalidate cache when the package version changes
+  knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tint'))
+  options(htmltools.dir.version = FALSE)
+  
+```

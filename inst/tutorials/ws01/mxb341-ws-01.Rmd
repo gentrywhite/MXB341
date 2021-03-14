@@ -1,0 +1,396 @@
+---
+title:  "MXB341 Worksheet 1 - Estimators"
+output:
+  learnr::tutorial:
+    theme: yeti
+    includes:
+    css: ["css/QUT.css","css/QUTtutorial.css"]
+  progressive: true
+  allow_skip: true
+runtime: shiny_prerendered
+params:
+  show_solutions: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(htmltools.dir.version = FALSE)
+opts <- options(knitr.kable.NA = "")
+
+  # install libraries needed for worksheet
+library(learnr)
+library(MXB341)
+
+
+```
+
+```{r, echo = FALSE}
+
+htmltools::includeHTML("header.html")
+
+```
+
+:::{.quote}
+"It is a capital mistake to theorise before one has data. Insensibly one begins to twist facts to suit theories, instead of theories to suit facts."
+
+--- Sherlock Holmes
+
+:::
+
+# Week 1: Estimating Paramters
+
+Statistics, or particularly statistical inference, is how we connect our observations of the real world to probabilistic models we construct to model observable phenomena. The term inference encompasses a variety of activities. Last week, we began with the most basic part of inference, estimating the values for our probabilistic models' parameters.  We learned three basic approaches: least-squares, the method of moments, and maximum likelihood. Each of these has its strength and weaknesses, but each can be useful in different situations. 
+
+
+:::{.boxed}
+
+### Methods for Estimating Parameters {.tabset .tabset-pills}
+
+
+#### Least Squares
+
+**Method:**\ Minimise the squared pointwise distance between the expected value and the observed data by defining the objective function
+$$
+\begin{align}
+Q(\theta,\mathbf{y})&= \sum_{i=1}^{n}\left( y_{i} - \operatorname{E}(Y)\right)^2\\
+&=\sum_{i=1}^{n}\left( y_{i} - g(\theta)\right)^2\\
+\end{align}
+$$
+minimising this function with respect to $\theta$ 
+$$
+\hat{\theta}_{LS} = \text{arg min}_{\theta} \sum_{i=1}^{n}\left( y_{i} - \operatorname{E}(Y)\right)^2
+$$
+results in the least squared estiamtor for $\theta$, $\hat{\theta}_{LS}$.
+
+
+#### Method of Moments
+
+  **Method:**\ Substitute the sample moments based on the data for the theoretical moments (as functions of the parameters) and solve for the parameters.
+  
+The theoretical moments for the density function $f(x;\theta)$ are
+$$
+\begin{aligned}
+\mu_1(\theta) & =   \int_{-\infty}^{\infty}xf(x;\theta)dx\\
+\mu_2(\theta) & =  \int_{-\infty}^{\infty}x^2f(x;\theta)dx\\
+\vdots &  \\
+\mu_k(\theta) & =  \int_{-\infty}^{\infty}x^kf(x;\theta)dx.
+\end{aligned}
+$$ 
+The sample moments based on the data are
+$$
+\begin{aligned}
+m_1 & = & \frac{1}{n}\sum_{i = 1}^nx_i\\
+m_2 & = & \frac{1}{n}\sum_{i = 1}^nx_i^2\\
+\vdots & & \\
+m_k & = & \frac{1}{n}\sum_{i = 1}^nx_i^k.
+\end{aligned}
+$$ 
+In the univariate case, we define
+$$
+\mu_k=g(\theta)
+$$
+and the sample moment $m_k$ then the method of moments estimator for $\theta$ is
+$$
+\hat{\theta}_{MM}=g^{-1}(m_k).
+$$
+
+Given a vector of parameters $\boldsymbol{\theta}=\theta_1,\theta_2,\ldots,\theta_p$, the corresponding moments
+$$
+\begin{align}
+\mu_1& = g_1(\mathbf{\theta})\\
+\vdots & \\
+\mu_p & = g_p(\mathbf{\theta})
+\end{align}
+$$
+yield a system of equations to solve to find the method of moments estimators.
+
+
+
+
+    
+#### Maximum Likelihood
+
+  **Method:**\ Choose the parameter which corresponds to the "most likely" distribution given the data. For a given distribution with probability mass/density function $f(x;\theta )$, from which we assume the data ($x_{i}$) are iid generated, define the likelihood as $L(\theta) = \prod_{i=1}^{n} f(x_{i};\theta )$, the maximum likelihood estimate is:
+$$
+\hat{\theta}_{ML} = \underset{\theta\in\Theta}{\operatorname{argmax}} L(\theta)
+$$
+Generally, we maximise 
+$$
+\begin{align}
+l(\theta)&=\log\left( L(\theta)\right)\\
+&=\sum_{i=1}^n\log\left(f(x_i;\theta)\right)
+\end{align}
+$$ 
+as it is more convenient to work with and results in the equivalent estimate. The maximum likelihood estimator (MLE) has several nice properties which we will explore.
+  
+:::    
+
+
+## Theory questions
+
+:::{.boxed}
+
+### Question 1
+
+```{r theory-question-1, child='../question-bank/id0002-est-simple-beta-mm.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler1()")
+
+div(id = "tq1-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0002-est-simple-beta-mm.Rmd"))
+```
+
+
+
+```{js, echo = FALSE}
+function button_handler1() {
+  var x = document.getElementById('tq1-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+
+:::{.boxed}
+
+### Question 2
+
+```{r theory-question-2, child='../question-bank/id0003-est-bernoulli.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler2()")
+
+div(id = "tq2-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0003-est-bernoulli.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler2() {
+  var x = document.getElementById('tq2-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+:::{.boxed}
+
+### Question 3
+
+```{r theory-question-3, child='../question-bank/id0004-est-ls-x2.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler3()")
+
+div(id = "tq3-solution",
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0004-est-ls-x2.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler3() {
+  var x = document.getElementById('tq3-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+:::{.boxed}
+
+### Question 4
+
+```{r theory-question-4, child='../question-bank/id0005-est-negbin.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution", 
+                    label = "Solution", 
+                    onclick = "button_handler4()")
+
+div(id = "tq4-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0005-est-negbin.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler4() {
+  var x = document.getElementById('tq4-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+## Practical questions
+
+For these questions, you will need to write functions, plot them, and optimise them. Here's a quick summary of how to do that:
+
+:::{.boxed}
+
+### Question 1: Defining functions in R
+
+```{r r-function-example, exercise = TRUE}
+
+      squared_plus_z <- function(x, z = 0)      # z is an argument with default value 0
+        {
+          result <- x^2 + z
+          return(result)
+        }
+    
+      # applying to a vector works because the contents 
+      # of the function are already vectorised
+      squared_plus_z( c(1, 11, 101), z = 1)
+    
+      # you can even pipe if you want to
+      
+      c(1, 11, 101) %>% squared_plus_z(z = 1)
+    
+```
+Now write a function to for the log-likelihood of a sample $\mathbf{x}=x_1,x_2,\ldots,x_n$ from a Bernoulli distribution with parameter $p$.  Note that the function will take both $p$ and $\mathbf{x}$ as arguments  
+```{r ex1, exercise = TRUE}
+
+l<-function(p,x)
+  {
+  
+  }
+
+```
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution", 
+                    label = "Hint", 
+                    onclick = "button_handler5()")
+
+div(id = "pq1-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../hint-bank/id0001-ll-bernoulli.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler5() {
+  var x = document.getElementById('pq1-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+  
+:::
+
+### Question 2: Plotting functions in ggplot
+
+**gpplot2** is a powerful graphic package in R that we can use to create various high-quality graphics.  Here is an example of plotting the function "squared_plus_z()" we created previously. 
+
+```{r r-plot-function-example, exercise = TRUE, fig.margin = TRUE, fig.cap = "Example ggplot with a function.", cache=TRUE, echo =TRUE}
+
+ dummy_data <-  tibble(x = c(-3,3))
+    
+      ggplot(data = dummy_data, aes(x = x) ) + 
+      stat_function(fun = squared_plus_z, args = list(z = 1)) +
+      ylab(expression("f(x)="*x^2+1))
+      
+```
+
+Now, plot the function for the log-likelihood that you created in the previous exercise for $0<p<1$ 
+```{r ex2, exercise = TRUE}
+x<-c(0,1,1,0,0,0,0,1,0,0)
+
+
+```
+    
+### Optimising functions with `optim`
+The `optim` function is just one example of optimisation in `R`. Here we minimise $x^2 - 1$ over $x \in [-1,1]$.
+Several methods in `optim` require you to specify an interval (i.e.\ specify a bounded problem), but some don't.
+`method = "Brent"` is only for one-dimensional optimisation. 
+
+```{r r-optim-example, echo=TRUE }
+
+<<r-function-example>>
+      
+      # initial value for solver
+      init_val <- 1
+      
+      opt_res <- optim(par = init_val, 
+            fn = squared_plus_z,
+            z = -1,
+            method = "Brent",
+            lower = -1,
+            upper = 1
+            )
+      
+      # optima and value
+      round(c(opt_res$par, opt_res$value),2)
+      
+      # optim minimises by default.
+      # To change use argument:
+      control = list(fnscale = -1)
+
+```
+
+Now, find the MLE of $p$ for using the log-likelihood function you created in the previous exercises.
+
+```{r ex3, exercise = TRUE}
+x<-rbinom(10,1,0.4)
+
+```
+
+
+### Question 3
+
+```{r prac-question-3, child='../question-bank/id0006-est-ls-stbernard.Rmd', eval = TRUE}
+  
+```
+
+## Supplementary Questions
+
+### Question 4
+
+```{r prac-question-4, child='../question-bank/id0047-gamma-est-supp.Rmd', eval = TRUE}
+  
+```
+
+
+

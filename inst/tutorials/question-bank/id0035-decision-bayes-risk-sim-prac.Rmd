@@ -1,0 +1,14 @@
+Consider the the absolute and quadratic loss functions,  $L_{1}(\beta, \hat{\beta}) = \vert\beta - \hat{\beta} \vert$ and $L_{2}(\beta, \hat{\beta}) = (\beta - \hat{\beta})^{2}$ respectively.
+
+We are going to perform a simulation to test certain estimators (posterior mean, median, and mode) for these loss functions in a Bayesian context.
+Suppose you have data $(y_{i} ~ \vert ~ \beta) \sim \text{Weibull}(\lambda, k = 0.4)$ distribution and wish to use prior on $\beta \sim \text{invGamma}(\alpha_{0} = 0.1,\beta_{0} = 2)$. Note, this is a conjugate prior, and the posterior distribution has parameters $\alpha_{n} = \alpha_{0} + n$ and $\beta_{n} = \beta_{0} + \sum_{i=1}^{n} y_{i}^{k}$.
+
+(a) Simulate some Weibull data with $n = 20$ and the parameters $\lambda = 1$ (scale),  $k = 0.4$ (shape). 
+
+(b) Write functions (or a single function) that calculates the posterior distribution's: (i) $\alpha_{n}$ and $\beta_{n}$, (ii) posterior mean, (iii) posterior mode, and (iv) posterior median^[Hint: The `R` package `extraDistr` has functions for the inverse gamma distribution.] given some data points $\boldsymbol{y}$. Make sure you test your code with the data in part (a).
+
+(c) Using (b), write a function to simulate from the posterior distribution of $\beta$.
+
+(d) We can estimate the Bayesian risk^[Recall: Bayesian risk is the expectation of the loss function w.r.t. the posterior] for a given estimate by simulation from the posterior distribution and calculating an average. Write a function to calculate the average of each type of loss above using samples from the posterior. It will use a given estimator, $\hat{\beta}$, from the posterior, as well as samples from the posterior of $\beta$ to calculate the average.
+
+(d) Use the above functions to evaluate the estimators from part (b) using the estimate Bayes risk in part (c). Also try using $n=3$ and $n=100$. Comment on the results. 

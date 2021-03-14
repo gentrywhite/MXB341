@@ -1,0 +1,135 @@
+
+***
+*Solution*: 
+
+(a)
+
+```{r id0035-prac-q1-a, echo = TRUE, eval = TRUE}
+
+  n <- 20
+  
+  # parameters for weibull data
+  weibull_scale <- 1 # what we are trying to estimate
+  weibull_shape <- 0.4 # fixed (equal to k)
+
+  # simulate some weibull data
+  y <- rweibull(n = n, shape = weibull_shape, scale = weibull_scale)
+  
+  
+```
+
+(b)
+
+```{r id0035-prac-q1-b, echo = TRUE, eval = TRUE}
+
+  library(extraDistr)
+
+ posterior_beta_weibull_invgamma <- function(y, alpha_0, beta_0, k){
+  
+  # prior: lambda ~ invgamma(a,b)
+  # data model: x ~ weibull(lambda, k = weibull_shape)
+  
+  # parameters for invgamma posterior:
+  alpha_n <- alpha_0 + length(y)
+  beta_n <- beta_0 + sum(y^k)
+  
+  # bayes estimates of beta
+  post_beta_mean <- beta_n / (alpha_n - 1)
+  post_beta_mode <-  beta_n / (alpha_n + 1)
+  post_beta_median <- qinvgamma(p = 0.5, alpha = alpha_n, beta = beta_n)
+  
+  return(
+    list(
+      alpha_n = alpha_n,
+      beta_n = beta_n,
+      mean = post_beta_mean,
+      mode = post_beta_mode,
+      median = post_beta_median
+    )
+  )
+  
+ }
+
+# test code
+ 
+# parametes for prior
+prior_invgamma_alpha <- 0.1
+prior_invgamma_beta <- 2
+
+posterior_results <- 
+  posterior_beta_weibull_invgamma(y = y, 
+                                  alpha_0 = prior_invgamma_alpha, 
+                                  beta_0 = prior_invgamma_beta, 
+                                  k = weibull_shape) 
+
+# access one element of list:
+posterior_results$alpha_n
+
+# one way to veiw all...
+posterior_results %>% c(recursive = T)
+
+
+```
+
+(c)
+
+```{r id0035-prac-q1-c, echo = TRUE, eval = TRUE}
+
+  # calculating an average loss from the posterior is a 
+  # Monte Carlo estimate of the Bayesian risk
+ loss_absolute_avg <- function(beta_hat, beta_posterior_samples){
+   
+   mean( abs(beta_hat - beta_posterior_samples) )
+   
+ }
+
+ loss_quadratic_avg <- function(beta_hat, beta_posterior_samples){
+   
+   mean( (beta_hat - beta_posterior_samples)^2 )
+   
+ }
+
+```
+
+(d)
+
+```{r id0035-prac-q1-d, echo = TRUE, eval = TRUE}
+
+  # compare the estimators using the estimated 
+  # Bayesian risk (average of loss functions)
+
+  # one simulation in a study would look like this:
+  
+  # generate data
+  y <- rweibull(n = 3, shape = weibull_shape, scale = weibull_scale)
+
+  # calc posterior values
+  posterior_vals <- 
+    posterior_beta_weibull_invgamma(y = y,
+                                    alpha_0 = prior_invgamma_alpha, 
+                                    beta_0 = prior_invgamma_beta, 
+                                    k = weibull_shape)
+
+  beta_posterior_samples <-
+    rinvgamma(n = 10000, 
+              alpha = posterior_vals$alpha_n,
+              beta = posterior_vals$beta_n)
+
+  # there are better ways of doing this using the purrr packge.
+  bayes_risk <- tibble(
+    loss_function = c("abs", "abs", "abs", "quad", "quad", "quad"),
+    estimator = c("mean", "mode", "median", "mean", "mode", "median"),
+    value = c(loss_absolute_avg(posterior_vals$mean, beta_posterior_samples),
+              loss_absolute_avg(posterior_vals$mode, beta_posterior_samples),
+              loss_absolute_avg(posterior_vals$median, beta_posterior_samples),
+              loss_quadratic_avg(posterior_vals$mean, beta_posterior_samples),
+              loss_quadratic_avg(posterior_vals$mode, beta_posterior_samples),
+              loss_quadratic_avg(posterior_vals$median, beta_posterior_samples)
+              )
+  )
+  
+  bayes_risk
+  
+```
+
+***

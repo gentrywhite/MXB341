@@ -1,0 +1,83 @@
+
+
+```{r id0009-sim-solns, exercise = TRUE}
+  
+  library(purrr)
+  library(dplyr)
+  library(tidyr)
+  library(ggplot2)
+
+# function that performs one simulation...
+
+unif_estimators_sim <- function(n_obs, true_theta){
+  
+  # sample data
+  y <- runif(n = n_obs, min = 0, max = true_theta)
+  
+  # estimators:
+  theta_est_A <- 2 * mean(y)
+  theta_est_B <- max(y) * (n_obs + 1) / n_obs
+  
+  # estimator's estimated variance
+  var_theta_est_A <- (theta_est_A^2)/(3 * n_obs)
+  var_theta_est_B <- (theta_est_A^2)/(n_obs * (n_obs + 2)) 
+  
+  # empirical bias (true bias is zero)
+  bias_theta_est_A <- theta_est_A - true_theta
+  bias_theta_est_B <- theta_est_B - true_theta
+  
+  # empirical squared error
+  sqerr_theta_est_A <- (theta_est_A - true_theta)^2
+  sqerr_theta_est_B <- (theta_est_B - true_theta)^2
+  
+  # save in tibble
+  out_tb <- tibble(
+    est = c(theta_est_A, theta_est_B),
+    var_est = c(var_theta_est_A, var_theta_est_B),
+    bias = c(bias_theta_est_A, bias_theta_est_B),
+    sq_err = c(sqerr_theta_est_A, sqerr_theta_est_B),
+    estimator = c("A", "B")
+  )
+  
+  # return as output
+  return(out_tb)
+  
+}
+
+```
+
+```{r id0009-solutions-1, exercise = TRUE}
+
+# check that the function works!
+
+# run many times...
+sim_results <- 
+  rerun(.n = 100, 
+        unif_estimators_sim(n_obs = 25, true_theta = 10) 
+  ) %>%
+  bind_rows() %>% 
+  group_by(estimator) 
+# need to group so that results for A/B are seperate
+
+# summarise results (just a few example ways to summarise)...
+
+# mean estimator, mse
+sim_results %>% 
+  select(est, sq_err) %>% summarise_all(mean)
+
+# selects columns to plot then stacks columns
+sim_results %>% select(bias, sq_err) %>% 
+  pivot_longer(cols = c(bias, sq_err)) %>% 
+  # sends to ggplot with "%>%"
+  ggplot() +
+  geom_boxplot(aes(x = name, y = value)) + 
+  facet_wrap(~estimator) +
+  xlab("") + ylab("Values from simulation") +
+  theme_bw()
+
+sim_results %>% select(bias) %>%
+  ggplot() +
+  geom_histogram(aes(x = bias), binwidth = 0.1) +
+  facet_wrap(~estimator) +
+  theme_bw()
+```

@@ -1,0 +1,53 @@
+
+***
+*Solution*: 
+
+The MLEs are $\hat{\theta}=\bar{y}$ and $\hat{\sigma}^2 = \frac{1}{n}\sum_{i=1}^n (y_i-\bar{y})^2$. Thus if $\sigma^2=a\theta^2$, then $\hat{a}=\hat{\sigma}^2/\hat{\theta}^2=\frac{\sum_{i=1}^n (y_i-\bar{y})^2}{\sum_{i=1}^n y_i}$.
+
+The likelihood for the null hypothesis is $L_{0}$, which is found by writing the likelihood of the model with $a = 1$ and $\theta = \hat{\theta}.$:
+$$
+L_{0} = \prod_{i=1}^{n}(2\pi \hat{\theta}^2)^{-1/2}\exp\left\{-\frac{(y_{i}-\hat{\theta})^{2}}{2\hat{\theta}^2}\right\}
+$$
+$$
+=(2\pi \bar{y}^2)^{-n/2}\exp\left\{-\sum_{i=1}^{n}\frac{(y_{i}-\bar{y})^{2}}{2\bar{y}^{2}}\right\} $$
+
+$$
+=(2\pi \bar{y}^2)^{-n/2}\exp\left\{-\frac{1}{2}\left(\frac{\sum_{i=1}^{n}y_{i}^{2}}{\bar{y}^{2}} - n\right)\right\} 
+$$
+
+The likelihood for the alternative hypothesis is $L_{1}$:
+$$
+L_{1} = \prod_{i=1}^{n}(2\pi \hat{a}\hat{\theta}^{2})^{-1/2}\exp\left\{-\frac{(y_{i}-\hat{\theta})^{2}}{2\hat{a}\hat{\theta}}\right\}
+$$
+$$
+=(2\pi\hat{a} \bar{y}^2)^{-n/2}\exp\left\{- \frac{n}{2}\right\}\\
+$$
+
+The GLRT can be simplified as
+$$
+\Lambda =\frac{L_0}{L_1} = \hat{a}^{n/2}\exp \left(-\frac{1}{2} \frac{\sum_{i=1}^{n}y_{i}^{2}}{\bar{y}^{2}} \right).
+$$
+Note that 
+$$
+\hat{a} = \frac{\sum_{i=1}^{n}(y_{i} - \bar{y})^{2}}{n\bar{y}^{2}} = \frac{\sum_{i=1}^{n}y_{i}^{2}}{n\bar{y}^{2}} - 1
+$$
+
+To use the Wilk's theorem for the asymptotic test, we need 
+$$
+w = -2 \log(\Lambda) = n\log\hat{a} - \frac{\sum_{i=1}^{n}y_{i}^{2}}{\bar{y}^{2}} 
+$$
+
+and we would reject $H_{0}$ if $w > c$ where $c$ is chosen such that $P(X > c) = \alpha$ for an $\alpha$-level test and $X \sim \chi^{2}_{1}$.
+
+For an exact (non-asymptotic) test, the critical region is
+$$
+\hat{a}^{n/2}\exp \left(-\frac{1}{2} \frac{\sum_{i=1}^{n}y_{i}^{2}}{\bar{y}^{2}} \right) < c_{1}$$
+or equivalently
+$$
+n\log\left(\frac{\sum_{i=1}^{n}y_{i}^{2}}{n\bar{y}^{2}} - 1\right) - \frac{\sum_{i=1}^{n}y_{i}^{2}}{\bar{y}^{2}} < c_{2}
+$$
+Which we doesn't simplify any further.
+
+We can use this exact test if the distribution of the LHS can be found... which is difficult. But is has been formulated in terms of a sufficient statistic^[Namely, $t = \frac{\sum_{i=1}^{n}y_{i}^{2}}{\bar{y}^{2}}$] for which approximate methods could be used.
+
+***

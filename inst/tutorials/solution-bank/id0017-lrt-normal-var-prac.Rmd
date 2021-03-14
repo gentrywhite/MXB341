@@ -1,0 +1,49 @@
+
+
+```{r pq1, exercise = TRUE}
+
+y <- c(9.91, 4.37, -1.06, 7.63, 0.78, 
+       2.73, -1.29, 2.78, -4.98, 2.45)
+
+n <- length(y)
+
+sigma2_null <- 100
+sigma2_alt <- 20
+
+alpha_level <- 0.05
+
+```
+
+```{r pq1-hint}
+test_stat <- sum(y^2) / sigma2_null
+
+if( sigma2_null > sigma2_alt){
+  # P(X < c) = alpha
+  c_critical_val <- qchisq(p = alpha_level, 
+                           df = n, lower.tail = TRUE)
+  reject_decision <- test_stat < c_critical_val
+  
+  pval <- pchisq(q = test_stat, 
+                 df = n, lower.tail = TRUE)
+  
+} else {
+  # P(X > c) = alpha
+  c_critical_val <- qchisq(p = alpha_level, 
+                           df = n, lower.tail = FALSE)
+  reject_decision <- test_stat > c_critical_val
+  
+  pval <- pchisq(q = test_stat, 
+                 df = n, lower.tail = FALSE)
+  
+}
+
+paste("Decision:", 
+      ifelse(reject_decision, "Reject", "Do not reject"), 
+      "null hypothesis")
+
+# p-value
+# you can use the p-value to decide on rejection too by
+# comparing it to alpha
+round(pval, 3)
+
+```

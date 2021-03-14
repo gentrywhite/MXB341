@@ -1,0 +1,10 @@
+In this question we will construct a ratio of uniform sampler for the exponential distribution with rate $\lambda = 1$. The density is $\lambda\exp(-\lambda x)$ which is proportional to $h(x) = \exp(-\lambda x)$ for $x \geq 0$ and $\lambda > 0$.
+
+(a) Determine the ratio of uniform bounding constants: 
+    - $b = \sup_{x}\sqrt{h(x)}$
+    - $c = \inf_{x} x \sqrt{h(x)}$
+    - $d = \sup_{x} x \sqrt{h(x)}$
+    
+(b) Implement a ratio of uniform sampler for the exponential distribution. Test your sampler by comping the output to `rexp()` in`R`.
+
+(c) Are you able to use the code in (c) to sample from $y \sim \text{Exp}(\lambda)$ for some $\lambda > 0$?

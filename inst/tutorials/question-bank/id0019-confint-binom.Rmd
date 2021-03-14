@@ -1,0 +1,14 @@
+Let $y_1,y_2,\ldots,y_n$ be a random sample of observations from a population described by the Binomial probability model
+	$$
+	p(y~\vert~\theta,k) = \left(\begin{array}{c}k\\y\end{array}\right)\theta^y (1-\theta)^{k-y}, \qquad y=0,1,2,\ldots,k,
+	$$
+where $k$ is known. The log-likelihood for such a model^[See previous worksheets for details.] is
+
+$$\ell(\theta) = n \bar{y} \log \theta + n(k-\bar{y})\log (1-\theta)  + C$$
+where $C$ is a constant not depending on $\theta$.
+
+(a) What is the expected (Fisher) information, $\mathcal{I}_{n}(\theta)$, for the parameter $\theta$? How about $\mathcal{I}(\theta)$?
+
+(b) Using aymptotic normality of the MLE for $\theta$, construct the 90% confidence interval. What is the 90% confidence interval if you independently observe 5 trials, 10 times each, and the total number of successes is 20? 
+(c) Discuss if the normal approximation for the confidence interval is appropriate for the binomial model.
+    

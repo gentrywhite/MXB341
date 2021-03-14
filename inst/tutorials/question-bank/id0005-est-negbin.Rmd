@@ -1,0 +1,11 @@
+A researcher is running an experiment using participants who are asked to complete a task within 10 minutes. They keep repeating the task until they fail $k$ times. If $1 - p$ is the unknown probability of success, then the number of successes until the experiment is completed is given by a negative binomial distribution,The pmf of a negative binomial in this situation is 
+$$
+p(y|k,p) = \frac{\Gamma(k+y)}{y!~\Gamma(k)}p^{k} (1-p)^y
+$$ 
+for $y=0,1,2,\ldots$.
+
+Let $y_{1},y_{2},\ldots,y_{n}$ be the number of successes for $n$ participants in the experiment. The ethics committee has accepted $k = 5$ as a safe stopping criteria for the experiment.
+
+(a) Determine the method of moments estimator for $p$.
+(b) Determine the maximum likelihood estimator for $p$
+(c) Compare the two estimators and comment on their similarities.

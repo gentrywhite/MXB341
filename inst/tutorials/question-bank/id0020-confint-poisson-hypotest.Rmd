@@ -1,0 +1,11 @@
+Let $y_1,y_2,\ldots,y_n$ be a random sample from a population described by the Poisson distribution with mean $\lambda_1$. Let $x_1,x_2,\ldots,x_m$ be a random sample from another population described by the Poisson distribution with mean $\lambda_2$. Suppose we are interested in the parameter $\tau=\lambda_2/\lambda_1$.
+
+(a) Write down the combined log-likelihood from both samples in terms of the parameters $\lambda=\lambda_1, \tau= \lambda_2/\lambda_1$. 
+
+(b) Determine the maximum likelihood estimates of the parameters $\tau$ and $\lambda$^[Hint: Use the invariance property of maximum likelihood estimates].
+
+(c) What is the observed information matrix with respect to $\hat{\lambda},\hat{\tau}$?
+
+(d) Hence determine the quadratic form of an approximate 90% confidence interval for the parameters $\lambda,\tau$.
+
+(e) Use part (d) to devise an approximate hypothesis test for null hypothesis $H_{0}: \lambda_{1} = \lambda_{2} = 2$ and alternative $H_{1}: \lambda_{1} \neq 2 \text{or} \lambda_{2} \neq 2$ with $\alpha = 0.1$. State the rejection region.

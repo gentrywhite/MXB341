@@ -1,0 +1,13 @@
+Consider a point estimation problem in which you observe $x_1, \ldots, x_n$ as i.i.d. random variables from the Poisson distribution with density
+$$
+f(x~\vert~ \theta) = \frac{\theta^{x}\exp\{-\theta\}}{x!}.
+$$
+
+a. Find the optimal estimator for $\theta$ under the loss function
+$$
+l(\theta,d(\mathbf{x}))=(d-\theta)^4-(d-\theta)^3+(d-\theta)^2+(d-\theta)
+$$
+
+b. Compute and graph the loss functions of $d^{\star}_{B}(\boldsymbol{x})$ and that of the MLE $d^{\star}_{m}(\boldsymbol{x}) = \bar{x}$. (Hint: plot the functions in terms of $(d-\theta)$ to see where their respective minima are located.)
+
+c. Compare the estimates from the quartic loss function to the MLE and least-squares loss functions.

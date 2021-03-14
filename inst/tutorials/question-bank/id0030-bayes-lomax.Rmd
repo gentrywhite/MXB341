@@ -1,0 +1,1 @@
+Assume $x_{1}, x_{2}, \ldots, x_{n}$ are exponentially distributed with rate $\lambda$, show that the gamma prior $\lambda \sim \text{Gamma}(\alpha,\beta)$ is conjugate for the exponential distribution. What is the marginal likelihood of the data? Show that the posterior predictive distribution is a [Lomax distribution](https://en.wikipedia.org/wiki/Lomax_distribution).

@@ -1,0 +1,1 @@
+Suppose data $y$ is binomially distributed, that is $y~\vert~\theta \sim \text{Bin}(n,\theta)$.  If our prior information for $\theta$ is best represented as a $\text{Beta}(8,4)$ (prior) distribution with mode at $\theta=7/10$, determine the posterior distribution for $\theta$ and the mode of this distribution when $n=3$, and $y=2$.

@@ -1,0 +1,32 @@
+1. Using Q3(d) we will create a contour plot for the 90% confidence interval. Assuming $\hat{\lambda}_{1} = 5$, $\hat{\lambda}_{2} = 10$, while $n = 20$ and $m = 10$.
+
+(a) Create a function with input $\lambda,\tau$ that evaluates the left hand side of the confidence interval you derived.
+
+(b) Generate a grid of points for $\lambda,\tau$, then evaluate these points with the function in (a). Use the `crossing` function from package `tidyr`. An example of plotting a contour is given below.^[Hint: you may have to try several grids to get the correct confidence interval.]
+    
+```{r prac-q1-contour-example, fig.margin = TRUE, fig.cap = "Example of contour plot.", eval = !params$show_solutions, echo=!params$show_solutions}
+  
+  library(tidyr); library(dplyr); library(ggplot2)
+  # Change "to" and "from" values
+  tau <- seq(from = -1, to = 1,length.out = 10) 
+  lambda <- seq(from = -1, to = 1, length.out = 10)
+  plot_data <- crossing(tau, lambda)
+  
+  plot_data <- plot_data %>%
+    mutate(CI = tau^2 + lambda^2)
+  # The CI variable draws a circle 
+  ggplot() + 
+    geom_contour(data = plot_data, 
+                 aes(x = tau, y = lambda, z = CI, 
+                     colour = factor(..level..)), 
+                 breaks = c(0.5,1)
+                 ) +
+    scale_color_discrete("CI quantile value") +
+    theme_bw()
+  
+  # Hint: you may need to vectorise the function 
+  # you make so that it accepts vectorsin each argument.
+  # This can be done with:
+  # new_vectorised_fun <- Vectorize(old_fun)
+  
+```

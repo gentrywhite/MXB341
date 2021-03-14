@@ -1,0 +1,10 @@
+Propose a Gibbs Algorithm for simulating from the posterior $p(\alpha,\beta,\sigma^2|y)$ for Q2 (theory) and implement it in R. Use the data:
+
+```{r data-q1-prac}
+
+x <- c(3.12, 2.82, 1.84, 0.85, 2.99, 4.05, 0.88, 1.2, 1.53, 1.52)
+y <- c(2.86, 2.81, 1.98, 1.22, 2.55, 3.43, 1.93, 1.82, 1.89, 1.72)
+
+```
+
+Once your Gibbs sampler is operational calculate the DIC for each iteration, save, and plot your results.

@@ -1,0 +1,19 @@
+Let $y_{1},y_{2},\ldots,y_{n}$ be a random sample of observations from a population described by the Uniform probability density function
+$$
+        p(y~\vert~\theta)=\begin{cases}\frac{1}{\theta}, \qquad 0 \leq y \leq \theta\\
+        0, \qquad \text{otherwise}. \end{cases}
+$$
+Two potential estimates of $\theta$ are 
+$$
+\hat{\theta}_{A}=\frac{2}{n}\sum_{i=1}^n y_{i}
+$$
+$$
+\hat{\theta}_{B} = \frac{n+1}{n}\max\{y_{1},y_{2},\ldots,y_{n}\}
+$$
+
+(a) Find the mean and variance of statistics $s_{1} = \sum_{i=1}^{n} y_{i}$ and $s_{2} = \max(y_{1},y_{2},\ldots,y_{n})$^[Hint: For the second statistic, determine the distribution of $s_{2}$, which is the $n$th order statistic $y_{(n)}$ where $y_{(1)} \leq y_{(2)}\leq \ldots \leq y_{(n)}$. Start by finding the CDF of the maximum.].
+(b) Show that both these estimates are unbiased. 
+(c) Which has the smaller sampling variance?
+(d) Are either estimators consistent? Explain your answer.
+(e) Is is possible to determine if either estimators are efficient? Explain your answer.
+    

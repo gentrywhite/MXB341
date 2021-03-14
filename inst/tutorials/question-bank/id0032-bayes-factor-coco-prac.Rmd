@@ -1,0 +1,63 @@
+In this question you will use Q2 and Q3 (theory) in order to choose between using a log-normal distribution with conjugate prior and an exponential distribution with Gamma prior using a Bayes factor. 
+
+```{r coco, fig.margin = TRUE, fig.cap = "Old girl Coco.", fig.width=0.3, fig.height=0.5, cache=TRUE, echo = FALSE}
+library(png)
+library(grid)
+img <- readPNG("../figures/coco.png")
+ grid.raster(img)
+```
+
+Note the following about a Bayesian model for log-normal data with a Normal-Gamma prior:
+The model is defined by
+$$
+\begin{aligned}
+(x_{i}~\vert~\mu,\tau) &\sim \text{LogN}(\mu, \tau^{-1}) \quad \text{for } i \in \{1,2,\ldots,n\}\\
+(\mu~\vert~\tau, \mu_{0}) &\sim \text{Normal}(\mu_{0}, \tau^{-1}) \\
+(\tau~\vert~\alpha,\beta) &\sim \text{Gamma}(\alpha,\beta)
+\end{aligned}
+$$
+and has posterior distribution with hierarchy
+$$
+\begin{aligned}
+(\mu~\vert~\boldsymbol{x},\tau, \mu_{0}) &\sim \text{Normal}(\mu^{\prime}, [(n+1)\tau]^{-1}) \\
+(\tau~\vert~\boldsymbol{x},\alpha,\beta) &\sim \text{Gamma}(\alpha^{\prime},\beta^{\prime})\\
+\mu^{\prime} &= \frac{\mu_{0} + ns_{1}}{n+1}, \quad s_{1} = n^{-1}\sum_{i=1}^{n}\log x_{i}  \\
+\alpha^{\prime} & = \alpha + n/2\\
+\beta^{\prime} & = \beta + \frac{n}{2} \left(s_{2} + \frac{(s_{1} - \mu_{0})^{2}}{n+1} \right), \quad s_{2} = n^{-1}\sum_{i=1}^{n}(\log x_{i} - s_{1})^{2}.
+\end{aligned}
+$$
+The marginal likelihood of the data is
+$$
+p(\boldsymbol{x}~\vert~\mu_{0}, \alpha^{\prime}, \beta^{\prime}) = (2\pi)^{-n/2}\frac{\Gamma(\alpha^{\prime}) \beta^{\alpha}}{\Gamma(\alpha) \beta^{\prime \alpha^{\prime}}} (n+1)^{-1/2}
+$$
+and the posterior predictive distribution is a Generalised Student's t-distribution on the log-scale:
+$$
+\begin{aligned}
+\tilde{x} & = \exp(\tilde{y})\\
+(\tilde{y}~\vert~\boldsymbol{x}, \mu_{0},\alpha,\beta) &\sim \text{t}_{2\alpha^{\prime}}\left(\mu^{\prime}, \frac{\beta^{\prime}(n+2)}{\alpha^{\prime}(n+1)}\right).
+\end{aligned}
+$$
+
+Coco (Figure 1) is an old dog who no longer eats as much food. Her human, Daemo, would like to determine how much he should be feeding Coco each day.
+Daemo decides that he would like us to model the feeding statistically, and lucky for us he is a Bayesian! Let $x_{i}$ be the amount Coco eats on day $i$, for $i \in \{1,2,3,\ldots\}$ in kilograms.
+He thinks that there are two models which could describe how much coco chooses to eat:
+$$
+\begin{aligned}
+&M_{1}: (x_{i}~\vert~\lambda) \sim \text{Exp}(\lambda), \quad \lambda \sim \text{Gamma}(4,1)\\
+&M_{2}: (x_{i}~\vert~\mu, \tau) \sim \text{logN}(\mu, \tau^{-1}),  \quad (\mu ~\vert~ \tau) \sim \text{N}(-1,\tau^{-1}), \quad \tau \sim \text{Gamma}(10,1)
+\end{aligned}
+$$
+
+(a) Write a function that calculates the median of the posterior predictive distribution for the $M_{1}$ and $M_{2}$ respectively. It should take a vector of observations as input^[The R package `extraDistr` has packages to calculate lomax and location-scale student-t distributions.].
+(b) Write a function that calculates the marginal likelihood for the $M_{1}$ and $M_{2}$ respectively. Use this to write a function for the Bayes factor comparing the two models. These functions should also take a vector of data as input.
+(c) Suppose you speak to Daemo each evening and he reports to you how much food Coco has eaten. Over the course of a week, he reports coco eats $x_{1} = 1, x_{2} = 0.8, x_{3} = 0.4, x_{4} = 0.35, x_{5} = 0.45, x_{6} = 0.3, x_{7} = 0.9$ kilograms of food. Show Daemo how the 
+    
+    (i) Median of the posterior predictive of each model, and
+    (ii) Bayes factor
+    
+get updated by Bayes rule after each evening report. 
+
+(d) Additionally, for each evening report
+    
+    (iii) Use the median of the predictive distributions to estimate the next observation. Record the MSE as each new observation arrives.
+    (iv)  After each update, make a recommendation to Daemo on whether there is enough evidence to recommend $M_{1}$ or $M_{2}$.

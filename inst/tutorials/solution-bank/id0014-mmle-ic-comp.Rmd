@@ -1,0 +1,180 @@
+
+*Solution*: 
+
+```{r pq1a, exercise = TRUE}
+
+  # (a) Write function to find log-likelihoods and MLEs:
+
+```
+
+
+```{r pq1a-hint-1}
+
+  # (a) Write function to find log-likelihoods and MLEs:
+
+  log_lhood_invexp <- function(params, x){
+    # params[1] lambda / scale
+    
+    n <- length(x)
+    
+    sum_log_x <- sum(log(x))
+    sum_inv_x <- sum(1/x)
+    
+    ll <- -n * log(params[1]) - 2 * sum_log_x -  sum_inv_x / params[1]
+    
+    return(ll)
+    
+  }
+  
+  invexp_mle <- function(x){
+    
+    n <- length(x)
+    
+    mle <- sum(1/x) / n
+    
+    return(mle)
+    
+  }
+```
+```{r pq1a-hint-2}
+  log_lhood_weibull <- function(params, x){
+    # params[1] lambda / scale
+    # params[2] kappa / shape
+    
+    n <- length(x)
+    
+    ll <- sum(
+      dweibull(x = x, 
+               scale = params[1], 
+               shape = params[2], 
+               log = T)
+      )
+    
+    return(ll)
+    
+  }
+
+  weibull_mle <- function(x){
+    
+    start_par <- c(0.1,0.1)
+    
+    # complete this line
+    optim_res <- optim(par = start_par, 
+                       fn = log_lhood_weibull, 
+                       x = x,
+                       control = list(fnscale = -1)
+                       )
+    # in this case I didn't add the constraints lambda, kappa > 0
+    # because it dweibull(...) automatically return NaN for invalid
+    # parameter values.
+    
+    return(optim_res$par)
+    
+  }
+  
+  # make sure you test the functions.
+  
+```
+
+```{r pq1b, exercise = TRUE}
+  
+  # (b) Write function to find AIC and BIC:
+
+```
+
+```{r pq1b-hint}
+
+  aic_invexp <- function(params, x){
+    
+    2 * ( length(params) - log_lhood_invexp(params = params, x = x)) 
+    
+  }
+
+  bic_invexp <- function(params, x){
+    
+    n <- length(x)
+    
+    log(n) * length(params) - 
+       2 * log_lhood_invexp(params = params, x = x)
+    
+  }
+  
+  aic_weibull <- function(params, x){
+    
+     2 * ( length(params) - log_lhood_weibull(params = params, x = x)) 
+    
+  }
+
+  bic_weibull <- function(params, x){
+    
+    n <- length(x)
+    
+    log(n) * length(params) - 
+       2 * log_lhood_weibull(params = params, x = x)
+    
+  }
+  
+  # make sure you test the functions.
+  
+```
+
+```{r pq1c, exercise = TRUE}
+
+  sim_weibull_vs_invexp <- function(n_obs, true_lambda, true_kappa){
+    
+    # simulate data
+    sim_x <- rweibull(n = n_obs, scale = true_lambda, shape = true_kappa)
+    
+    # fit MLEs for each model
+    invexp_est <- invexp_mle(x = sim_x)
+    weibull_est <- weibull_mle(x = sim_x)
+    
+    
+    # compute AIC/BIC
+    aic_iexp <- aic_invexp(params = invexp_est, x = sim_x)
+    bic_iexp <- bic_invexp(params = invexp_est, x = sim_x)
+    aic_wei <- aic_weibull(params = weibull_est, x = sim_x)
+    bic_wei <- bic_weibull(params = weibull_est, x = sim_x)
+
+      
+    # Check if correct decision made using AIC
+    correct_aic <- aic_iexp > aic_wei
+    
+    # Check if correct decision made using BIC
+    correct_bic <- bic_iexp > bic_wei
+    
+    # save and return results
+    out_tb <- tibble(
+      correct_aic = correct_aic,
+      correct_bic = correct_bic,
+      sqerror_weibull_lambda = (weibull_est[1] - true_lambda)^2,
+      sqerror_weibull_kappa = (weibull_est[2] - true_kappa)^2,
+      sqerror_invexp_lambda = (invexp_est - true_lambda)^2
+    )
+    
+    return(out_tb)
+    
+  }
+
+  # make sure you test the functions.
+
+
+```
+
+
+```{r pq1d, exercise = TRUE}
+
+  sim_results <- rerun(.n = 1000, sim_weibull_vs_invexp(n_obs = 20, 
+                        true_lambda = 2, true_kappa = 1)) %>%
+                          bind_rows()
+
+  # inspect results
+  sim_results %>% 
+    summarise(mean(correct_aic),mean(correct_bic))
+  
+  sim_results %>% 
+    summarise(mean(sqerror_weibull_lambda), 
+              mean(sqerror_weibull_kappa),
+              mean(sqerror_invexp_lambda))
+
+```

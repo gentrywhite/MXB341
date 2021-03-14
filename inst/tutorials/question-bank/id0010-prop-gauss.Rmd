@@ -1,0 +1,7 @@
+Suppose $x_{1}, x_{2}, \ldots, x_{n} \overset{\text{iid}}{\sim} N(\mu,\sigma^2)$, where the MLE $\hat{\mu}_{ML} = \bar{x}$.
+
+(a) Show the MLE of the variance is $\widehat{\sigma^2}_{ML} = n^{-1}\sum_{i=1}^{n}(x_{i} - \bar{x})^{2}$.
+(b) Show that $\widehat{\sigma^2}_{ML}$ is biased and suggest an unbiased estimator^[Hint: Use the following identities to help you: (i) $\sum_{i=1}^{n}(x_{i} - \bar{x})^{2} = \sum_{i=1}^{n}(x_{i} - \mu)^2 - n(\bar{x} - \mu)^2$, under the given distributional assumptions: (ii) $\frac{\sum_{i=1}^{n}(x_{i} - \mu)^{2}}{\sigma^2} \sim \chi^{2}_{n}$ (with mean $n$), (iii) $\bar{x} \sim N(\mu, \sigma^2/n)$.].
+(c) Calculate the expected Fisher information for the data.
+(d) What is the observed Fisher information?
+(e) Is $\hat{\mu}_{ML}$ efficient? Is $\widehat{\sigma^2}_{ML}$ efficient? 

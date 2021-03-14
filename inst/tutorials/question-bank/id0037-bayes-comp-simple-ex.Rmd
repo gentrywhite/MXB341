@@ -1,0 +1,12 @@
+When we use Monte Carlo simulation methods to estimate a quantity, usually a mean in statistics, then we should take into account the accuracy of the estimate by finding a standard error of the estimate.  The standard error can be reduced by taking more Monte Carlo simulations.  The accuracy of the estimate can be defined in terms of a fraction or percentage of the mean,  $\frac{\text{SE}(\hat{\mu})}{\hat{\mu}} = 1\%$.  This question is about using sufficient Monte Carlo samples to obtain a given accuracy.
+
+Let $\theta_1$ be the probability that treatment $ABC$ for an injured knee is successful. Suppose I assess my uncertainty about $\theta_1$ as represented by a Beta $(20,30)$ distribution. That is, $\theta_1$ behaves like a random variable.
+
+(a) By simulating $1000$ values from the Beta $(20,30)$ distribution, estimate the means of $\theta_1$ and $\tau = \theta_1/(1-\theta_1)$, the odds of success. How accurate are these estimates?^[Hint: Find the standard errors of the estimates. Note that $\tau$ is distributed according to a Beta prime distribution.]
+
+(b) If the mean of $\theta_1$ is to be estimated with $1\%$ accuracy (or standard error of estimate $= 0.01 \times$ estimated value) or better, are $1000$ values sufficient in number? How many values should be used in this simulation? Now repeat the same calculation for the mean of the odds $\theta_1/(1-\theta_1)$. Compare the sample sizes required.
+	
+(c) Let $\theta_2$ be the probability that treatment $XYZ$ is successful. My uncertainty about $\theta_2$ is represented by a Beta$(30,20)$ distribution, independent of $\theta_1$. By simulating $1000$ pairs of values of $(\theta_1,\theta_2)$, estimate the means of $\theta_2-\theta_1$, $\theta_2/\theta_1$, $\frac{\theta_2/(1-\theta_2)}{\theta_1/(1-\theta_1)}$ (the odds ratio success for treatment $XYZ$ to treatment $ABC$), estimate the lower and upper $25\%$ percentiles of each of these distributions. What is my belief that treatment $XYZ$ is better than treatment $ABC$?
+	
+(d) Repeat parts (a)-(c) with $\theta_1 \sim \text{Beta}(2,3)$ and $\theta_2\sim \text{Beta}(3,2)$. Do these distributions represent more or less certainty than above?
+Explain why the final conclusion about treatment $XYZ$ being better than treatment $ABC$ is different.

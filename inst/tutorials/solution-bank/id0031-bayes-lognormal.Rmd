@@ -1,0 +1,85 @@
+
+***
+*Solution*: 
+
+
+(a) Rearrange $f(x~\vert~\mu,\tau)$ as 
+$$
+\begin{aligned}
+f(x~\vert~\mu,\tau) &= \frac{\tau^{1/2}}{x\sqrt{2\pi}} \exp\left\{ -\frac{\tau}{2} (\log x - \mu)^{2}  \right\} \\
+&= (2\pi)^{-1/2}x^{-1} \exp\left\{-\frac{\tau}{2}(\log x)^{2} + \mu \tau \log x  - \frac{\mu^{2}\tau}{2}+ \frac{1}{2}\log \tau  \right\} \\
+& = h(x) \exp\{\boldsymbol{\eta}(\mu,\tau) \cdot \boldsymbol{T}(x) - A(\boldsymbol{\eta})\}
+\end{aligned}
+$$
+where $h(x) = (2\pi)^{-1/2}x^{-1}$, $A(\boldsymbol{\eta}) = \mu^{2}\tau/2 - (\log \tau)/2$, and
+$$
+\boldsymbol{\eta}(\mu,\tau) = 
+\begin{bmatrix}
+-\tau/2 \\
+\mu\tau
+\end{bmatrix}, \quad
+ \boldsymbol{T}(x) =
+\begin{bmatrix}
+(\log x)^2 \\
+\log x
+\end{bmatrix}
+$$
+which satisfies the form of the exponential family of distributions.
+
+(b) The conjugate prior will have the following form:
+$$
+\begin{aligned}
+\pi(\mu,\tau~\vert~\boldsymbol{\phi},\nu) &\propto \exp\{\boldsymbol{\phi} \cdot \boldsymbol{\eta}(\mu,\tau) - \nu A(\boldsymbol{\eta})\} \\
+&\propto \exp\left\{-\frac{\phi_{1}}{2}\tau + \phi_{2}\mu\tau - \frac{\nu}{2}\mu^{2}\tau + \frac{\nu}{2}\log \tau\right\}
+\end{aligned}
+$$
+(c) For some constants $a_{1}, a_{2}, a_{3}, a_{4}$, a Normal-Gamma distribution is defined by a conditional normal distribution and an unconditional Gamma distribution. One way it can be expressed is as:
+
+$$
+\alpha~\vert~\beta \sim \text{N}(a_{1},(a_{2}\beta)^{-1})
+$$
+$$
+\beta \sim \text{Gamma}(a_{3},a_{4})
+$$
+
+From (b) we can use the following steps^[the third line is "completing the square".]
+$$
+\begin{aligned}
+\pi(\mu,\tau~\vert~\boldsymbol{\phi},\nu) 
+&\propto \exp\left\{-\frac{\phi_{1}}{2}\tau + \phi_{2}\mu\tau - \frac{\nu}{2}\mu^{2}\tau + \frac{\nu}{2}\log \tau\right\} \\
+&\propto \tau^{\nu/2}\exp\left\{-\frac{\nu\tau}{2}\left(- \frac{2}{\nu}\phi_{2}\mu + \mu^{2} \right) - \frac{\phi_{1}}{2}\tau \right\}\\
+&\propto \tau^{\nu/2}\exp\left\{-\frac{\nu\tau}{2}\left(\mu - \frac{\phi_{2}}{\nu} \right)^{2} + \frac{\nu\tau}{2}\left(\frac{\phi_{2}}{\nu}\right)^{2} - \frac{\phi_{1}}{2}\tau \right\} \\
+&\propto \tau^{\nu/2}\exp\left\{-\frac{\nu\tau}{2}\left(\mu - \frac{\phi_{2}}{\nu} \right)^{2} - \left(\frac{\phi_{1}}{2} -\frac{\phi_{2}^{2}}{2\nu} \right)\tau \right\}
+\end{aligned}
+$$
+
+From here, treat $\tau$ as a constant to find $\pi(\mu~\vert~\tau,\boldsymbol{\phi},\nu)$ is
+$$
+\begin{aligned}
+\pi(\mu~\vert~\tau,\boldsymbol{\phi},\nu) &\propto \exp\left\{-\frac{\nu\tau}{2}\left(\mu - \frac{\phi_{2}}{\nu} \right)^{2} \right\}
+\end{aligned}
+$$
+
+therefore by inspection, conditional on $\tau$, $\mu$ has a normal distribution, $(\mu~\vert~\tau)\sim \text{N}(\phi_{2}/\nu, (\nu\tau)^{-1})$. That is $(\nu\tau)^{-1}$ is the variance. Since we are interested in the marginal distribution^[In order to satisfy the definition of the Normal-Gamma distribution.] of $\tau$, we can write^[since only constants of proportionality are changing]
+
+$$
+\begin{aligned}
+\pi(\mu,\tau~\vert~\boldsymbol{\phi},\nu) 
+&\propto \tau^{\nu/2}\exp\left\{-\frac{\nu\tau}{2}\left(\mu - \frac{\phi_{2}}{\nu} \right)^{2} - \left(\frac{\phi_{1}}{2} -\frac{\phi_{2}^{2}}{2\nu} \right)\tau \right\} \\
+&\propto (\nu \tau/2)^{1/2}\exp\left\{-\frac{\nu\tau}{2}\left(\mu - \frac{\phi_{2}}{\nu} \right)^{2}\right\}\tau^{(\nu-1)/2}\exp\left\{ - \left(\frac{\phi_{1}}{2} -\frac{\phi_{2}^{2}}{2\nu} \right)\tau \right\}.
+\end{aligned}
+$$ 
+
+Integrating out $\mu$ we find
+$$
+\begin{aligned}
+\pi(\tau~\vert~\boldsymbol{\phi},\nu) 
+&\propto \int_{-\infty}^{\infty}\pi(\mu,\tau~\vert~\boldsymbol{\phi},\nu) \text{ d}\mu \\
+&\propto \int_{-\infty}^{\infty}(\nu \tau/2)^{1/2}\exp\left\{-\frac{\nu\tau}{2}\left(\mu - \frac{\phi_{2}}{\nu} \right)^{2}\right\}\text{ d}\mu \times \tau^{(\nu-1)/2}\exp\left\{ - \left(\frac{\phi_{1}}{2} -\frac{\phi_{2}^{2}}{2\nu} \right)\tau \right\} \\
+&\propto 1 \times \tau^{(\nu-1)/2}\exp\left\{ - \left(\frac{\phi_{1}}{2} -\frac{\phi_{2}^{2}}{2\nu} \right)\tau \right\}
+\end{aligned}
+$$ 
+which implies $(\tau~\vert~\boldsymbol{\phi},\nu) \sim \text{Gamma}(\nu/2 + 1, \zeta )$ where $\zeta = \frac{\phi_{1}}{2} -\frac{\phi_{2}^{2}}{2\nu}$. Thereby having a Normal-Gamma distribution.
+
+
+***

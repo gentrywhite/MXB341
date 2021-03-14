@@ -1,0 +1,239 @@
+---
+title: "MXB341 Worksheet 4 - Hypothesis testing"
+output:
+  learnr::tutorial:
+    theme: yeti
+    includes:
+    css: ["css/QUT.css","css/QUTtutorial.css"]
+  progressive: true
+  allow_skip: true
+runtime: shiny_prerendered
+params:
+  show_solutions: TRUE
+---
+
+```{r ws-setup, include=FALSE}
+  # if problems with knitting directory:
+  # set Knit Directory = Document Directory
+
+  # install libraries needed for worksheet
+  library(MXB341)
+
+
+  # Make notes here:
+  # --- chunk `instructions-header` currently turned off. 
+  #     Set `eval = TRUE` to use (and update file).
+  #
+  #
+
+```
+
+```{r, echo = FALSE}
+
+htmltools::includeHTML("header.html")
+
+```
+
+:::{.quote}
+Please beware of the problem of testing too many hypotheses; the more you torture the data, the more likely they are to confess, but confessions obtained under duress may not be admissible in the court of scientific opinion.
+
+---Stephen Stigler
+:::
+
+# Week 4: Hypothesis testing
+
+Once we have estimated statistical parameters in a model (week 1-3) and are confident that we have appropriately described the data, we can begin to make a statistical inference. Inferential statistics is concerned with inferring properties from a sample of the population to the entire population. In particular, conducting a hypothesis test on a parameter assesses the evidence (from the known observations) that a parameter takes a certain value (or is in a set of values). 
+
+Hypothesis testing is a cornerstone of frequentist statistics^[More on this later in the semester. But for a jump start, see [here](https://en.wikipedia.org/wiki/Frequentist_probability).] and modern inductive science^[Despite being the dominating paradigm for assessing scientific evidence, like any method, it is not without flaws and can be misused.]. We focus on likelihood ratio tests (LRT), which compare the evidence supporting the null hypothesis versus the alternative hypothesis. There are two cases we consider.
+
+:::{.boxed}
+
+## Likelihood Ratio Tests {.tabset .tabset-pills}
+
+### Simple Hypotheses
+
+<p style="margin-bottom:0.3cm;"></p>
+
+A simple-versus-simple hypothesis test occurs the null, and the alternative hypothesis consists of single values. More specifically 
+$$
+H_{0}:\theta = \theta_{0}\mbox{ and } H_{1}:\theta = \theta_{1}
+$$
+.]. The likelihood ratio is
+
+$$\Lambda = \frac{L(\theta_{0}~\vert~\boldsymbol{y})}{L(\theta_{1}~\vert~\boldsymbol{y})}.$$
+For this case, the Neyman–Pearson Lemma states that this likelihood-ratio test is the most powerful for all $\alpha$-level tests. Note: $\Lambda$ is a statistic and depends on the data; as such, before we can treat it as a random variable before observing the data. For a fixed constant $c$, the decision rule for this hypothesis test is:
+
+- Do not reject $H_{0}$ if $\Lambda > c$
+- Reject^[The rejection region is defined as $\Lambda < c$ but can usually be simplified.] $H_{0}$ if $\Lambda < c$
+
+The constant $c$ is chosen with respect to the hypothesis test's properties (see ``Properties of hypothesis tests''). As such, the method for determining $c$ is
+
+1. Assume the null hypothesis, $H_{0}$, is true.
+2. Simplify the rejection region so that it involves a quantity for which the distribution is known.
+3. Choose $c$ to decide the Type I and/or Type II error based on part 2.
+
+The hypothesis test assumes $H_{0}$ is true so that evidence against the null occurs when we make unlikely observations (with respect to the probability distribution). 
+
+Question 1 explores this further.
+
+### Composite Hypotheses
+
+<p style="margin-bottom:0.3cm;"></p>
+
+We cab handle other hypotheses using the generalised likelihood test (GLRT). This hypothesis test partitions the parameter space, $\Theta$, into two sets, $\Theta_{0}$ and $\Theta_{1}$:
+
+- The null hypothesis: $H_{0} = \{\theta:\theta \in \Theta_{0}\}$, and
+- The alternative hypothesis^[Note that $\Theta_{1}$ is the complement of $\Theta_{0}$, $\Theta_{1}^{\complement} = \Theta_{0}$. Hence the two sets cover the entire parameter space.]: $H_{1} = \{\theta:\theta \in \Theta_{1}\}$
+
+The ratio for this test is:
+$$
+\Lambda = \frac{\sup_{\theta \in \Theta_{0}} L(\theta~\vert~\boldsymbol{y})}{\sup_{\theta \in \Theta} L(\theta ~\vert~\boldsymbol{y})}.
+$$
+We compare the likelihoods for the most likely parameter under the null hypothesis to the most likely parameter in the entire parameter space.
+
+Note that simple likelihood ratio tests are a specific type of GLRT.
+
+### Type of Errors
+
+<p style="margin-bottom:0.3cm;"></p>
+
+Considering the properties of hypothesis tests (just like the properties of estimators) is also important. Important properties include:
+
+- Type I error (Significance): 
+$$
+\alpha = P(\text{reject } H_{0}~\vert~H_{0} \text{ is true})
+$$
+- Type II error: 
+$$
+\beta = P(\text{do not reject } H_{0}~\vert~H_{1} \text{ is true})
+$$
+- Test power: 
+$$
+\text{power} = 1 - \beta = P(\text{reject } H_{0}~\vert~H_{1} \text{ is true}).
+$$
+It is important to consider these error rates and power when designing test and experiments.  Because Type I error is considered the more serious error, we usually fix that rate and then adjust other parameters (typically difference between the true value and hypothesised value and sample size) to obtain the desired power.
+
+### Wilk's theorem
+
+<p style="margin-bottom:0.3cm;"></p>
+
+For large samples (i.e. $n\rightarrow \infty$), a log-likelihood ratio has an approximate Chi-squared distribution 
+$$
+2 \left( \ell(\hat{\boldsymbol{\theta}}) - \ell(\boldsymbol{\theta}) \right) \sim \chi^{2}_{p} 
+$$ 
+where $p$ is the number of parameters estimated. Often it is neccessary to use a Taylor series approximation on $2 \left( \ell(\hat{\boldsymbol{\theta}}) - \ell(\boldsymbol{\theta}) \right)$ because it is hard to invert. This leads to the approximate distribution
+$$ 
+\left( \hat{\boldsymbol{\theta}} - \boldsymbol{\theta} \right)^{\top}\mathcal{J}  \left( \hat{\boldsymbol{\theta}} - \boldsymbol{\theta} \right) \sim \chi^{2}_{p} 
+$$
+where $\mathcal{J}$ is the observed information matrix.
+
+:::
+
+## Theory questions
+
+:::{.boxed}
+
+### Question 1
+
+```{r theory-question-1, child='../question-bank/id0015-lrt-normal-var.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler1()")
+
+div(id = "tq1-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0015-lrt-normal-var.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler1() {
+  var x = document.getElementById('tq1-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+:::{.boxed}
+
+### Question 2
+
+```{r theory-question-2, child='../question-bank/id0016-lrt-normal-invariance.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler2()")
+
+div(id = "tq2-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0016-lrt-normal-invariance.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler2() {
+  var x = document.getElementById('tq2-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+
+## Practical questions
+
+### Note on random variables in R
+For this section, you will need to use random variables in R.  In base R; these have a particular naming convention:
+
+ - `d<rv>()`: probability density (or mass) function. The univariate normal distribution has  `dnorm(x, mean = 0, sd = 1)` for example.
+  - `p<rv>()`: distribution function, $P(X < q)$. The chi-squared has  `pchisq(q, df, lower.tail = TRUE)` for example.
+  - `q<rv>()`: quantile function, $q$ such that $P(X < q) = p$. The binomial distribution has `qbinom(p, size, prob, lower.tail = TRUE)` for example.
+  - `r<rv>()`: random variable generator. The exponential distribution has `rexp(n, rate = 1)` for example.
+
+:::{.boxed}
+
+### Question 3
+
+```{r pq3, child='../question-bank/id0017-lrt-normal-var-prac.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+&thinsp;
+
+```{r pq3-solution, child='../solution-bank/id0017-lrt-normal-var-prac.Rmd', eval = TRUE}
+  
+```
+
+:::{.boxed}
+
+### Question 4
+
+```{r prac-question-4, child='../question-bank/id0018-lrt-leon-prac.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+
+
+```{r prac-solution-4, child='../solution-bank/id0018-lrt-leon-prac.Rmd', eval = TRUE}
+  
+```

@@ -1,0 +1,7 @@
+What are the full conditional densities for the following posterior distribution?
+$$
+\pi(\mu,\tau,\alpha~\vert~\boldsymbol{y}) \propto \tau^{-n/2}\exp\left\{ - \frac{\sum_{i=1}^{n}( \mu - y_{i})^2}{\tau} \right\}\exp\{-\alpha(\tau+1)\}\alpha
+$$
+Note that $\mu \in \mathbb{R}$, $\alpha > 0$, and $\tau > 0$.
+
+Can you write the model that this posterior could have been generated from?^[Hint: Find the data generating process, or distribution for each $y_{i}$, and priors for the parameters.]

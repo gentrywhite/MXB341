@@ -1,0 +1,14 @@
+Consider a dataset with $y_{1}, y_{2}, \ldots, y_{n}$ from a Bernoulli distribution 
+$$ 
+p(y;p)=p^y(1-p)^{1-y}
+$$
+
+a) Write the equation for the likelihood function $L(p|y_{1})$ for the first observation only. 
+
+b) Define the vector $\boldsymbol{y}$ as  $\mathbf{y} = (y_{1}, y_{2}, \ldots, y_{n})$. Write the equation for the likelihood function for observing all $y_{1}, y_{2}, \ldots, y_{n}$ as $L(p|\mathbf{y})$. 
+
+c) Is the use of the condition (i.e. "$\vert$") important in the likelihood and pmf? Is the ordering of $\mathbf{y}$ and $p$ important? Explain your answers.
+
+d) Write the equation for the log-likelihood function $\log(L) = l(p|\mathbf{y})$ and determine the MLE.
+
+e) Rewrite $l(p|\mathbf{y})$ in terms of $s = \sum_{i=1}^{n} y_{i}$ and write it as a function $\hat{p}_{ML}(s)$.  For what values $s$ is the function defined? What is the range of the function? For what values of $s$ is the MLE (i.e. the maximum) unique?

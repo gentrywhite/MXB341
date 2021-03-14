@@ -1,0 +1,12 @@
+
+Suppose you observe the data, $\boldsymbol{y}$ given below, and you wish to perform the hypothesis test in Question 1 (theory) with 
+$$
+H_{0}: \sigma^{2} = 100$ \mbox{ versus } $H_{1}: \sigma^{2} = 20.
+$$ 
+
+a. Do you reject the null hypothesis at $\alpha = 0.05$? What is the $p$-value^[The $p$-value of a test is the probability of observing a test statistic equal to or more extreme than what was actually observed. In this case, the critical region is in the left-tail ($\sigma^{2}_{0} < \sigma^{2}_{1}$), so the p-value is $P(T < t~\vert~H_{0} \text{ is true})$ where $t$ is the observed statistic.] of the test? 
+
+b. Plot the distributions relating to the null and alternative hypothesis, along with where the observations occured. Discuss how this graph relates to the hypothesis test. 
+
+The data are: $\mathbf{y}=(9.91, 4.37, -1.06, 7.63, 0.78, 2.73, -1.29, 2.78, -4.98, 2.45)$  
+       

@@ -1,0 +1,148 @@
+
+***
+*Solution*: 
+
+(a)
+
+$$
+\hat{\theta} = N^{-1}\sum_{i=1}^{N}x_{i}, \quad x_{i} \overset{\text{iid}}{\sim} \text{Beta}(20,30)
+$$
+
+$$
+\text{Var}(\hat{\theta}) = N^{-2}\sum_{i=1}^{N}\text{Var}(x_{i}) = N^{-1}\frac{a b}{ (a+b)^2 (a+b+1) } = 4.705882 \times 10^{-6}
+$$
+since $\text{Var}(x) = \frac{a b}{ (a+b)^2 (a+b+1) }$ if $x \sim \text{Beta}(a,b)$.
+
+Therefore the standard error of $\hat{\theta}$ is 0.002169.
+
+The estimator $\hat{\tau} = \sum_{i=1}^{N}\frac{x_{i}}{1-x_{i}}$ but each $\frac{x_{i}}{1-x_{i}}$ has a Beta prime distribution, with 
+$$
+\text{Var}\left(\frac{x_{i}}{1-x_{i}}\right) = \frac{a(a+b-1)}{(b-2)(b-1)^{2}}
+$$
+
+Therefore, the variance of $\hat\tau$ is 
+$$
+\text{Var}\left(\hat\tau\right) = N^{-1}\frac{a(a+b-1)}{(b-2)(b-1)^{2}}
+$$
+which corresponds to a standard error of 0.006451.
+
+```{r prac-q1-a, echo = TRUE, eval = TRUE}
+
+N <- 1000
+a <- 20
+b <- 30
+
+var_beta <- a * b / ( ((a + b)^2) * (a + b + 1) )
+var_beta_prime <- a * (a + b - 1) / ( (b - 2) * (b - 1)^2 )
+  
+# standard error of \hat{\theta}:
+se_theta_hat <- sqrt(var_beta / N)
+
+# standard error of \hat{\tau}:
+se_tau_hat <- sqrt(var_beta_prime / N)
+
+# calculate means:
+x <- rbeta(n = N, shape1 = a, shape2 = b)
+
+theta1_hat <- mean( x )
+approx_se_theta1_hat <- sqrt( var(x)/N )
+  
+tau_hat <- mean( x / (1 - x) )
+approx_se_tau_hat <- sqrt( var(x / (1 - x))/N )
+
+cat("Theta1 estimate:\n")
+cat(theta1_hat,", true SE =", se_theta_hat, ", approximate SE = ", approx_se_theta1_hat)
+
+cat("Tau estimate:\n")
+cat(tau_hat, ", true SE =", se_tau_hat, ", approximate SE = ", approx_se_tau_hat)
+
+```
+
+(b)
+
+```{r prac-q1-b, echo = TRUE, eval = TRUE}
+
+# use true or approximate SE...
+se_theta_hat / theta1_hat
+
+se_tau_hat / tau_hat
+
+# both less than 1% currently. 
+# Change N to determine required samples for desired accuracy.
+
+```
+
+(c)
+
+```{r prac-q1-c, echo = TRUE, eval = TRUE}
+
+theta1 <- rbeta(n = N, shape1 = a, shape2 = b)
+theta2 <- rbeta(n = N, shape1 = b, shape2 = a)
+
+theta2_minus_theta1 <- theta2 - theta1
+theta2_div_theta1 <- theta2 / theta1
+odds_ratio <- (theta2 / (1 - theta2)) / (theta1 / (1 - theta1))
+
+mean(theta2_minus_theta1)
+mean(theta2_div_theta1)
+mean(odds_ratio)
+
+quantile(theta2_minus_theta1, probs = c(0.25,0.75))
+quantile(theta2_div_theta1, probs = c(0.25,0.75))
+quantile(odds_ratio, probs = c(0.25,0.75))
+
+```
+
+(d)
+
+```{r prac-q1-d, echo = TRUE, eval = TRUE}
+
+theta1 <- rbeta(N, 2, 3, ncp = 0)
+theta2 <- rbeta(N, 3, 2, ncp = 0)
+
+theta_est <- mean(theta1)  		# theoretical value = 0.4
+theta_se <- sqrt(var(theta1)/N)
+theta_se/theta_est
+if(theta_se/theta_est > 0.01){
+  n <- N
+  while(theta_se/theta_est > 0.01){
+    n <- n + 1
+    theta_new <- rbeta(n, 2, 3, ncp = 0)
+    theta_est <- mean(theta_new) 
+    theta_se <- sqrt(var(theta_new)/n)
+  }
+}
+n
+
+
+odds_est <- mean(theta1/(1-theta1))	
+odds_se <- sqrt(var((theta1/(1-theta1)))/N)
+odds_se/odds_est
+if(odds_se/odds_est > 0.01){
+  n <- N
+  while(odds_se/odds_est > 0.01){
+    n <- n + 10
+    theta_new <- rbeta(n, 2, 3, ncp = 0)
+    odds_est <- mean(theta_new/(1-theta_new))   
+    odds_se <- sqrt(var((theta_new/(1-theta_new)))/n)
+  }
+}
+n
+
+
+theta2_minus_theta1 <- theta2 - theta1
+mean(theta2_minus_theta1)
+quantile(theta2_minus_theta1, probs = c(0.25,0.75))
+
+theta2_div_theta1 <- theta2/theta1
+mean(theta2_div_theta1)
+quantile(theta2_div_theta1, probs = c(0.25,0.75))
+
+theta_odds <- (theta2 / (1 - theta2)) / (theta1 / (1 - theta1))
+mean(theta_odds)
+quantile(theta_odds, probs = c(0.25,0.75))
+
+  
+```
+
+***

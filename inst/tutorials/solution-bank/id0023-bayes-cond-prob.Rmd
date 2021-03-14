@@ -1,0 +1,20 @@
+
+***
+*Solution*: 
+
+(a) The probability $p(A,B,C)$ can be written as $p(A,B,C) = p(C|A,B)p(A,B) =p(C|A,B)p(B|A)p(A)$. Hence $p(A,B,C)=p(C|B)p(B|A)p(A)$ is true only if $p(C|A,B)=p(C|B)$. In other words, $A$ and $C$ are independent.
+
+(b) From above, it is always true that $p(A,B,C) = p(C|A,B)p(B|A)p(A)$.
+	
+(c) Note we can write
+$$
+	\begin{aligned}
+		p(A,B,C) &= p(A|B,C)p(B,C), \qquad \text{and}\\
+		p(A,B,C) &= p(B,C|A)p(A).
+	\end{aligned}
+$$
+Combining the two, we get $p(A|B,C)p(B,C)=p(B,C|A)p(A)$ and hence $p(A|B,C) = \frac{p(B,C|A)p(A)}{p(B,C)}$ is always true.
+	
+(d) From above, for $p(A|B,C) = \frac{p(B|A)p(C|A)p(A)}{p(B)p(C)}$ to be true, we require $p(B,C|A)=p(B|A)p(C|A)$ and $p(B,C)=p(B)p(C)$, i.e. $B$ and $C$ are independent.
+
+***

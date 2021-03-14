@@ -1,0 +1,73 @@
+
+*Solution*: 
+
+
+a. The set of all possible outcomes (change in fortunes): $\mathcal{Z} = \{-1000, 2d - 1000, 1000 - 2d, 1000\}$ whose elements corresponds to "both fail", "stock A succeeds, stock B fails", "stock A fails, stock B succeeds", "both succeed".
+
+b. The probabilities associated with each outcome in $\mathcal{Z}$ are
+$$\{0.4\times 0.3, 0.6\times 0.3, 0.4\times 0.7, 0.6\times 0.7\}=\{0.12, 0.18, 0.28, 0.42\}$$. 
+The values of the loss funtion $L(\theta, z) = -\log(0.0007\theta z + 1)$ for each outcome is
+$$-\theta\log(0.3), -\theta\log(0.0014d + 0.3), -\theta\log(1.7 - 0.0014d), -\theta\log(1.7),$$ 
+therefore the expected loss (or risk function) is
+$$
+R(\theta, d) = -\theta\left[0.12\log(0.3) + 0.18\log(0.0014d +0.3) + 0.28\log(1.7 - 0.0014d) + 0.42\log(1.7)\right]
+$$
+
+c. 
+Note that the risk function can be written as $R(\theta, d) = \theta r(d)$ where 
+$$
+r(d) = -\left[0.12\log(0.3) + 0.18\log(0.0014d +0.3) + 0.28\log(1.7 - 0.0014d) + 0.42\log(1.7)\right]
+$$
+Plotting the function $r(d)$ we can see that $r(d) < 0$ for $d < 776.96$ and $r(d) \geq 0$ for $d \geq 776.96$.
+
+
+
+Therefore, since $1 < \theta < 2$, when $r(d) < 0$, the maximum risk is for $\theta = 1$. And when  $r(d) \geq 0$ the maximum risk is occurs when $\theta = 2$.
+
+In other words the maximum risk is
+$$
+\max_{\theta} R(\theta, d) = 
+\begin{cases}
+R(1, d) & \text{ if } d \leq 776.96 \\
+R(2, d) & \text{ if } d > 776.96 \\
+\end{cases}
+$$
+
+Next we'll minimise $R(\theta, d)$ for a decision $d$, for a given $\theta$:
+$$
+\frac{\partial}{\partial~d} R(\theta, d) = -\theta\left[\frac{0.000252}{0.0014d +0.3} -\frac{0.000392}{1.7 - 0.0014d}\right] = 0
+$$
+
+So we need to solve:
+$$
+\frac{2.52\times 10^{-4}}{1.4\times 10^{-3}d +0.3} = \frac{3.92\times 10^{-4}}{1.7 - 1.4\times 10^{-3}d} 
+$$
+$$
+4.284 \times 10^{-4} - 3.528 \times 10^{-7}d = 5.488 \times 10^{-7}d + 1.176 \times 10^{-4} 
+$$
+$$
+9.016 \times 10^{-7}d = 3.108 \times 10^{-4} 
+$$
+$$
+d = 344.72.
+$$
+Therefore
+$$
+\underset{d}{\operatorname{argmin}} \underset{\theta}{\operatorname{max}} R(\theta, d) =
+\underset{d}{\operatorname{argmin}}
+\left\{
+\begin{array}{ll}
+R(1, d) & \text{ if } d \leq 776.96 \\\
+R(2, d) & \text{ if } d > 776.96 
+\end{array}\right.
+$$
+
+$$
+=\underset{d}{\operatorname{argmin}}
+\left\{
+\begin{array}{ll}
+R(1, 344.72) = -0.089 & \text{ if } d = 344.72 \\\
+R(2, 776.96)  = 0 & \text{ if } d = 776.96 
+\end{array}\right.
+$$
+so the minimax decision is $d^{\star}_{m} = 344.72$.

@@ -1,0 +1,9 @@
+Let $y_{1},y_{2},\ldots,y_{n}$ be a random sample of observations from a population described by a normal distribution with mean equal to zero and variance $\sigma^2$. 
+
+(a) What is the probability distribution of $T = \frac{1}{\sigma^2}\sum_{i=1}^n y_i^2$? State what it is, no need to show proof.
+
+(b) Determine the likelihood ratio, $\Lambda$, for the most powerful test of $H_0: \sigma^2=\sigma^2_0$ against $H_1:\sigma^2=\sigma^2_1$.
+
+(c) Simplify the rejection region^[Hint: Consider cases $\sigma^2_1 > \sigma^2_0$ and $\sigma^2_1 < \sigma^2_0$ separately.], $\Lambda < c$, in terms of the statistic $T$. Note that $c$ is a constant^[Hint: The constant $c$ may be combined with other constants to simplify the derivation.] with $0<c<1$.
+
+(d) Determine when the null hypothesis will be rejected using significance level $\alpha$.

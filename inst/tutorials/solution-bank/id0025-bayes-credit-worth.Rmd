@@ -1,0 +1,32 @@
+
+***
+*Solution*: 
+
+(a) Putting $D=$ default on loan, and $Q=$pass questionnaire, we have $p(D)=0.05$ and hence $p(\bar{D})=0.95$, $p(\bar{Q}|D)=0.9$ and hence $p(Q|D)=0.1$, and $p(Q|\bar{D})=0.95$ and hence $p(\bar{Q}|\bar{D})=0.05$.
+
+We note using the total law of probability that
+$$
+\begin{aligned}
+	p(Q)&=p(Q|D)p(D)+p(Q|\bar{D})p(\bar{D})\\
+	&=0.95 \times 0.95 + 0.1 \times 0.05\\
+	&= 0.9075.
+\end{aligned}
+$$
+
+Hence we have
+$$
+\begin{aligned}
+	p(\bar{D}|Q) &= \frac{p(Q|\bar{D})p(\bar{D})}{p(Q)}\\
+	&= \frac{0.95 \times 0.95}{0.9075}\\
+	&= 0.9944.
+\end{aligned}
+$$
+
+Thus only giving loans to those customers who pass the questionnaire decreases the default rate from $5\%$ to $0.6\%$.
+
+(b) With $p(\bar{Q}|D)=0.95$, we have $p(Q)=0.95^2+0.05^2=0.905$, so as above we have $p(\bar{D}|Q)=0.9972$.
+
+With $p(Q|\bar{D})=0.99$, we have $p(Q)=0.99\times 0.95+0.1\times 0.05=0.9455$, so as above we have $p(\bar{D}|Q)=0.9947$. Thus it is better to improve $p(\bar{Q}|D)$ from $0.90$ to $0.9$ than $p(Q|\bar{D})$ from $0.9$ to $0.99$.
+
+
+***

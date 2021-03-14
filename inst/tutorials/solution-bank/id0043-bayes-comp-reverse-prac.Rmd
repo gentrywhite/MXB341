@@ -1,0 +1,114 @@
+
+***
+*Solution*: 
+
+```{r mh-tau, fig.margin = TRUE, fig.cap= 'Trace plot for MH sampler of tau'}
+
+library(extraDistr)
+
+# the log density of tau given alpha and mu up to a constant
+log_dens_tau_given_all <- function(tau, alpha, mu, y, n){
+  
+  sum( dnorm(x = y, mean = mu, sd = sqrt(tau/2), log = T) ) - alpha * tau
+  
+}
+
+# going to use an truncated normal proposal (tau has to be positive)
+
+
+one_step_mh_tau <- function(current_tau, scale, alpha, mu, y, n){
+  
+  proposal_tau <- rtnorm(n = 1, mean = current_tau, sd = scale, a = 0) 
+  
+  # proposal densities
+  q_log_dens_proposal_given_current <- 
+    dtnorm(x = proposal_tau, mean = current_tau, sd = scale, a = 0)
+  
+  q_log_dens_current_given_proposal <- 
+    dtnorm(x = current_tau, mean = proposal_tau, sd = scale, a = 0)
+  
+  # posterior densities
+  pi_log_dens_tau_proposal <- 
+    log_dens_tau_given_all(tau = proposal_tau, 
+                           alpha = alpha,
+                           mu = mu, 
+                           y = y, n = n)
+  
+  pi_log_dens_tau_current <- 
+    log_dens_tau_given_all(tau = current_tau, 
+                           alpha = alpha, 
+                           mu = mu, 
+                           y = y, n = n)
+  
+  log_mh_ratio <- 
+    pi_log_dens_tau_proposal - q_log_dens_proposal_given_current - 
+    (pi_log_dens_tau_current - q_log_dens_current_given_proposal)
+    
+  accept_ratio <- min(1, exp(log_mh_ratio) )
+  
+  if(runif(1) < accept_ratio){
+    return(proposal_tau)
+  } else {
+    return(current_tau)
+  }
+  
+}
+
+# check if works:
+tau_chain <- rep(NA_real_, times = 10000)
+tau_chain[1] <- 0.01
+for(i in 2:length(tau_chain)){
+  
+ tau_chain[i] <-  
+  one_step_mh_tau(current_tau = tau_chain[i-1], 
+                  scale = 1.5, 
+                  alpha = 1, 
+                  mu = 1, 
+                  y = rnorm(n = 10, mean = 1, sd = 1), n = 10)
+
+}
+
+# accept prop
+mean( diff(tau_chain) != 0)
+
+plot(tau_chain, type = "l")
+
+```
+
+```{r gibbs-mu-alpha, fig.margin = TRUE, fig.cap= 'Trace plots for Gibbs sampler alpha/mu'}
+
+# simulate some data
+y <- rnorm(n = 100, mean = 3, sd = 1)
+y_bar <- mean(y)
+n <- length(y)
+
+samples <- matrix(NA_real_, nrow = 10000, ncol = 3)
+colnames(samples) <- c("alpha","mu","tau")
+
+samples[1,] <- c(1,2,1)
+
+# algorithm tuning:
+MH_scale <- 1
+
+for(i in 2:nrow(samples)){
+  
+  # update alpha
+  samples[i,"alpha"] <- rexp(n = 1, rate = samples[i-1,"tau"] + 1)
+  
+  # update mu
+  samples[i,"mu"] <- rnorm(n = 1, mean = y_bar, sd = sqrt(samples[i-1,"tau"] / (2 * n) ) )
+  
+  # update tau
+  samples[i,"tau"] <- one_step_mh_tau(
+    current_tau = samples[i-1,"tau"], 
+    scale = MH_scale, 
+    alpha = samples[i,"alpha"] , 
+    mu = samples[i,"mu"], 
+    y = y,
+    n = n)
+  
+}
+
+```
+
+***

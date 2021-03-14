@@ -1,0 +1,44 @@
+
+***
+*Solution*: 
+
+a. For the mean of $s_{1}$: $E(y_{i}) = \theta/2$, therefore $E(s_{1}) = n\theta/2$. Whereas for the variance: $\opertorname{var}(y_{i}) = \theta^{2}/12$, so $\opertorname{var}(s_{1}) = n\theta^{2}/12$._
+
+Let $y_{(n)}$ be the maximum of the sample ($n$th order statistic).
+    $P(y_{(n)} < x) = P(y_{1} < x, \ldots, y_{n} < x) = \prod_{i=1}^{n}P(y_{i} < x) = (x/\theta)^{n}$. For $0 \leq x \leq \theta$. From this, the PDF for $y_{(n)}$ is 
+$$
+    p(x) = \frac{nx^{n-1}}{\theta^{n}} \quad \opertorname{ for } 0 \leq x \leq \theta,
+$$ 
+the expectation is 
+$$
+\operatorname{E}(y_{(n)}) = \frac{n \theta}{n+1},
+$$
+and the variance is 
+$$
+\operatorname{Var}(y_{(n)}) = \frac{n \theta^{2}}{(n+1)^{2}(n+2)}.
+$$
+
+b. Using part a., 
+$$
+\operatorname{E}(\hat{\theta}_{A}) = \frac{2}{n}\frac{n\theta}{2} = \theta
+$$ 
+and 
+$$
+\operatorname{E}(\hat{\theta}_{B}) = \frac{n+1}{n}\frac{n\theta}{n+1} = \theta
+$$
+therefore both estimators are unbiased.
+
+c. Using part a., 
+$$
+\operatorname{Var}(\hat{\theta}_{A}) = \left(\frac{2}{n}\right)^{2}\operatorname{Var}(s_{1}) = \left(\frac{2}{n}\right)^{2} \frac{n\theta^{2}}{12} = \frac{\theta^{2}}{3n}
+$$
+$$
+\operatorname{Var}(\hat{\theta}_{B}) = \frac{(n+1)^{2}}{n^{2}}\opertorname{var}(s_{2}) = \frac{(n+1)^{2}}{n^{2}} \frac{n \theta^{2}}{(n+1)^{2}(n+2)} = \frac{\theta^{2}}{n(n+2)}.
+$$
+Since $n(n+2) \geq 3n$ for $n \geq 1$, $\operatorname{Var}(\hat{\theta}_{B})$ is always smaller of the two variances.
+
+d. Yes, both are consistent. Since both estimator are unbiased, it suffices to show that $\operatorname{Var}(\hat{\theta}_{A}) \rightarrow 0$ and $\operatorname{Var}(\hat{\theta}_{B}) \rightarrow 0$ as $n \rightarrow \infty$. Note that $\operatorname{Var}(\hat{\theta}_{B}) \rightarrow 0$ approaches 0 much faster, which is a desirable property.
+
+e. The CRLB does not apply in this case because one of the regularity conditions does not hold. In this case, it is because the parameter, $\theta$, determines the support of the distribution (This stops the order of integration and differentiation being swapped in the CRLB proof.). While we can't determine absolute efficiency of either estimator, we can say that the $\hat{\theta}_{B}$ is **more** efficient since its variance is always smaller
+
+***

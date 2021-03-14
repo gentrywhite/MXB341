@@ -1,0 +1,24 @@
+
+***
+*Solution*: 
+
+The binomial pmf for $n$ trials is
+$$
+p(y~|~\theta) \propto \theta^y (1-\theta)^{n-y}
+$$
+which gives the likelihood for one observation $y$:
+$$
+L(\theta~|~y) \propto \theta^y (1-\theta)^{n-y}
+$$
+Whilst the prior is $p(\theta) \propto \theta^{a-1}(1-\theta)^{b-1}$. The posterior distribution is therefore
+$$
+\begin{aligned}
+p(\theta~\vert~y) &\propto  L(\theta~|~y) p(\theta)\\
+&\propto   \theta^y (1-\theta)^{n-y} \theta^{a-1}(1-\theta)^{b-1}\\
+&\propto   \theta^{a + y -1} (1-\theta)^{b + n - y -1}
+\end{aligned}
+$$
+
+Which has the same form as the Beta distribution, $\theta~\vert~y \sim \text{Beta}(a+y,b+n-y)$. For this question, $a=8$, $b=4$, $y=2$, $n=3$, the posterior is given by $\theta~|~y \sim \text{Beta}(\theta; 10,5)$. The mode of $\text{Beta}(10,5)$ occurs at $9/13$.
+
+***

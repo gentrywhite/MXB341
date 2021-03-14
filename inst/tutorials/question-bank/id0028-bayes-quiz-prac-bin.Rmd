@@ -1,0 +1,9 @@
+Students are asked to repeat an online test until they obtain a pass mark.  The number of times, $y$, the test is repeated by a given student is recorded.  Suppose the distribution of $y$ for a given student is given by the geometric distribution
+$$p(y~|~\theta)= (1-\theta)^{y-1} \theta, \quad \quad y=1,2,\ldots $$
+for $0 < \theta < 1$.  Suppose independent data $y_1,\ldots,y_n$ (results from similar tests with the same value of $\theta$) are available.  
+
+(a) If the prior for $\theta$ is taken as $\text{Beta}(\alpha,\beta)$ determine the posterior distribution of $\theta$ as a Beta distribution.
+
+(b) Plot the posterior distribution in (a) for $n=10$ tests and $\sum_j {y_j} = 12$ for $\alpha = 0.1, 1, 8, 20$ and  $\beta = 0.1, 1, 8, 20$. What part of your model are you changing when you vary $\alpha$ and $\beta$?
+
+(c) Repeat (b) with  $n=5$ tests and $\sum_j {y_j} = 6$. Explain why the posterior distributions change, even though the mean number of times a test is repeated remains the same.

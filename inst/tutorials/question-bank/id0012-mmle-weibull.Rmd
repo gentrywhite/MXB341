@@ -1,0 +1,10 @@
+Let $x_{1},x_{2},\ldots,x_{n}$ be data distributed according to a Weibull distribution with pdf
+$$
+g(x~\vert~\lambda, \kappa) = \frac{\kappa}{\lambda}\left(\frac{x}{\lambda}\right)^{\kappa-1}\exp\{-(x/\lambda)^{\kappa}\} \quad \text{for} \quad x > 0
+$$
+Note that $\lambda > 0$ and $\kappa > 0$.
+
+(a) Write down the equations which determine the MLE for the Weibull distributed data. Find the MLE of $\lambda$ in terms of $\kappa$.
+(b) What are the AIC and BIC formulae for the Weibull distribution?
+(c) For $n=20$ does the AIC or BIC penalise larger models more?
+(d) Is the Weibull distribution in the exponential family? Why or why not?

@@ -1,0 +1,177 @@
+
+***
+*Solution*: 
+
+(a)/(b) Exact sampling with independent Gamma
+
+```{r mh-algorithm-q2, fig.margin = TRUE, fig.cap= 'Approx posterior distribution of r'}
+
+n <- c(10, 15)
+y_bar <- c(6.5,5.0)
+
+sim_gamma_posterior <- function(n_sim, n_sample, y_bar){
+  
+  cbind(
+    rgamma(n = n_sim, shape = n[1] + 10e-03, rate = n[1]*y_bar[1] + 10e-03),
+    rgamma(n = n_sim, shape = n[2] + 10e-03, rate = n[2]*y_bar[2] + 10e-03)
+  )
+  
+}
+
+exact_samples <- sim_gamma_posterior(n_sim = 5000, n_sample = n, y_bar = y_bar)
+
+# (a) approximate distribution of r = \theta_1^{-1}-\theta_2^{-1}:
+
+r_sim_exact <- exact_samples[,1]^(-1) - exact_samples[,2]^(-1)
+
+hist(r_sim_exact)
+
+# (b) P(r <= 1 | y)
+mean(r_sim_exact <= 1)
+
+
+```
+
+
+(c) Random-walk metropolis Hasting Algorithm with independent normal distributions truncated at zero as proposal
+$$
+q(\theta_{1}', \theta_{2}' ~\vert~ \theta_{1}, \theta_{2}) = \text{N}(\theta_{1}, s^2) \times \text{N}(\theta_{1}, s^2) \quad \text{s.t.} \quad \theta_{1} > 0,~ \theta_{2} > 0.
+$$
+$(\theta_{1}', \theta_{2}')$ is "new" or proposed random variable, and $(\theta_{1}, \theta_{2})$ is the current random variable.
+
+```{r mh-algorithm}
+
+# (c)(i) This code is for the RWMH algorithm with truncated normal proposal
+
+library(extraDistr)
+
+gamma2_log_posterior_prop <- 
+  function(theta1, theta2, 
+          n1, n2, y1_mean, y2_mean, 
+          alpha_prior = 10e-03, beta_prior = 10e-03){
+  
+  if(theta1 <= 0 | theta2 <= 0) return(-Inf)
+  
+  (n1 + alpha_prior - 1) * log( theta1 ) - theta1 * (y1_mean * n1 + beta_prior) +
+    (n2 + alpha_prior - 1) * log( theta2 ) - theta2 * (y2_mean * n2 + beta_prior)
+  
+}
+
+n1 <- 10
+y1_mean <- 6.5
+n2 <- 15
+y2_mean <- 5.0
+
+gamma2_log_posterior_prop(theta1 = 1, theta2 = 1,
+                          n1 = n1, n2 = n2, 
+                          y1_mean = y1_mean, y2_mean = y2_mean)
+
+
+rwmh_sampler_gibbs <- function(n_samples, kernel_scale){
+  
+  # storage and initialise samples
+  samples <- matrix(0, nrow = n_samples, ncol = 2)
+  samples[1,] <- 1
+  
+  sum_accept <- 0
+  
+  for(t in 2:n_samples){
+    
+    # sample proposal
+    proposal <- rtnorm(n = 2, mean = samples[t-1,], sd = kernel_scale, a = 0)
+    
+    # calculate densities at proposal and current position
+    log_proposal_given_current_dens <- 
+      sum(dtnorm(proposal, mean = samples[t-1,], sd = kernel_scale, a = 0, log = TRUE))
+    
+    log_current_given_proposal_dens <- 
+      sum(dtnorm(samples[t-1,], mean = proposal, sd = kernel_scale, a = 0, log = TRUE))
+    
+    log_posterior_proposal_density <- 
+      gamma2_log_posterior_prop(theta1 = proposal[1], theta2 = proposal[2],
+                            n1 = n1, n2 = n2, 
+                            y1_mean = y1_mean, y2_mean = y2_mean)
+    
+    log_posterior_current_density <- 
+      gamma2_log_posterior_prop(theta1 = samples[t-1,1], theta2 = samples[t-1,2],
+                            n1 = n1, n2 = n2, 
+                            y1_mean = y1_mean, y2_mean = y2_mean)
+    
+    log_ratio <- log_posterior_proposal_density + log_current_given_proposal_dens - 
+      (log_posterior_current_density + log_proposal_given_current_dens)
+    
+    accept <- exp(log_ratio) > runif(1)
+    if(accept){
+      samples[t,] <- proposal
+    } else {
+      samples[t,] <- samples[t-1,]
+    }
+  
+    sum_accept <- sum_accept + accept
+    
+  }
+   
+  cat("Proportion accepted:", round(sum_accept/(n_samples-1),2) )
+   
+  return(samples)
+  
+}
+
+samples <- rwmh_sampler_gibbs(n_samples=10000, kernel_scale=0.1)
+
+samples_post_burnin <- samples[5001:10000,]
+
+```
+
+(d)
+
+```{r run-mean, fig.margin = TRUE, fig.cap= 'Running mean plot'}
+
+# (d)
+
+# running mean of samples:
+plot(
+  cumsum(samples_post_burnin[,1])/(1:nrow(samples_post_burnin)),
+  type = "l", xlab = "Iteration", ylab = "Theta1")
+
+plot(
+  cumsum(samples_post_burnin[,2])/(1:nrow(samples_post_burnin)), 
+  type = "l", xlab = "Iteration", ylab = "Theta2")
+
+# compared to 
+mean(r_sim_exact)
+
+```
+
+(e)
+
+```{r trace, fig.margin = TRUE, fig.cap= 'Trace plot'}
+
+# trace plot
+
+plot(samples_post_burnin[,1], type = "l",  
+     xlab = "Iteration", ylab = "Theta1")
+plot(samples_post_burnin[,2], type = "l",  
+     xlab = "Iteration", ylab = "Theta2")
+
+# effective sample size
+library(coda)
+
+effectiveSize(samples_post_burnin[,1])
+effectiveSize(samples_post_burnin[,2])
+
+```
+
+```{r pacf,  fig.margin = TRUE, fig.cap= 'PACF plot'}
+
+# (p)acf
+
+pacf(samples_post_burnin[,1])
+
+#pacf(samples_post_burnin[,2])
+
+```
+
+(f) The optimal (asymptotic) acceptance rate is 0.234 for a limited set of target distributions (see https://projecteuclid.org/euclid.bj/1251463281 for more information). A rate of 0.25 is generally what is aimed for in practice. Check your rejection rate against this.
+
+***

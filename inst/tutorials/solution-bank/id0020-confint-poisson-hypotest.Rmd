@@ -1,0 +1,93 @@
+
+*Solution*: 
+
+a. The log-likelihood can be found by combining the likelihoods for the $x_{i}$ and $y_{i}$ data
+$$
+	L(\lambda,\tau) = \left[\prod_{i=1}^n \frac{e^{-\lambda}\lambda^{y_i}}{y_i!} \right]\left[\prod_{j=1}^m \frac{e^{-\tau\lambda}(\tau\lambda)^{x_j}}{x_j!}\right]
+$$
+$$
+	=\frac{e^{-\lambda(n+\tau m)}\lambda^{\sum_{i=1}^n y_i+\sum_{j=1}^m x_j}\tau^{\sum_{j=1}^m x_j}}{\prod_{i=1}^n y_i! \prod_{j=1}^m x_j!}
+$$
+$$
+	l(\lambda,\tau) = -\lambda(n+\tau m)+\left(\sum_{i=1}^n y_i+\sum_{j=1}^m x_j\right)\log \lambda +(\sum_{j=1}^m x_j)\log \tau + \text{const}
+$$
+$$
+	= -\lambda(n+\tau m)+\left(n\bar{y}+m\bar{x}\right)\log \lambda +(m\bar{x})\log \tau + \text{const}
+$$	
+
+b. From the derivatives (or using the fact that  $\hat\lambda_1=\bar y$ and $\hat\lambda_2=\bar x$) we can show that $\hat{\lambda} = \bar y$ and $\hat{\tau} = \frac{\bar x}{\bar y}$.
+The derivatives/score functions are:
+$$
+	\frac{\partial l(\lambda,\tau)}{\partial \lambda} = -(n+\tau m)+\frac{\left(n\bar{y}+m\bar{x}\right)}{\lambda}
+$$
+$$
+	\frac{\partial l(\lambda,\tau)}{\partial \tau} = -\lambda m +\frac{m\bar{x}}{\tau}
+$$
+
+c. The second derivatives are
+$$
+\frac{\partial^{2} l(\lambda,\tau)}{\partial \lambda^{2}} = - \frac{\left(n\bar{y}+m\bar{x}\right)}{\lambda^{2}}
+$$
+$$
+\frac{\partial^{2} l(\lambda,\tau)}{\partial \tau^{2}} = -\frac{m\bar{x}}{\tau^{2}}
+$$
+$$
+\frac{\partial^{2} l(\lambda,\tau)}{\partial \lambda \partial \tau} = -m 
+$$
+therefore the observed information matrix is
+$$ 
+\mathcal{J} = 
+\begin{bmatrix}
+\frac{\left(n\bar{y}+m\bar{x}\right)}{\hat{\lambda}^{2}} & m\\\
+m & \frac{m\bar{x}}{\hat{\tau}^{2}}
+\end{bmatrix}
+$$
+
+d. Using the Wilk's theorem (quadratic approximation), we can form a confidence region using the Chi-square distribution (approximation)
+$$
+\left[
+\begin{bmatrix}
+\hat{\lambda} \\\ \hat{\tau}
+\end{bmatrix} -
+\begin{bmatrix}
+\lambda \\\ \tau
+\end{bmatrix}
+\right]^{\top}
+\begin{bmatrix}
+\frac{\left(n\bar{y}+m\bar{x}\right)}{\hat{\lambda}^{2}} & m\\\
+m & \frac{m\bar{x}}{\hat{\tau}^{2}}
+\end{bmatrix}
+\left[
+\begin{bmatrix}
+\hat{\lambda} \\\ \hat{\tau}
+\end{bmatrix} -
+\begin{bmatrix}
+\lambda \\\ \tau
+\end{bmatrix}
+\right] \leq 4.60517
+$$
+since `qchisq(p = 0.9, df = 2)` $= 4.60517$.
+
+e. The given null hypothesis is equivalent to $\lambda = 2$ and $\tau = 1$, also the critical level ($\alpha$) is equivalent to a 90% confidence level. Therefore, the rejection region can be inferred from part (d), that is 
+$$
+\left[
+\begin{bmatrix}
+\hat{\lambda} \\\ \hat{\tau}
+\end{bmatrix} -
+\begin{bmatrix}
+2 \\\ 1
+\end{bmatrix}
+\right]^{\top}
+\begin{bmatrix}
+\frac{\left(n\bar{y}+m\bar{x}\right)}{\hat{\lambda}^{2}} & m\\\
+m & \frac{m\bar{x}}{\hat{\tau}^{2}}
+\end{bmatrix}
+\left[
+\begin{bmatrix}
+\hat{\lambda} \\\ \hat{\tau}
+\end{bmatrix} -
+\begin{bmatrix}
+2 \\\ 1
+\end{bmatrix}
+\right] > 4.60517
+$$

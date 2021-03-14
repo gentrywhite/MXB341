@@ -1,0 +1,92 @@
+
+***
+*Solution*: 
+
+```{r id0006-stbernard}
+  
+  library(dplyr)
+  library(ggplot2)
+
+  age_months <- c(0.4, 2.3, 2.9,  4.5,  4.9,  7.9,  10.1, 11.5)
+  weight_kgs <- c(1.8, 7.1, 17.0, 20.4, 36.1, 55.2, 58.4, 77.1)
+
+  # (a) Plot data
+  bernards <- tibble(
+    age = age_months, 
+    weight = weight_kgs
+  )
+
+  puppy_plot <- ggplot(data = bernards) + 
+    geom_point(aes(x = age, y = weight)) +
+    scale_y_continuous("Weight (kg)") +
+    scale_x_continuous("Age (months)") +
+    ggtitle("Weight vs age of St. Bernard puppies") +
+    theme_bw()
+  
+  #puppy_plot
+  
+  # (b) Estimate model
+  
+  puppy_alpha <- 1
+  
+  # function to be minimised:
+  puppy_sum_of_squares <- function(beta){
+    
+    # constants, read from enclosing environment
+    alpha <- puppy_alpha
+    x <- age_months
+    y <- weight_kgs
+    # sum of squares
+    ss <- sum( ( y - (alpha + beta * x) )^2 )
+    return(ss)
+  }
+
+  puppy_res <- optim(par = 0, # start value
+                     fn = puppy_sum_of_squares,
+                     method = "BFGS"
+                     )
+  
+  puppy_beta <- puppy_res$par
+  
+  # because the SS is a convex function, we should be 
+  # confident (after observing convergence) that the
+  # result is the global minimum.
+  
+  # (c) plot fit
+  puppy_ls_fit <- function(x){
+    
+    puppy_alpha + puppy_beta * x
+    
+  }
+  
+  puppy_plot + 
+    stat_function(fun = puppy_ls_fit, colour = "blue")
+  
+  # (d) lm fit comparison
+  
+  puppy_lm <- lm(weight ~ age, data = bernards)
+  
+  coef(puppy_lm)
+  # intercept (alpha) is estimated to be negative, 
+  # this doesn't make physical sense given the data.
+  # Need to be careful about the domain of parameters.
+  
+  puppy_lm_fit <- function(x){
+    
+    coef(puppy_lm)[1] + coef(puppy_lm)[2] * x
+    
+  }
+  
+  puppy_plot + 
+     # Blue: ls fit with alpha = 1
+    stat_function(fun = puppy_ls_fit, colour = "blue", xlim = c(0,12)) +
+    # Red: lm fit (ls as well) with alpha unconstrained.
+    stat_function(fun = puppy_lm_fit, colour = "red", xlim = c(0,12)) 
+  
+# When the intercept is unconstrained, as in lm(...) 
+# it fits a negative value for the intercept, which isn't
+# physically possible. Domain knowledge is important for stats.
+  
+```
+
+***

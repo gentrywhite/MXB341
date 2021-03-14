@@ -1,0 +1,85 @@
+
+***
+*Solution*: 
+
+a. If $y_{i} \sim \text{Bin}(k,\theta)$, then $s = \sum_{i=1}^n y_i \sim \text{Bin}(nk,\theta)$. Proof omitted, using MGF is one option.
+
+b. 
+$$
+		\mathcal{I}_{n}(\theta) = \operatorname{E}\left[- \frac{d^2 \ell(\theta)}{d \theta^2}\right]
+$$		
+$$		
+= \operatorname{E}\left[\sum_{i=1}^n \frac{y_i}{\theta^2} - \frac{k-y_i}{(1-\theta)^2} \right]
+$$
+
+$$
+= \sum_{i=1}^n \left[\frac{\operatorname{E}(y_i)}{\theta^2}- \frac{k-\operatorname{E}(y_i)}{(1-\theta)^2} \right]
+$$
+
+$$
+= \sum_{i=1}^n \left[\frac{k}{\theta}- \frac{k}{1-\theta} \right]  
+$$
+noting that $\operatorname{E}(y_i)=k\theta$
+
+$$
+= \frac{nk}{\theta(1-\theta)}.
+$$
+thus the CRB is: $\operatorname{Var}(\hat{\theta}) \geq \frac{\theta(1-\theta)}{nk}$.
+  
+c. The log-likelihood is 
+$$
+l(\theta) = \sum_{i=1}^{n} \left\{ y_{i} \log \theta + (k-y_i)\log (1-\theta) \right\} + C.
+$$ 
+The first and second derivatives are
+$$
+		\frac{d l(\theta)}{d \theta} = \sum_{i=1}^n \frac{y_i}{\theta} - \frac{k-y_i}{1-\theta}
+$$
+$$
+		\frac{d^2 \ell(\theta)}{d \theta^2} = -\sum_{i=1}^n \frac{y_i}{\theta^2} - \frac{k-y_i}{(1-\theta)^2}.
+$$
+	
+The MLE $\hat{\theta}$ is found by solving
+$$
+		\frac{d l(\theta)}{d \theta}\biggr\rvert_{\theta=\hat{\theta}} = \sum_{i=1}^n \frac{y_i}{\hat{\theta}} - \frac{k-y_i}{1-\hat{\theta}}=0
+$$		
+yielding
+$$
+		\hat{\theta} = \frac{\sum_{i=1}^ny_i}{nk},
+$$
+	the pooled proportion of successes. Note that $-\frac{d^2 l(\theta)}{d \theta^2}$ is $>0$ for all $\theta\in (0,1)$ (a convex optimisation) so that the MLE is a maximum and unique.
+  
+The expectation of the MLE is given by
+$$
+\operatorname{E}(\hat{\theta}) = \operatorname{E}\left(\frac{\sum_{i=1}^n y_i}{nk}\right)
+$$
+$$		
+\operatorname{E}(\hat{\theta})= \sum_{i=1}^n\frac{E\left(y_i\right)}{nk}
+$$
+$$
+\operatorname{E}(\hat{\theta})= \sum_{i=1}^n \frac{\theta}{n}, 
+$$
+by noting that $\operatorname{E}(y_i)=k\theta$
+$$
+\operatorname{E}(\hat{\theta})=\theta,
+$$
+	and hence the maximum likelihood estimate $\hat{\theta}$ is an unbiased estimate of $\theta$.
+	
+d. The variance of the MLE is given by
+$$
+		\operatorname{Var}(\hat{\theta}) = \text{var}\left(\frac{1}{nk}\sum_{i=1}^n y_i\right)
+$$
+$$
+		=\frac{1}{n^2k^2}\text{var}\left(\sum_{i=1}^n y_i\right)
+$$		
+$$	  
+=\frac{1}{n^2k^2}\text{var}(s)
+$$
+$$
+=\frac{nk\theta(1-\theta)}{n^2k^2} \quad \text{using part (a)} 
+$$
+$$
+= \frac{\theta(1-\theta)}{nk}.
+$$
+Hence we note that the MLE $\hat{\theta}$ is an **efficient estimator** since its variance is equal to the Cramér-Rao minimum variance bound.
+	
+***

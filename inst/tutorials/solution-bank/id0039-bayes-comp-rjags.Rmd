@@ -1,0 +1,58 @@
+
+***
+*Solution*: 
+
+```{r id0039-rjags-prac, eval = F, echo= T}
+
+  library(rjags)
+  library(coda)
+  
+  ##  Likelihood is propotional to exp(-sum (mu-y)^2/tau)
+  ##  Prior for mu is proportional to 1
+  ##  Prior for tau is proportional to exp(-alpha*tau)
+  ##  Prior for alpha is exp(1)
+  
+  ##  Generate some data
+  
+  n<-35
+  
+  y<-rnorm(35,1.7,sd=2.3)
+  
+  model.text<-"
+  model
+  {
+  for(i in 1:n)
+    {
+    y[i]~dnorm(mu,prec)
+    }
+    prec<-2/tau
+    mu~dnorm(0,0.001)
+    tau~dgamma(1,alpha)
+    alpha~dgamma(1,1)
+  }
+  "
+  
+  model.spec<-textConnection(model.text)
+  
+  model.jags<-jags.model(model.spec,data=list("y"=y,"n"=n),n.chains = 3,n.adapt = 1000)
+  
+  update(model.jags,10000)
+  
+  model.samples<-coda.samples(model.jags,c("mu","tau","prec","alpha"),n.iter = 10000)
+  
+  gelman.diag(model.samples)
+  
+  gelman.plot(model.samples)
+   
+  load.module("dic")
+  
+  s<-jags.samples(model.jags,c("mu","tau","prec","alpha","deviance","pD"),n.iter = 10000)
+  
+  devbar<-summary(s$deviance,mean)[[1]]
+  pD<-summary(s$pD,mean)[[1]]
+  DIC<-devbar+pD
+
+```
+
+
+***

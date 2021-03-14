@@ -1,0 +1,16 @@
+This question continues from Question 1 (theory).
+
+(a) By simulating pairs of values of $\theta_1,\theta_2$ from the posterior $p(\theta_1,\theta_2|\mathbf{y})$ estimate the posterior distribution of $r = \theta_1^{-1}-\theta_2^{-1}$, the mean reduction in infection time until symptom free, comparing the new treatment with the standard.
+
+(b) What is the approximate probability that $p(r \leq 1 ~\vert~ \boldsymbol{y})$? 
+
+(c) Write a random-walk Metropolis-Hastings (RWMH) algorithm to simulate from $p(\theta_1,\theta_2|\mathbf{y})$ using
+
+    (i) Truncated normal proposal (truncated at zero to avoid having negative proposals).
+    (ii) Pareto proposal distribution, with support on $[0,\infty)$.
+
+(d) Approximate $E(r)$ using the samples from the two RWMH for a fixed number of samples. Compare to iid Gamma samples from the posterior. Approximate how large $N$ needs to be before you the three estimates are indistinguishable (use graphical methods).
+
+(e) Evalulate the performance of the RWMH algoirthms using trace, running mean, and (partial) auto-correlation plots, as well as effective sample size approximations.^[Hint: `[p]acf()` and `effectiveSize()` in the `coda` package can assist you. Don't forget to discard the first part of your sample as burnin.] Based on these metrics, should you run your sampler for a longer than $N=3000$ iterations?
+
+(f) What proportion of iterations were accepted (by the MH ratio)? Is this proportion close to optimal?

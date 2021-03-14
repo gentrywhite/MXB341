@@ -1,0 +1,11 @@
+Consider the standard linear regression model with three parameters $\alpha,\beta,\sigma^2$.  Assume the linear model has independent normal errors.
+        
+$$y_j |\alpha, \beta,\sigma^2 \sim {\rm N} ( \alpha + \beta (x_j-\bar{x}), \sigma^2), \quad \text{for} \quad j=1,\ldots,n$$
+Assume uniform (improper) priors for $\alpha,\beta, \log(\sigma^2)$.
+
+Find the three posterior full conditionals $p(\alpha|\beta,\sigma^2,\mathbf{y}), p(\beta|\alpha,\sigma^2,\mathbf{y}), p(\sigma^2|\alpha,\beta,\mathbf{y})$ to show that
+
+$$(\alpha~\vert~\cdot~) \sim {\rm N} \left(\bar{y}, \frac{\sigma^2}{n} \right),$$
+$$( \beta~\vert~\cdot~) \sim {\rm N} \left( \frac{\sum y_j(x_j-\bar{x})}{\sum (x_j-\bar{x})^2}, \frac{\sigma^2}{\sum (x_j-\bar{x})^2} \right)$$
+and for $(\sigma^2 ~\vert~ \alpha,\beta)$
+$$\frac{\sum_j (y_j-\alpha-\beta (x_j-\bar{x}))^2}{\sigma^2} \sim  \chi^2_n$$

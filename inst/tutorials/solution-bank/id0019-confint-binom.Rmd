@@ -1,0 +1,40 @@
+
+*Solution*:
+
+a.  The expected Fisher information is 
+$$
+\mathcal{I}_{n}(\theta) = \frac{nk}{\theta(1-\theta)}
+$$ 
+while 
+$$
+\mathcal{I}(\theta) = \frac{k}{\theta(1-\theta)}.
+$$
+
+b. From the asymptoptic normality of the MLE we have 
+$$
+\sqrt{n}(\hat{\theta} - \theta) \sim N(0, \mathcal{I}(\hat{\theta})^{-1})
+$$ 
+after we substitute the estimate 
+$$
+\mathcal{I}(\hat{\theta})\mbox{ for }\mathcal{I}(\theta_{0})
+$$
+We can rearrange this to be 
+$$
+\sqrt{n}\mathcal{I}(\hat{\theta})^{1/2}(\hat{\theta} - \theta) \sim N(0, 1)
+$$ 
+for which the 90% bounds of the standard normal are $(-1.645,1.645)$. Therefore we find the confidence interval for $\theta$ by solving 
+$$
+-1.645 \leq \sqrt{\frac{nk}{\hat{\theta}(1-\hat{\theta})}}(\hat{\theta} - \theta) \leq 1.645
+$$ 
+which is equivalent to the interval 
+$$
+\hat{\theta} \pm 1.645 \sqrt{\frac{\hat{\theta}(1-\hat{\theta})}{nk}}.
+$$
+
+The MLE is $\hat{\theta}  = 0.4$. Since $k=5$, $n=10$, and $s = 20$ this gives a standard error (based on the information matrix) as 
+$$
+\sqrt{\frac{\hat{\theta}(1-\hat{\theta})}{nk}} = 0.069.
+$$
+The approximate 90% confidence interval is therefore $0.4 \pm 1.645 \times 0.069$, or $(0.286, 0.514)$.
+
+c. In this case it seems appropriate but if the estimated $\theta$ is very small the confidence interval will contain negative values which is not valid. It also should be noted that the interval is the result of two approximations, an asymptotic result and an approximation to the true expected information.

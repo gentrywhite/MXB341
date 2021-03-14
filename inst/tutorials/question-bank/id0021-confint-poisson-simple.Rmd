@@ -1,0 +1,9 @@
+Let $y_1,y_2,\ldots,y_n$ be a random sample from a population described by the Poisson distribution with mean $\lambda$.
+
+(a) Determine the likelihood of the data.
+
+(b) What is the MLE for the model?
+
+(c) What is the expected Fisher information for the model?
+
+(d) Construct a 95% confidence interval for the MLE using the asymptotic normal approximation.

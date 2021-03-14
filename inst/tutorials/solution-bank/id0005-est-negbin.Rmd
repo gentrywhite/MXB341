@@ -1,0 +1,45 @@
+***
+_Solution:_ 
+
+a. The mean of the negative binomial (in this formulation) is 
+$$
+E(Y) = \frac{(1-p)k}{p}.
+$$
+
+Equating to the empirical mean, we have 
+$$
+\frac{(1-p)r}{p} = \bar{y}
+$$ 
+therefore 
+$$
+\hat{p}_{MM}= \frac{r}{\bar{y} + r}.
+$$
+
+b. The log-likelihood is 
+$$
+l(p|\mathbf{y},k) = \sum_{i=1}^{n} \log \left(\frac{\Gamma(k+y_{i})}{y_{i}!~\Gamma(k)}p^{k} (1-p)^{y_{i}} \right)
+$$
+which can be simplified to
+$$
+l(p|\mathbf{y},k) = C(k,\boldsymbol{y}) + n k \log p + \sum_{i=1}^{n}y_{i} \log (1 - p)
+$$
+where 
+$$
+C(k,\mathbf{y}) = \sum_{i=1}^{n} \log \left(\frac{\Gamma(k+y_{i})}{y_{i}!~\Gamma(k)}\right)
+$$ 
+does not depend on $p$.  
+
+Setting $\frac{\partial l}{\partial p} = 0$
+$$
+\frac{\partial l}{\partial p} = \frac{nk}{p} - \frac{\sum_{i=1}^{n}y_{i}}{1-p}
+$$
+
+$$
+0=\frac{nk}{p} - \frac{\sum_{i=1}^{n}y_{i}}{1-p}
+$$
+$$
+\hat{\theta}_{ML} = \frac{k}{\bar{y} + k}
+$$
+
+c. The MM and MLE are the same.
+***

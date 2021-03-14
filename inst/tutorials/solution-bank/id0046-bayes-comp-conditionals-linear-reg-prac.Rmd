@@ -1,0 +1,102 @@
+
+***
+*Solution*: 
+
+```{r id0046-gibbs}
+
+
+x <- c(3.12, 2.82, 1.84, 0.85, 2.99, 4.05, 0.88, 1.2, 1.53, 1.52)
+y <- c(2.86, 2.81, 1.98, 1.22, 2.55, 3.43, 1.93, 1.82, 1.89, 1.72)
+
+N <- 20000
+
+samples <- matrix(NA_real_, ncol = 4, nrow = N)
+colnames(samples) <- c("alpha","beta","sigma2","loglike")
+
+x_bar <- mean(x)
+y_bar <- mean(y)
+n <- length(x)
+
+x_total_var <-  sum( (x - x_bar)^2 )
+
+beta_cond_mean <- sum( y * (x - x_bar) ) / x_total_var
+
+# residual sum of squares function (takes x,y,x_bar from global environment)
+rss <- function(alpha, beta){
+  
+  sum( (y - (alpha + beta * (x - x_bar) ))^2 )
+  
+}
+
+log_likelihood <- function(alpha, beta, sigma2){
+  
+  mu <- alpha + beta * (x - x_bar)
+  
+  sum(
+    dnorm(x = y, mean = mu, sd = sqrt(sigma2), log = T)
+  )
+  
+}
+
+# initial values
+samples[1,1:3] <- 1
+samples[1,4] <- log_likelihood(alpha = samples[1,1], 
+                               beta = samples[1,2], 
+                               sigma2 = samples[1,3])
+
+for(i in 2:N){
+  
+  # alpha | everything else
+  samples[i,"alpha"] <- 
+    rnorm(n = 1, 
+          mean = y_bar, 
+          sd = sqrt( samples[i-1,"sigma2"]/n) 
+          )
+  
+  # beta | everything else
+  samples[i,"beta"] <-  
+    rnorm(n = 1, 
+          mean = beta_cond_mean, 
+          sd = sqrt( samples[i-1,"sigma2"]/x_total_var )
+        )
+  
+  # sigma2 | everything else
+  samples[i,"sigma2"] <-  
+    rss(samples[i,"alpha"], samples[i,"beta"]) / 
+    rchisq(n = 1, df = n)
+    
+  # log likelihood
+  samples[i,"loglike"] <- log_likelihood(
+    alpha = samples[i,"alpha"], 
+    beta = samples[i,"beta"], 
+    sigma2 = samples[i,"sigma2"])
+  
+  
+}
+
+burnin <- floor(N/2)
+
+# samples after burnin
+pb_samples <- samples[burnin:N,]
+
+# posterior means
+post_mean <- colMeans(pb_samples)
+
+deviance_of_post_mean <- 
+  -2 * log_likelihood(
+    alpha = post_mean["alpha"], 
+    beta = post_mean["beta"], 
+    sigma2 = post_mean["sigma2"])
+
+post_mean_of_deviance <- -2 * post_mean["loglike"]
+
+p_d <- post_mean_of_deviance - deviance_of_post_mean
+
+# approximate DIC:
+(DIC <- deviance_of_post_mean + 2 * p_d)
+
+```
+
+
+
+***

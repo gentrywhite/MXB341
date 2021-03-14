@@ -1,0 +1,28 @@
+
+***
+*Solution*: 
+
+The likelihood for an exponential data $\mathbf{y}$ is
+
+$$
+p(\mathbf{y}~\vert~\theta) = \prod_{i=1}^{n}\theta \exp\{-\theta y_{i}\} = \theta^{n}\exp\{-\theta n \bar{y}\}
+$$
+so for two groups of data with means $\bar{y}_{1}$ and $\bar{y}_{2}$ is the product of likelihoods $p(\mathbf{y}_{1}~\vert~\theta_{1})$ and $p(\mathbf{y}_{2}~\vert~\theta_{2})$ which is
+
+$$
+p(\mathbf{y}_{1},\mathbf{y}_{2}~\vert~\theta_{1},\theta_{2}) \propto \theta_1^{n_{1}} \exp\{-\theta_1 n_{1} \bar{y}_1\} \times \theta_2^{n_{2}} \exp\{-\theta_2 n_{2} \bar{y}_2\}
+$$
+
+The Gamma priors for $\theta_{1}$ and $\theta_{2}$ have density proprtional to
+
+$$
+p(\theta_{i}) \propto \theta_{i}^{c-1}\exp\{-c\theta_{i}\}
+$$
+so the posterior is
+
+$$
+p(\theta_{1},\theta_{2}~\vert~\mathbf{y}_{1},\mathbf{y}_{2}) \propto p(\mathbf{y}_{1},\mathbf{y}_{2}~\vert~\theta_{1},\theta_{2}) p(\theta_{1}) p(\theta_{2})
+$$
+which can be simplified to give the desired result.
+
+***

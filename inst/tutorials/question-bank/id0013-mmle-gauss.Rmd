@@ -1,0 +1,1 @@
+For normally distributed data, $x_{1},x_{2},\ldots,x_{n}$ show that distribution is in the exponential family. What are the sufficient statistics of the normal distribution? 

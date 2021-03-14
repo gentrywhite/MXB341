@@ -1,0 +1,54 @@
+
+***
+*Solution*: 
+
+```{r id0041-sol-1}
+
+f <- function(x){ 4 * x * (1 - x^2)}
+
+ggplot(data.frame(x = c(0,1)), aes(x=x)) + 
+  stat_function(fun = f)
+
+```
+
+For any value of $y$, $0 < y < \max_{x}f(x)$, we can find the points the horizontal line crosses $f(x)$ by finding the roots to $y = x (1 - x^2)$ or in other words
+
+$$
+\{x : y - x + x^3 = 0\} \text{ for a given } y.
+$$
+```{r id0041-sol-2}
+# unnormalised f
+f_unn <- function(x){ x * (1 - x^2)}
+start_x <- runif(1)
+y <- f_unn(start_x) 
+# roots found need to be between 0 and 1
+realpolyroot(c(y,-1,0,1))
+
+k_slice_sampler <- function(n_samples, x_start = runif(1)){
+  
+  samples <- rep(0, times = n_samples)
+  samples[1] <- x_start
+  # no need for normalising constant
+  f <- function(x){ x * (1 - x^2)}
+  
+  for(i in 2:n_samples){
+    
+    y <- runif(1, min = 0, max = f(samples[i-1]))
+    f_intersect <- realpolyroot(c(y,-1,0,1))
+    f_intersect <- f_intersect[0 < f_intersect & f_intersect < 1]
+    samples[i] <- runif(1, min = min(f_intersect), max= max(f_intersect))
+  }
+  
+  return(samples)
+}
+
+samples <- k_slice_sampler(n_samples = 100000)
+
+ggplot(data.frame(x = samples), aes(x = x)) + 
+  geom_density(colour = "red") +
+  stat_function(fun = f)
+
+```
+
+
+***

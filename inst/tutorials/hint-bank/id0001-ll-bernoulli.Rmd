@@ -1,0 +1,15 @@
+The probability mass function for the Bernoulli distribution is
+$$ 
+Pr(Y=y)=p^y(1-p)^{1-y}
+$$
+So the likelihood is
+$$
+L(p)=\prod_{i=1}^np^{y_i}(1-p)^{1-y_i}
+$$
+and the log-likelihood is
+$$
+l(p)=\log\left(\prod_{i=1}^np^{y_i}(1-p)^{1-y_i}\right)
+$$
+$$
+\phantom{l(p)}=\sum_{i=1}^ny_i\log(p)+(1-y_i)\log(1-p).
+$$

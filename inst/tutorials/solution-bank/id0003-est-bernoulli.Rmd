@@ -1,0 +1,43 @@
+
+***
+*Solution*: 
+
+a. 
+$$
+L(p|y_{1}) = p^{y_{1}}(1-p)^{1-y_{1}}
+$$
+
+b.  
+$$
+L(p|\mathbf{y}) = \prod_{i=1}^{n}p^{y_{i}}(1-p)^{1-y_{i}}
+$$
+  
+c. '$\vert$' symbolises conditioning. The likelihood is a function of the parameter $p$, conditioned on the random variable $y$.
+
+d. 
+$$
+l(p|\mathbf{y}) = \sum_{i=1}^{n}\left\{y_{i} \log(p) + (1-y_{i})\log(1-p) \right\}
+$$
+
+$$
+= \sum_{i=1}^{n}y_{i} \log(p) + \left(n-\sum_{i=1}^{n}y_{i}\right)\log(1-p).
+$$
+
+$$
+\frac{\partial l}{\partial p} = p^{-1}\sum_{i=1}^{n}y_{i} - \frac{n-\sum_{i=1}^{n}y_{i}}{1 - p} = 0
+$$
+
+resulting in the MLE
+$$
+\hat{p}_{ML}(s) = (\sum_{i=1}^{n}y_{i})/n.
+$$
+
+You answers should also check that $\hat{p}_{ML}(s)$ is indeed a maximum by a sign test, or checking the second derivative.
+  
+e. 
+$$
+l(p|\mathbf{y}) = s \log(p) + (n-s)\log(1-p)
+$$ 
+defined for $s = 0, 1, \ldots,n$ with  $p\in(0,1)$. The endpoints $s=0,n$ are best checked using the likelihood, rather than log-likelihood. Clearly, the maximum is unique for all values of $s$.
+
+***

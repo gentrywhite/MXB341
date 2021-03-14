@@ -1,0 +1,10 @@
+Let $y_{1},y_{2},\ldots,y_{n}$ be a random sample of observations from a population described by the binomial probability model:
+$$
+	p(y~\vert~\theta) = \left(\begin{array}{c} k\\y\end{array}\right)\theta^y(1-\theta)^{k-y}, \quad \text{for} \quad y=0,1,2,\ldots,k,\quad \text{and} \quad \theta \in (0,1).
+$$
+where $k$ is known. 
+
+(a) What is the distribution of $s=\sum_{i=1}^{n} y_{i}$?^[Is the distribution Binomial?]
+(b) Determine the Cramér-Rao minimum variance bound (MVB) for unbiased estimates of $\theta$. 
+(c) Determine the MLE estimate of $\theta$. Is the maximum likelihood estimate $\hat{\theta}$ unbiased? 
+(d) How does the variance of $\hat{\theta}$ compare with the MVB? Explain the significance of your answer.

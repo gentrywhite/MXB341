@@ -1,0 +1,27 @@
+
+***
+*Solution*:
+
+(a) The support (or range) of the random variable is discrete (i.e. $(X,Y) \in \{1,2,3\}\times \{1,2\}$). The probabilities are all non-negative and sum to one over the support.
+
+(b) Marginal distribution for $X$: $P(X=1) = 0.06+0.04 = 0.1, P(X=2) = 0.42+0.28 = 0.7, P(X=3) = 0.08+0.12 = 0.2$. 
+
+Marginal distribution for $Y$: $P(Y=1) = 0.06+0.42+0.08 = 0.56, P(Y=2) = 0.04+0.28+0.12 = 0.44$.
+
+(c) Mean/expectations: $E(X) = 1 \times 0.1 + 2 \times 0.7 + 3 \times 0.2 = 2.1$, $E(Y) = 1 \times 0.56 + 2 \times 0.44 = 1.44$. 
+
+Second moment: $E(X^2) =  1^2 \times 0.1 + 2^2 \times 0.7 + 3^2 \times 0.2 = 4.7$, $E(Y^2) = 1^2 \times 0.56 + 2^2 \times 0.44 = 2.32$. 
+
+Variance: $\text{Var}(X) = E(X^2) - E(X)^2 = 4.7 - 2.1^2 = 0.29$, $\text{Var}(Y) = E(Y^2) - E(Y)^2 = 2.32 - 1.44^2 = 0.2464$.
+
+(d) $E(XY) = (1 \times 1)  \times  0.06 + (2 \times 1)  \times  0.42 + (3 \times 1)  \times  0.08 + (1 \times 2)  \times  0.04 + (2 \times 2)  \times  0.28 + (3 \times 2)  \times  0.12 = 3.06$. 
+
+Covariance: $\text{Cov}(X,Y) = E(XY) - E(X)E(Y) = 3.06 - 2.1 \times 1.44 = 0.036$. 
+
+Correlation: $\text{Cor}(X,Y) = \text{Cov}(X,Y)/\sqrt{\text{Var}(X)\text{Var}(Y)} = 0.036 / \sqrt{0.29 \times 0.2464} = 0.1346738$.
+
+(e) Correlation does not imply dependence^[Although, independence does imply zero correlation.] (although it does occur in some cases). To show they are not independent we need to find a counter-example to $P(Y=y~\vert~X=x) = P(Y=y)$^[The definition of independence is $P(Y=y~\vert~X=x) = P(Y=y)$ for all $x$ and $x$ in the support.]. For example, showing $P(Y=1~\vert~X=1) = 0.06 / (0.06 + 0.04) = 0.6$ but $P(Y=1) = 0.56$ is enough to prove they are not indpendent.
+
+(f) Looking at the columns of the table, we see that the first two have the same proportions, i.e. $0.6/0.4 = 1.5$ and $0.42/0.28 = 1.5$, so it must be the last column that needs to be switched. To check this defines independent random variables for $X$ and $Y$, find the marginal distribution for each, and check that $P(X=x)P(Y=y) = P(X=x,Y=y)$ for values in the support of the random variable.
+
+***

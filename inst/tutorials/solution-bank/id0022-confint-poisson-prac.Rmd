@@ -1,0 +1,68 @@
+
+```{r id0022a-prac-code, exercise = TRUE}
+
+# (a) Construct the function to compute the values of the confidence region
+
+```
+
+```{r id0022a-prac-code-solution}
+
+confidence_region_value <- function(lambda, tau){
+ 
+  # mles
+  lambda_hat <- 5
+  tau_hat <- 0.5
+  
+  lambda_2_hat <- lambda_hat / tau_hat
+  
+  n <- 20
+  m <- 10
+  
+  # obs information matrix
+  obs_info <- matrix(0, ncol=2, nrow = 2)
+  obs_info[1,1] <- (n * lambda_hat + m * lambda_2_hat)/(lambda_hat^2)
+  obs_info[1,2] <- m
+  obs_info[2,1] <- m
+  obs_info[2,2] <- lambda_2_hat/(tau_hat^2)
+  
+  vec_val <- matrix(c(lambda_hat - lambda, tau_hat - tau), ncol = 1)
+  
+  conf_value <- as.numeric( t(vec_val) %*% obs_info %*% vec_val )
+  
+  return(conf_value)
+  
+}
+
+```
+
+```{r id0022b-prac-code, exercise = TRUE}
+
+# (b)  Plot the results
+
+
+```
+
+```{r id0022b-prac-code-solution}
+
+CI_quant_vals <- round(qchisq(p = c(0.8, 0.9, 0.95), df = 2),2)
+ # quantiles for 1 - alpha values 
+
+conf_region <- Vectorize(confidence_region_value)
+
+ tau <- seq(from = 0, to = 1,length.out = 100) 
+  lambda <- seq(from = 3, to = 7, length.out = 100)
+  plot_data <- crossing(tau, lambda)
+  
+  plot_data <- plot_data %>%
+    mutate(CI = conf_region(lambda = lambda, tau = tau))
+  # The CI variable draws a circle 
+  ggplot() + 
+    geom_contour(data = plot_data, 
+                 aes(x = tau, y = lambda, z = CI, 
+                     colour = factor(..level..)), 
+                 breaks = CI_quant_vals
+                 ) +
+    scale_color_discrete("CI quantile value") +
+    theme_bw()
+
+```

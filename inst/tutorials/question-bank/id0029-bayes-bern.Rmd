@@ -1,0 +1,5 @@
+Let $y_{1}, y_{2}, y_{n}$ be Bernoulli random variables with probability of success $p$. Assume your prior knowledge of $p$ is in the form of a Beta prior, $p \sim \text{Beta}(\alpha,\beta)$.
+
+(a) Find the posterior distribution $\pi(p~\vert~\boldsymbol{y})$^[Hint: Recall the pmf of a Bernoulli can be written as $p^{y}(1-p)^{1 - y}$ for $y \in \{0 ,1\}$.].
+(b) Find the posterior predictive distribution $\pi(\tilde{y}~\vert~\boldsymbol{y})$ for predicted observation $\tilde{y}$.
+(c) Determine the marginal likelihood of the data, $\pi(\boldsymbol{y})$.

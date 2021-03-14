@@ -1,0 +1,20 @@
+Consider a point estimation problem in which you observe $x_1, \ldots, x_n$ as i.i.d. random variables from the Poisson distribution with density^[Question adapted from @Parmigiani2009.]
+$$
+f(x~\vert~ \theta) = \frac{\theta^{x}\exp\{-\theta\}}{x!}.
+$$
+Assume a squared error of estimation loss $L(\theta,d) = (d - \theta)^2$, and assume a prior distribution on $\theta$ given by the gamma density
+$$
+\pi(\theta) = \frac{\theta^{\alpha-1}\exp\{-\beta\theta\}}{\Gamma(\alpha)\beta^{-\alpha}}
+$$
+
+(a) Show that the Bayes decision rule with respect to the prior above is of the form
+$$
+d^{\star}_{b}(\boldsymbol{x}) = a + b \bar{x}
+$$
+where $a>0$, $b \in (0,1)$, and $\bar{x} = n^{-1}\sum_{i=1}^{n}x_{i}$. Hint: $\sum_{i=1}^{n}x_{i} \sim \text{Pois}(n\theta)$.
+
+(b) Compute and graph the risk functions of $d^{\star}_{B}(\boldsymbol{x})$ and that of the MLE $d^{\star}_{m}(\boldsymbol{x}) = \bar{x}$.
+
+(c) Compute the Bayes risk of $d^{\star}_{b}(\boldsymbol{x})$ and show that it is (i) decreasing in $n$ and (ii) it goes to $0$ as $n$ gets large.
+
+(d) Suppose an investigator wants to collect a sample that is large enough that the Bayes risk after the experiment is half of the Bayes risk before the experiment. Find that sample size.

@@ -1,0 +1,39 @@
+
+***
+*Solution*: 
+
+(a) Using $\pi(\cdot)$ to denote a density, the likelihood can be written as 
+$$
+\pi(\boldsymbol{y}~\vert~p) = p^{s}(1-p)^{n - s} \quad \text{where} \quad s = \sum_{i=1}^{n}y_{i}
+$$
+which leads to a posterior (using a Beta prior) proportional to
+$$
+\begin{aligned}
+\pi(p~\vert~\boldsymbol{y}) &\propto \pi(\boldsymbol{y}~\vert~p)~\pi(p) \\
+&\propto p^{s}(1-p)^{n - s} \frac{p^{\alpha -1}(1-p)^{\beta - 1}}{\text{B}(\alpha,\beta)} \\
+&\propto p^{\alpha + s - 1}(1-p)^{\beta + n - s - 1}
+\end{aligned}
+$$
+
+By inspection we can see that this is $(p~\vert~\boldsymbol{y}) \sim \text{Beta}(\alpha + s,\beta + n - s)$.
+
+(b) The posterior predictive distribution is
+
+$$
+\begin{aligned}
+\pi(\tilde{y}~\vert~\boldsymbol{y})& = \int_{0}^{1} p^{\tilde{y}}(1-p)^{1 - \tilde{y}} \frac{p^{\alpha + s - 1}(1-p)^{\beta + n - s - 1}}{\text{B}(\alpha + s,\beta + n - s)}\text{ d}p \\
+&= \frac{1}{\text{B}(\alpha + s,\beta + n - s)} \int_{0}^{1} p^{\alpha + s + \tilde{y} - 1}(1-p)^{\beta + n - s - \tilde{y}} \text{ d}p  \\
+&= \frac{\text{B}(\alpha + s + \tilde{y},\beta + n - s - \tilde{y} + 1)}{\text{B}(\alpha + s,\beta + n - s)} \\
+&= \frac{\Gamma(\alpha + s + \tilde{y})\Gamma(\beta + n - s - \tilde{y} + 1)/\Gamma(\alpha+\beta+n+1)}{\Gamma(\alpha + s)\Gamma(\beta + n - s )/\Gamma(\alpha+\beta + n)} \\
+&= \frac{\Gamma(\alpha + s + \tilde{y})\Gamma(\beta + n - s - \tilde{y} + 1)}{\Gamma(\alpha + s)\Gamma(\beta + n - s )(\alpha+\beta +n)}
+\end{aligned}
+$$
+
+Therefore $\pi(\tilde{y} = 1~\vert~\boldsymbol{y}) = \frac{\alpha+s}{\alpha+\beta+n}$ and $\pi(\tilde{y} = 0~\vert~\boldsymbol{y}) = \frac{\beta+n-s}{\alpha+\beta+n}$.
+
+(c) The marginal likelihood of the data is the normalising constant of the posterior (ensure you have the correct constants in the equations). It can be found by integrating the unnormalised posterior or equivalently
+$$
+\pi(\boldsymbol{x}) = \frac{\pi(\boldsymbol{y}~\vert~p)\pi(p)}{\pi(p~\vert~\boldsymbol{y})} = \frac{p^{\alpha + s - 1}(1-p)^{\beta + n - s - 1}/\text{B}(\alpha,\beta)}{p^{\alpha + s - 1}(1-p)^{\beta + n - s - 1}/\text{B}(\alpha + s,\beta + n - s)} = \frac{\text{B}(\alpha + s,\beta + n - s)}{\text{B}(\alpha,\beta)}.
+$$
+
+***

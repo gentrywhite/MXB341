@@ -1,0 +1,6 @@
+Using the example simulation study code as a template, run a simulation study for the two estimators in Q2 (theory section). 
+
+a. Compare the theoretical results obtained in Q2 to the results from the simulation study. Use  $n = 25$ and the true value of $\theta = 10$.
+b. Write some code to run the simulation study automatically for $n = 10, 25, 100, 250, 1000$. Plot some summaries for each estimator from the simulation study with $n$ on the $x$-axis.
+c. Comment on what the simulation study shows. Does it agree with the theoretcial results? Why/why not?
+

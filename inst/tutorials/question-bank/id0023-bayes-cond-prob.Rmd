@@ -1,0 +1,6 @@
+Suppose $A$, $B$, $C$ are three events. Which of the following are always true, and which are special relations following from assumptions. State the assumption(s) (if any) required to make the statement true.
+
+(a) $p(A,B,C) = p(A)p(B|A)p(C|B)$
+(b) $p(A,B,C) = p(A)p(B|A)p(C|A,B)$
+(c) $p(A|B,C) = \frac{p(B,C|A)p(A)}{p(B,C)}$
+(d) $p(A|B,C) = \frac{p(B|A)p(C|A)p(A)}{p(B)p(C)}$

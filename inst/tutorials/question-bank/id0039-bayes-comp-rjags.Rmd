@@ -1,0 +1,50 @@
+Repeat Q2 (practical) using JAGS^[Just Another Gibbs Sampler.]. The following code gives an example of using JAGS in `R` (once `JAGS`^[To install visit http://mcmc-jags.sourceforge.net/.] and `rjags`^[This is an `R` package so use `install.packages("rjags")`.] are installed).
+
+The code below is a JAGS model with $(y_{i}~\vert~\alpha,\beta) \sim \text{Gamma}(\alpha,\beta)$ for $i \in 1,2,\ldots,n$ and priors $\alpha \sim \text{Gamma}(10^{-4},10^{-4})$ and  $\beta \sim \text{Gamma}(10^{-4},10^{-4})$. Update this code for the model referred to in Q2 (practical)^[Hint for flat priors in JAGS: you may need to specify a weakly informative prior instead. Say a $\text{N}(0,1000)$ prior, i.e. very large variance $\approx$ flat. Also be careful about how the priors are specified in JAGS, do they use a precision or variance parametrisation?]
+
+```{r jags, eval=FALSE, echo=!params$show_solutions}
+# make sure you have JAGS, rjags, coda installed!
+library(rjags)
+
+n <- 10
+y <- rgamma(n = n, shape = 0.5, scale = 3)
+
+##  Gamma Likelihood + priors RJAGS version (change this!)
+jags_model_spec <- textConnection("
+model
+{
+  for(i in 1:n)
+  {
+    y[i] ~ dgamma(alpha,beta); # data model
+  }
+  alpha ~ dgamma(1e-3,1e-3); # prior for alpha
+  beta  ~ dgamma(1e-3,1e-3); # prior for beta
+}
+")
+
+# set up model + MCMC specifications
+jags_model <- jags.model(jags_model_spec, 
+                         data=list("y"=y,"n"=n), 
+                         n.chains = 3, 
+                         .adapt = 1000)
+
+# run MCMC (Gibbs) burnin
+update(jags_model,10000)
+
+# run MCMC (Gibbs) 
+jags_samples <- coda.samples(jags_model, c("alpha","beta"), 
+                             n.iter = 10000)
+
+# check diagnostics (add more diagnostics here)
+gelman.diag(jags_samples)
+gelman.plot(jags_samples)
+
+effectiveSize(jags_samples)
+
+# DIC
+dic.samples(jags_model, n.iter = 5000)
+```
+
+(a) Look at the paper on the Gelman-Rubin-Brooks diagnostic/plot [@brooks1998general] [here](http://www.stat.columbia.edu/~gelman/research/published/brooksgelman2.pdf). What are the above Gelman diagnostics checking? How are they checking this?
+
+(b) Use the paper on DIC [@spiegelhalter2002bayesian] [here](https://rss.onlinelibrary.wiley.com/doi/10.1111/1467-9868.00353) to understand what the DIC is trying to measure. How might you use this information in a statistical analysis?

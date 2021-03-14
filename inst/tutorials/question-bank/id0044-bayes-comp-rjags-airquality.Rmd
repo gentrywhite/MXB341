@@ -1,0 +1,15 @@
+The `airquality` dataset in `R` contains daily air quality measurements in New York, May to September 1973. We will use this data to investigate the effect of temperature (`Temp`) on mean ozone in parts per billion (`Ozone`) which is an indicator of poor air quality^[More information on ozone [here](https://www.environment.gov.au/protection/publications/factsheet-ground-level-ozone-o3).].
+
+Let $y_{i}$ be the `Ozone` variable and $x_{i}$ be the `Temp` variable. Assume we are interested in fitting the following linear model: $y_{i} = \alpha + \beta x_{i} + \epsilon_{i}$, $\epsilon_{i} \sim \text{N}(0,\sigma^{2})$. 
+
+(a) Write `JAGS` code in `R` to fit the models with:
+
+    (i) Ridge regression priors^[Recall ridge regression uses a zero-mean normal priors for the regression parameters] with a prior scale of $10^{-2}$ on the parameters^[Hint: be careful specifying the scale parameters in `JAGS`, they are often inputted in terms of precision (1/scale).].
+
+    (ii) Approximately flat priors.
+
+In each case use a inverse gamma prior for $\sigma^2 \sim \text{IG}(10^{-2}, 10^{-2})$ and calculate the DIC of the model.
+
+(b) Repeat (i) and (ii) for the linear model:  $y_{i} = \alpha + \beta x_{i} + \gamma x_{i}^{2} + \epsilon_{i}$. Which model is preferred by the DIC?
+
+(c) Repeat (i) and (ii) after changing the inverse gamma prior for $\sigma^2$ to $\sigma^2 \sim \text{IG}(100, 100)$. Does it change the results? If so, can you think of why?

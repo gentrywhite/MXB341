@@ -1,0 +1,29 @@
+
+a. The log-likelihood is
+$$
+l(\lambda,k) = n\log k  + (k-1)\sum_{i=1}^{n}\log(x_{i}) - kn \log \lambda  -\sum_{i=1}^{n}\left(\frac{x_{i}}{\lambda}\right)^{k}
+$$
+Setting the score functions (first derivatives) to zero we need to solve:
+$$
+\frac{\partial l}{\partial \lambda} = -\frac{kn}{\lambda} + k \lambda^{-k-1}\sum_{i=1}^{n}x_{i}^{k} = 0
+$$
+$$
+\frac{\partial l}{\partial k} = \frac{n}{k} + \sum_{i=1}^{n}\log(x_{i}) - n \log \lambda - \sum_{i=1}^{n}\log \left( \frac{x_{i}}{k} \right) \left(\frac{x_{i}}{\lambda}\right)^{k} = 0
+$$
+
+The first equations simplifies to $\hat{\lambda}(k) = \left(\frac{\sum_{i=1}^{n}x_{i}^{k}}{n}\right)^{1/k}$.
+
+b. The unnormalised deviance (i.e. no saturated model) is
+
+$$
+\text{dev} = -2n\log k  -2 (k-1)\sum_{i=1}^{n}\log(x_{i}) +2 kn \log \lambda  +2\sum_{i=1}^{n}\left(\frac{x_{i}}{\lambda}\right)^{k}
+$$
+$\text{AIC} = 2(2) + \text{dev} = 4 + \text{dev}$
+
+$\text{BIC} = (\log n) (2) + \text{dev} = (\log n) (2) + \text{dev}$
+
+c. For $n = 20$ $\log(20) \geq 2$ therefore BIC penalises the number of parameters more. For the current example:
+
+$\text{AIC} = 4 + \text{dev}$ and $\text{BIC} \approx 6 + \text{dev}$.
+
+d. No, it is not in the exponential family as the parameter $k$ and data $x_{i}$ do not interact linearly in the exponential function. That is, $\sum_{i=1}^{n}\left(\frac{x_{i}}{\lambda}\right)^{k}$ cannot be written linearly in $k$.

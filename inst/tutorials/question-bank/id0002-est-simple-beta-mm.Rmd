@@ -1,0 +1,13 @@
+A random sample of observations, $y_{1},y_{2},\ldots,y_{n}$, are taken from a population whose probability density function is
+$$ 
+  f(y;\theta) = 
+  \begin{cases}
+  \theta y^{\theta-1}, & \text{if } 0 < y \leq 1 \\
+  0, & \text{otherwise}
+  \end{cases}
+$$
+where $\theta > 0$. 
+
+(a) Find the mean of a random variable from distribution with pdf $f(y;\theta)$. 
+(b) Find the method of moments estimator for $\theta$. 
+(c) What is the MM estimate of $\theta$ if $n=4$ and $(y_{1}, y_{2}, y_{3}, y_{4}) = (0.1, 0.2, 0.33, 0.4)$?

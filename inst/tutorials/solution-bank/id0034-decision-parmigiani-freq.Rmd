@@ -1,0 +1,95 @@
+
+*Solution*: 
+
+a. Under loss function optimality the best estimator for $\theta$ is 
+$$
+\underset{\theta\in\Theta}{\operatorname{argmin}}(d-\theta)^4-(d-\theta)^3+(d-\theta)^2+(d-\theta)
+$$
+We can find this analytically by letting 
+$$
+z=(d-\theta) 
+$$
+setting the derivative of 
+$$
+z^4-z^3+z^2+z
+$$
+to $0$ and solving for the roots of the cubic equations, then verifying that it is a minima.  Or we can do this numerically and graphically
+
+```{r pq1, exercise = TRUE}
+
+##  Define a function for the polynomial in z
+
+## Plot the function over a range of values (positive and negative)
+
+## Use optim() to find the minima
+
+
+```
+
+```{r pq1-solution}
+
+##  Define a function for the polynomial in z
+
+f<-function(z)
+{
+  z^4-z^3+z^2+z
+}
+
+## Plot the function over a range of values (positive and negative)
+
+x<-seq(-1,1,len=100)
+
+df<-tibble(x=x,y=f(x))
+ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  xlab(expression("z="*(d-theta)))+
+  ylab(expression("quartic loss function: "*z^4-z^3+z^2+z))
+
+## Use optimise() to find the minima
+
+res<-optimise(f,c(-1,1))
+
+
+
+
+```
+
+b. 
+
+The log likelihood with respect to 
+
+```{r pq2, exercise = TRUE}
+
+##  Define functions for the MLE and the quartic losses
+
+##  Plot in terms of d-\theta
+
+```
+
+```{r pq2-solution}
+
+##  Define functions for the MLE and the quartic losses
+
+##  See above, for the Poisson MLE you can just use -dpois()
+
+##  Plot in terms of d-\theta
+
+x<-seq(-1,1,len=100)
+
+X<-rep(x,2)
+Y<-c(f(x),-dpois(1,1+x,log=TRUE))
+
+df<-tibble(x=X,y=Y,name=c(rep("quartic",100),rep("MLE",100)))
+ggplot(df,aes(x=x,y=y,color=name))+
+  geom_line()+
+  xlab(expression("z="*(d-theta)))+
+  ylab(expression("loss function"))
+
+
+
+```
+
+c.    The quartic loss function is biased, it prefers to underestimate $\theta$, this is an example of a shrinkage estiamtor.  
+
+
+

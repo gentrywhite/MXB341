@@ -1,0 +1,68 @@
+
+***
+*Solution*: 
+
+(a)
+The prior is 
+$$
+p(\theta) \propto \theta^{\alpha - 1}(1-\theta)^{\beta -1}
+$$
+The likelihood is 
+$$
+L(\theta~\vert~\boldsymbol{y}) \propto (1-\theta)^{s-n} \theta^{n}, \quad s = \sum_{i=1}^{n}y_{i}.
+$$
+Therefore the posterior distribution is
+$$
+p(\theta~\vert~\boldsymbol{y}) \propto \theta^{n + \alpha - 1} (1-\theta)^{s-n +\beta - 1}
+$$
+which is identifiable as $\theta~\vert~\boldsymbol{y} \sim \text{Beta}(n + \alpha,s-n +\beta)$.
+
+(b)
+
+```{r id0028-prac-b, echo=TRUE, cache=TRUE, fig.height=6, fig.width=6.5}
+
+  library(ggplot2); library(dplyr)
+
+  geometric_beta_posterior <- function(theta, s, n, alpha, beta){
+    
+    alpha_post <- n + alpha
+    beta_post <- s - n + beta
+    
+    dbeta(x = theta, 
+          shape1 = alpha_post, 
+          shape2 = beta_post)
+    
+  }
+
+  prior_alpha <- c(0.1, 1, 8, 20)
+  prior_beta <- c(0.1, 1, 8, 20)
+  
+  theta_vals <- seq(0, 1, length.out = 51)
+  
+  dummy_data <- 
+    tidyr::crossing(alpha = prior_alpha, 
+                    beta = prior_beta,
+                    theta = theta_vals
+                    ) 
+  
+  dummy_data <- dummy_data %>%
+    mutate(posterior = 
+             geometric_beta_posterior(theta = theta, 
+                                      s = 12, 
+                                      n = 10, 
+                                      alpha = alpha, 
+                                      beta = beta)
+             )
+  
+  ggplot(data = dummy_data) + 
+    geom_line(aes(x = theta, y = posterior)) +
+    facet_grid(alpha ~ beta,
+               labeller = labeller(.rows = label_both, .cols = label_both)
+               ) +
+    theme_bw()
+  
+```  
+
+(c) Adapt code from above.
+
+***

@@ -1,0 +1,369 @@
+---
+title: "MXB341 Worksheet 2 - Properties of estimators"
+output:
+  learnr::tutorial:
+    theme: yeti
+    includes:
+    css: ["css/QUT.css","css/QUTtutorial.css"]
+  progressive: true
+  allow_skip: true
+runtime: shiny_prerendered
+params:
+  show_solutions: TRUE
+---
+
+```{r ws-setup, include=FALSE}
+  # if problems with knitting directory:
+  # set Knit Directory = Document Directory
+
+  # install libraries needed for worksheet
+library(MXB341)
+
+```
+
+```{r, echo = FALSE}
+
+htmltools::includeHTML("header.html")
+
+```
+
+:::{.quote}
+Politicians use statistics in the same way that a drunk uses lampposts --- for support rather than illumination.
+
+---Andrew Lang (1910)
+
+:::
+
+# Week 2: Some properties of estimators
+
+We would like to know some "good" properties of the estimators we use. These properties help us compare estimators and understand their limitations^[How can we tell if politicians, or any other individual or group, are misusing statistics if we don't know their limitations?]. Recall that an estimator $\hat{\theta}_{n} = t(y_{1},y_{2},\ldots,y_{n})$, is a transformation of the observations, which are assumed to follow a given probability distributions. Hence, we can use probability theory to determine the following characteristics. The properties we explored in the lectures were:
+
+:::{.boxed}
+
+### Properties of Estimators {.tabset .tabset-pills}
+
+#### Bias
+
+Bias is the difference between the expected value of our estimator and the true value of the parameter.  If the first goal is to be correct, we would expect that it would be desirable that our estimator would (on average) share the same value as the parameter. Because our estimator is a function of data and itself a random variable, it is reasonable to assume that in any given circumstance (i.e. for a given sample of data), the estimator's value may exceed or fall short of the true value of the parameter.  That is for some estimator $\hat{\theta}_n = g(x_1,x_2,\ldots,x_n)$ of the parameter $\theta$ there will be some difference. Still, ideally, if we averaged these differences over all possible samples, they would cancel out.
+$$
+\operatorname{E}\left(\hat{\theta}_n-\theta\right)=0\equiv \operatorname{E}\left(\hat{\theta}_n\right)-\theta.
+$$
+
+Depending on how we calculate the estimator, it may be *biased* or tend to be larger or smaller than the parameter's true value.  So we formally define bias in terms of the this average result
+$$
+\text{Bias} = \operatorname{E}\left(\hat{\theta}_{n}\right) - \theta
+$$
+or the difference between the expected value of our estimator and the true value of the parameter.  
+
+- If $\text{E}(\hat{\theta}_{n}) = \theta$, i.e.\ Bias $=0$, then the estimator $\hat{\theta}$ is *unbiased*.
+- If $\text{E}(\hat{\theta}_{n}) \neq \theta$, i.e.\ Bias $\neq 0$ then the estimator is *biased*.
+
+  
+#### Mean squared error
+
+Bias tells us if an estimator is "on target" and is one measure of estimators, but what if we have more than one unbiased estimator to choose from?  In this case, we might also want to consider the variance of the estimator.  Recall that variance is the expected squared distance between the estimator and its expected value
+$$
+\operatorname{Var}(\hat{\theta}_n)=\operatorname{E}\left[\left(\hat{\theta}_n-
+\operatorname{E}\left(\hat{\theta}_n\right)\right)^2\right].
+$$
+Given two unbiased estimators, it makes sense that we would prefer the one with the smaller variance because, on average, the estimator with the smaller variance is on average closer to its expected value.  
+
+This preference implies a general measure for assessing an estimator, the mean squared error.
+The mean squared error (MSE) is a measure of how good an estimator performs; essentially, it is on average how far the estimator is from the true value of the parameter
+$$
+\text{MSE} = \operatorname{E}\left[\left(\hat{\theta}_{n} - \theta\right)^2\right].
+$$
+Note that this definition is slightly different from the definition of variance. In the case of unbiased estimators, it simply reduces to the variance, as $\operatorname{E}(\hat{\theta}_n)=\theta$.
+
+Instead, we can see that we can decompose the MSE can into the sum of two parts, the variance and the square of the bias
+$$
+\text{MSE}=\operatorname{Var}\left(\hat{\theta_n}\right)+\text{Bias}\left(\hat{\theta}_n\right)^2
+$$
+  
+#### Consistency: 
+
+While bias is a property of the estimator with respect to its expectation from the sampling distribution, the property of *consistency* describes the property of the estimator in the limit as the sample size approaches infinity.  An estimator is said to be consistent if
+$$
+\lim_{n\rightarrow\infty}\left|\hat{\theta}_n-\theta\right|=0.
+$$
+
+Both of the traits of bias and consistency are important to evaluating estimators; it is important to understand the nuance of their slightly different meanings,
+
+If an estimator is unbiased, then
+$$
+\text{MSE}\left(\hat{\theta}_n\right)=\operatorname{Var}\left(\hat{\theta}_n\right)
+$$
+If an estimator is consistent, then 
+$$
+\text{MSE} \rightarrow 0 \text{ as } n \rightarrow \infty.
+$$
+We can think of unbiasedness and consistency in other terms as well.  An unbiased estimator will, on average, be equal to the true value of the parameter, regardless of sample size.  A consistent estimator will eventually recover the true value of the parameter with infinite data.
+  
+#### Efficiency: 
+
+For a given probability density function, $f(x;\theta)$ under some regularity conditions
+
+$$
+\text{Var}(\hat{\theta}_{n}) \geq  \mathcal{I}_{n}(\theta)^{-1}
+$$
+In other words, the variance of any estimator has a lower bound defined by the inverse of the Fisher information computed using the log-likelihood.  Note that there are no conditions on the estimator $\hat{\theta}_n$ in terms of bias or consistency, but any **unbiased** estimator that attains the Cramér-Rao lower bound is said to be **efficient**, i.e./ if 
+$$
+\operatorname{Var}\left(\hat{\theta}_n\right)=\mathcal{I}\left(\theta\right)^{-1}
+$$
+then $\hat{\theta}_n$ is said to be efficient. 
+
+:::
+
+## Theory questions
+
+:::{.boxed}
+
+### Question 1
+
+```{r theory-question-1, child='../question-bank/id0007-prop-binomial-mle.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler1()")
+
+div(id = "tq1-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0007-prop-binomial-mle.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler1() {
+  var x = document.getElementById('tq1-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+:::{.boxed}
+
+### Question 2
+
+```{r theory-question-2, child='../question-bank/id0008-prop-uniform-est.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler2()")
+
+div(id = "tq2-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0008-prop-uniform-est.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler2() {
+  var x = document.getElementById('tq2-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+:::{.boxed}
+
+### Question 3
+
+```{r theory-question-3, child='../question-bank/id0010-prop-gauss.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler3()")
+
+div(id = "tq3-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0010-prop-gauss.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler3() {
+  var x = document.getElementById('tq3-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+
+## Performing simulation studies
+
+This week we will perform a simulation study to see if we can replicate the estimator's properties we found in the theory section. Here's an example of running a simulation study in `R` for the scenario of estimating the number of poodle puppies in a litter. 
+
+```{r puppies-plot, fig.margin = TRUE, fig.cap = "Eleanor Roosevelt (the poodle) had a litter of 10 puppies!", fig.width=2.4, fig.height=3.0, cache=TRUE, echo = FALSE}
+library(png)
+library(grid)
+img <- readPNG("../figures/eleanor.png")
+ grid.raster(img)
+```
+
+Suppose a Poisson distribution describes the size, $y$, of a randomly selected litter of poodle puppies, i.e. $y \sim \text{Pois}(\lambda)$ where the pdf is
+$$
+p(y~\vert~\lambda) = \frac{e^{-\lambda}\lambda^y}{y!}, \quad \text{ for } \quad y=0,1,2,\ldots \quad \text{and} \quad \lambda \in (0,\infty).
+$$
+
+The MLE estimate of $\lambda$ from an iid random sample of Poisson variables is 
+
+$$
+\hat{\lambda} = n^{-1}\sum_{i=1}^{n} y_{i},
+$$
+
+i.e. the sample mean and the variance of this estimator is 
+
+$$
+\text{Var}(\hat{\lambda}) = \lambda
+$$
+To perform a simulation study, we have to choose to assume a true value of $\lambda$ as a baseline truth to compare. To begin, let's set the true $\lambda = 6$. We also have to select some default number of observations,  $n$; we expect to use in a real data analysis, say $n = 30$ for now. The steps we will perform for the simulation study are:
+
+1. Simulate data according to the appropriate distribution, using the constants chosen for this study, e.g. $\lambda = 6$ and $n = 30$.
+
+2. Perform the method we are investigating, e.g. MLE estimation.
+
+3. Save results and calculate some properties of the method.
+
+4. Repeat steps 1-3 many times.
+
+5. Calculate aggregates of the results and inspect summaries (e.g. average estimate, mean squared error etc.).
+
+```{r sim-study-ex1, exercise = TRUE}
+
+  # set fixed constants
+  n_obs <- 30
+  true_lambda <- 6
+  
+  # example code for one simulation
+  
+  # sample data
+  y <- rpois(n = n_obs, lambda = true_lambda)
+  
+  # method: MLE
+  mle_lambda <- mean(y)
+  # in this case, plugin the estimate for variance
+  var_mle_lambda <- mle_lambda 
+  
+  # bias
+  bias_mle_lambda <- mle_lambda - true_lambda
+  
+  # squared error
+  sq_err_mle_lambda <- (mle_lambda - true_lambda)^2
+  
+  # check that these steps work when you 
+  # implement your simulation study!
+
+```
+
+After checking that the code works for one simulation, convert the code into a function:
+
+```{r sim-study-ex-func, exercise = TRUE, fig.margin = TRUE, fig.cap = "Boxplot of simulation example results.", cache=TRUE, echo=TRUE}
+
+  library(purrr)
+  library(dplyr)
+  library(ggplot2)
+  # function that performs one simulation...
+  
+  pois_mle_sim <- function(n_obs, true_lambda){
+    
+    # sample data
+    y <- rpois(n = n_obs, lambda = true_lambda)
+  
+    # method: MLE
+    mle_lambda <- mean(y)
+    # in this case, plugin the estimate for variance
+    var_mle_lambda <- mle_lambda
+    
+    # bias
+    bias_mle_lambda <- mle_lambda - true_lambda
+  
+    # squared error
+    sq_err_mle_lambda <- (mle_lambda - true_lambda)^2
+    
+    # save in tibble
+    out_tb <- tibble(
+      mle = mle_lambda,
+      var_mle = var_mle_lambda,
+      bias_mle = bias_mle_lambda,
+      sq_err = sq_err_mle_lambda
+    )
+    
+    # return as output
+    return(out_tb)
+    
+  }
+  
+  # check that the function works!
+  
+  # run many times...
+  sim_results <- 
+    rerun(.n = 100, 
+          pois_mle_sim(n_obs = 30, true_lambda = 6) 
+          ) %>%
+    bind_rows()
+
+  # summarise results (just a few example ways to summarise)
+  
+  # mean mle, mse
+  sim_results  %>% select(mle, sq_err) %>% summarise_all(mean)
+  
+  # selects columns to plot then stacks columns
+  sim_results %>% select(bias_mle, sq_err) %>% stack() %>%
+  # sends to ggplot with "%>%"
+  ggplot() +
+    geom_boxplot(aes(x = ind, y = values)) + 
+    xlab("") + ylab("Values from simulation") +
+    theme_bw()
+  
+```
+and plot the results
+```{r sim-study-ex-plot2, exercise = TRUE, fig.margin = TRUE, fig.cap = "Histogram of simulated bias.", cache=TRUE, echo=TRUE}
+
+  sim_results %>% select(bias_mle) %>%
+  ggplot() +
+    geom_histogram(aes(x = bias_mle), binwidth = 0.1) + 
+    theme_bw()
+
+```
+
+## Practical questions
+
+### Question 4
+
+:::{.boxed}
+
+```{r prac-question-4, child='../question-bank/id0009-prop-uniform-sim-study.Rmd', eval = TRUE}
+  
+```
+
+<!--
+
+```{r prac-soln-4, child='../solution-bank/id0009-prop-uniform-sim-study.Rmd', eval = params$show_solutions}
+  
+```
+-->
+:::

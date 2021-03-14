@@ -1,0 +1,13 @@
+Antibiotics are sometimes taken by people who have influenza symptoms although 'flu is caused by a virus.  Various controlled comparative trials have been undertaken to investigate the efficacy of antibiotics for various diseases.  It is expected, for example, that antibiotics would have little effect in reducing 'flu symptoms.
+
+We have collected data on the times from infection until symptoms disappear for a given disease when patients are treated using the standard treatment $S$ and using a new treatment $N$. We assume exponentially distributed times Exp$(\theta_1)$ for the standard and Exp$(\theta_2)$ for the new treatment. We assume a priori that $\theta_1$ and $\theta_2$ are independent both with Gamma$(c,c)$ distributions, for some constant $c$. Suppose there are $n_{1}=10$ patients for the standard treatment with sample mean $\bar{y}_1=6.5$ days, whilst there are $n_{2}=15$ patients for the new treatment with sample mean $\bar{y}_2=5.0$ days. Let $c = 10^{-3}$.
+
+Show that the likelihood  
+$$
+p(\mathbf{y}_{1},\mathbf{y}_{2}~\vert~\theta_{1},\theta_{2}) \propto \theta_1^{n_{1}} \exp\{-\theta_1 n_{1} \bar{y}_1\} \times \theta_2^{n_{2}} \exp\{-\theta_2 n_{2} \bar{y}_2\}
+$$ 
+and that the posterior for $\theta_1$ and $\theta_2$ is given by 
+$$
+p(\theta_1,\theta_2,|\mathbf{y}) \propto \theta_1^{n_{1}+c-1} \exp\{-\theta_1 (n_{1} \bar{y}_1+c)\} \times \theta_2^{n_{2}+c-1} \exp\{-\theta_2 (n_{2} \bar{y}_2+c)\},
+$$ 
+i.e. the posterior distributions for $\theta_1$ and $\theta_2$ are given by independent Gamma$(n_{1}+c,n_{1}\bar{y}_1+c)$ and Gamma$(n_{2}+c,n_{2}\bar{y}_2+c)$ random variables, respectively.

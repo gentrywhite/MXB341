@@ -1,0 +1,28 @@
+
+*Solution*: 
+
+a. $T = \frac{1}{\sigma^2}\sum_{i=1}^n y_i^2 \sim \chi^{2}_{n}$.
+
+(b) Under the null and alternative hypothesis respectively, the likelihoods are
+$$
+	L_0 = (2\pi)^{-\frac{n}{2}}\sigma_0^{-n}\exp\left(\frac{-1}{2\sigma_0^2}\sum_{i=1}^n y_i^2\right)
+$$
+	
+$$
+	L_1 = (2\pi)^{-\frac{n}{2}}\sigma_1^{-n}\exp\left(\frac{-1}{2\sigma_1^2}\sum_{i=1}^n y_i^2\right)
+$$
+and likelihood ratio is given by
+$$
+	\Lambda =\frac{L_0}{L_1} = \left(\frac{\sigma_1^2}{\sigma_0^2} \right)^{\frac{n}{2}}\exp \left(\frac{\sum_{i=1}^n y_i^2}{2}\left[\frac{ \sigma_0^2 - \sigma_1^2}{\sigma_0^2\sigma_1^2}\right]\right).
+$$
+
+c. The rejection region or test is given by the likelihood ratio $\Lambda < c$ for some constant $c$. Note that when $\sigma_0^2 > \sigma_1^2$, the quantity $\left[\frac{\sigma_0^2 - \sigma_1^2}{\sigma_0^2\sigma_1^2}\right]$ is positive, and when $\sigma_0^2<\sigma_1^2$, the quantity is negtive. Taking logs and dividing by the quantity $\frac{\sigma_0^2 -\sigma_1^2}{2\sigma_1^2}$ we obtain
+$$
+	\frac{\sum_{i=1}^n y_i^2}{\sigma_0^2} \leq c_1 \qquad \text{if } \sigma_0^2>\sigma_1^2, \text{ and}
+$$
+$$
+	\frac{\sum_{i=1}^n y_i^2}{\sigma_0^2} \geq c_2 \qquad \text{if } \sigma_0^2<\sigma_1^2.
+$$
+for constants $c_1, c_2$, respectively.
+
+d. The quantity $\frac{\sum_{i=1}^n y_i^2}{\sigma_0^2}$ has a $\chi^2_{n}$ distribution if $H_0$ is true. Therefore if $\sigma_0^2>\sigma_1^2$, $c_1$ is chosen such that $P(X < c_1) = \alpha$ where $X \sim \chi^2_{n}$ for $\alpha$ sized tests. Whereas if $\sigma_0^2<\sigma_1^2$, $c_2$ is chosen such that $P(X > c_2) = \alpha$ for $\alpha$ sized tests (or alternatively $P(X < c_2) = 1 - \alpha$).

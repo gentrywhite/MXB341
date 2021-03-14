@@ -1,0 +1,29 @@
+
+***
+*Solution*: 
+
+With $\alpha = 2$ the log-probability is 
+$\log p(x~\vert~\beta) = 3\log \beta - \log \Gamma(3) + 2\log x -\beta x$
+
+The second derivative of the log-probability is
+$$
+\frac{\partial^{2} \log p}{\partial \beta^{2}} = -\frac{3}{\beta^2}
+$$
+The Fisher information matrix is therefore
+$$
+\mathcal{I}(\beta) = - E\left( \frac{\partial^{2} \log p}{\partial \beta^{2}} \right) = \frac{3}{\beta^2}
+$$
+
+and so Jeffery's prior is
+
+$$
+p(\beta)\propto \sqrt{\det\left(\frac{3}{\beta^2}\right)} \propto \frac{1}{\beta}
+$$
+
+It is not a proper prior as it doesn not integrate to a (positive) finite value.
+
+$$
+\int_{0}^{\infty} p(\beta) \text{d}\beta = \lim_{a \rightarrow 0, b \rightarrow \infty} \left[ \log \beta \right]_{a}^{b} = \lim_{a \rightarrow 0, b \rightarrow \infty} \left[\log b - \log a \right] = \infty
+$$
+
+***

@@ -1,0 +1,15 @@
+Let $f(x) = 4x(1 - x^2)$ be the pdf for a distribution with support on $0 \leq x \leq 1$. Write a slice sampler to draw MCMC samples from this distribution^[Hint: Plot the density to determine the requirements for the sampler.]. 
+
+You may find the following real polynomial root finding function helpful:
+
+```{r id0041-polyroot}
+# To solve:  - 1 - x + x^2 = 0
+# Use: realpolyroot(c(-1,-1,1))
+realpolyroot <- function(coefs){
+  all_roots <- polyroot(coefs)
+  real_roots <- abs(Im(all_roots)) < 1e-08
+  Re(all_roots[real_roots])
+}
+
+```
+

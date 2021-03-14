@@ -1,0 +1,36 @@
+
+***
+*Solution*: 
+
+The likelihood is 
+$$
+\pi(\boldsymbol{x}~\vert~\lambda) = \lambda^{n} \exp\left\{-\lambda \sum_{i=1}^{n}x_{i}\right\}
+$$
+whilst the prior is 
+$$
+\pi(\lambda) = \frac{\beta^{\alpha}}{\Gamma(\alpha)} \lambda^{\alpha-1} \exp\left\{-\beta\lambda\right\}
+$$
+which generates a posterior
+$$
+\pi(\lambda~\vert~\boldsymbol{x}) \propto \lambda^{n} \exp\left\{-\lambda \sum_{i=1}^{n}x_{i}\right\} \lambda^{\alpha-1} \exp\left\{-\beta\lambda\right\} = \lambda^{\alpha+n - 1} \exp\left\{-\lambda \left(\beta + \sum_{i=1}^{n} x_{i} \right)\right\}.
+$$
+By inspection, we see that  $(\lambda~\vert~\boldsymbol{x}) \sim \text{Gamma}(\alpha + n, \beta + s)$ where $s = \sum_{i=1}^{n}x_{i}$. The prior and the posterior are in the same family, therefore the Gamma prior is conjugate for the exponential distribution.
+
+The marginal likelihood of the data is
+$$
+\pi(\boldsymbol{x}) = \frac{\beta^{\alpha}/\Gamma(\alpha)}{(\beta+s)^{\alpha+n}/\Gamma(\alpha+n)} = \frac{\beta^{\alpha}\Gamma(\alpha+n)}{(\beta+s)^{\alpha+n}\Gamma(\alpha)}.
+$$
+
+The posterior predictive is
+$$
+\begin{aligned}
+\pi(\tilde{x}~\vert~\boldsymbol{x}) &= \int_{0}^{\infty}\pi(\tilde{x}~\vert~ \lambda)\pi(\lambda~\vert~\boldsymbol{x}) \text{ d}\lambda \\
+&= \frac{(\beta+s)^{\alpha+n}}{\Gamma(\alpha+n)}\int_{0}^{\infty} \lambda\exp\{-\lambda\tilde{x}\} \lambda^{\alpha+n - 1} \exp\left\{-\lambda \left(\beta + \sum_{i=1}^{n} x_{i} \right)\right\} \text{ d}\lambda \\
+&= \frac{(\beta+s)^{\alpha+n}}{\Gamma(\alpha+n)}\int_{0}^{\infty}  \lambda^{\alpha+n} \exp\left\{-\lambda \left(\beta + \sum_{i=1}^{n} x_{i} + \tilde{x}\right)\right\} \text{ d}\lambda \\
+&= \frac{(\beta+s)^{\alpha+n}}{\Gamma(\alpha+n)} \frac{\Gamma(\alpha+n+1)}{(\beta+s +\tilde{x})^{\alpha+n+1}}\\
+&= \frac{(\alpha+n)(\beta+s)^{\alpha+n}}{(\beta+s +\tilde{x})^{\alpha+n+1}} \\
+&= \frac{(\alpha+n)(\beta+s)^{-1}}{(1 + \frac{\tilde{x}}{\beta+s})^{\alpha+n+1}} 
+\end{aligned}
+$$
+
+***

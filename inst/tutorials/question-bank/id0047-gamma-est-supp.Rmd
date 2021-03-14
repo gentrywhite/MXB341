@@ -1,0 +1,33 @@
+For the gamma distribution 
+$$
+f(x;\alpha,\beta)=\frac{\beta^\alpha}{\Gamma(\alpha)}e^{-\beta x}
+$$
+Given the data:
+```{r ex4, exercise = TRUE}
+x<-c(2.3905022, 3.4975296, 2.6559558, 1.6964185, 1.4185724, 4.7956602, 3.0188619, 
+     1.9287381, 3.7493438,1.4089986, 0.4889999, 1.7204471, 4.0426991, 2.4519901, 
+     1.8883987, 2.0412268, 1.9829191, 0.6888060, 3.4596279, 2.5985436)
+
+
+```
+
+a. Find the Least Squares Estiamtors for $\alpha$ and $\beta$ where
+$$
+\operatorname{E}(X)=\frac{\alpha}{\beta}
+$$
+is this possible? Why or why not?
+
+b. Find the method of moments estiamtors for $\alpha$ and $\beta$ where
+$$
+\operatorname{E}(X)=\frac{\alpha}{\beta}
+$$
+and
+$$
+\operatorname{Var}(X)=\frac{\alpha}{\beta^2}
+$$
+
+c. Find the maximum likelihood estimators for $\alpha$ and $\beta$, compare them to the method of moments estimators. 
+
+d. Plot the log-likelihood function.  Create two plots one where you set $\beta=\hat{\beta}$ (the MLE of $\beta$) and plot the log-likelihood for $\alpha$, and  one where you set $\alpha=\hat{\alpha}$ and plot the log-likelihood for $\beta$.  
+
+(**BONUS**: See if you can create a 3-D plot of the log-likelihood for both paramters.)

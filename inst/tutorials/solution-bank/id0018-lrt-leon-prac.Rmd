@@ -1,0 +1,135 @@
+
+*Solution*: 
+
+a. and b. From previous worksheets, the Bernoulli likelihood is
+$$
+L_{0}(p~\vert~s) = p^{s}(1-p)^{n-s}
+$$
+where $n$ is the number of observations and $s = \sum_{i=1}^{n}y_{i}$ is the number of successes. The MLE is $\hat{p} = s/n$. The likelihood in this scenario has two independent populations (males and females) so the likelihood is 
+$$
+L_{1}(p_{1},p_{2}~\vert~s) = p_{1}^{s_{1}}(1-p_{1})^{n_{1}-s_{1}}p_{2}^{s_{2}}(1-p_{2})^{n_{2}-s_{2}}
+$$
+where subscript 1 denotes the parameters/values for the females dogs, and subscript 2 is for the male dogs. Since the parameters $p_{1}$ and $p_{2}$ don't depend on each other, the MLEs will be $\hat{p}_{1} = s_{1}/n_{1}$ and $\hat{p}_{2} = s_{2}/n_{2}$.
+
+The hypothesis test should be $H_{0}: p_{1}=p_{2}$ and $H_{1}: p_{1}\neq p_{2}$.
+
+The GLRT is therefore:
+$$
+\Lambda = \frac{L_{0}(\hat{p}~\vert~s) }{L_{1}(\hat{p}_{1},\hat{p}_{2}~\vert~s)}
+$$
+and the (asymptotic) test statistic is
+$$
+w = -2\log(\Lambda) = -2 \left[ \log L_{0}(\hat{p}~\vert~s) - \log L_{1}(\hat{p}_{1},\hat{p}_{2}~\vert~s) \right]
+$$
+we would reject $H_{0}$ if $w > c$ where $c$ is chosen such that $P(X > c) = \alpha$ for an $\alpha$-level test and $X \sim \chi^{2}_{1}$. The degrees of freedom is $2 - 1 = 1$ because the number of parameters in $H_{1}$ is 2 and in $H_{0}$ is 1.
+
+```{r q2-ab-prac-code, exercise=TRUE, cache=TRUE}
+
+```
+
+```{r q2-ab-prac-code-solution}
+
+# likelihood for Bernoulli observations
+bern_likelihood <- function(p,s,n){
+  ( p^s ) * ( (1-p)^(s-n) )
+}
+
+# critical value level
+alpha <- 0.05
+
+# sufficient statistics (number of successes)
+s_1 <- 4
+s_2 <- 2
+s <- s_1 + s_2
+
+# number of observations
+n_1 <- 20
+n_2 <- 25
+n <- n_1 + n_2
+
+# MLEs under the two hypotheses
+p_hat_null <- s/n
+p_1_hat_alt <- s_1/n_1
+p_2_hat_alt <- s_2/n_2
+
+# likelihoods under null and alt hypothesis
+L_0 <- bern_likelihood(p = p_hat_null, s = s, n = n)
+L_1 <- bern_likelihood(p = p_1_hat_alt, s = s_1, n = n_1) *
+  bern_likelihood(p = p_2_hat_alt, s = s_2, n = n_2)
+
+# - 2 log(LR)
+w_log_ratio <- - 2 * (log(L_0) - log(L_1))
+
+# cutoff based on chi-squared distribution
+test_stat_chi <- qchisq(p = alpha, df = 1, lower.tail = FALSE)
+
+reject_decision <- w_log_ratio > test_stat_chi
+
+paste("Decision:", ifelse(reject_decision, "Reject", "Do not reject"), 
+      "null hypothesis (Caution: based on large n approximation)") 
+
+# part (b): (approximate) p-value
+pval <- pchisq(q = w_log_ratio, df = 1, lower.tail = FALSE)
+# you can use the p-value to decide on rejection too by
+# comparing it to alpha
+round(pval,3) 
+
+```
+
+c. The power is $P(\text{reject } H_{0}~\vert~H_{1} \text{ is true})$ which we can approximate by (1) simulating Bernoulli random variables assuming $H_{1}$ is true, (2) conduct the above hypothesis test, (3) counting how many times we reject $H_{0}$.
+
+```{r q2-c-prac-code, exercise = TRUE, cache=TRUE}
+
+```
+
+```{r q2-c-prac-code-solution}
+sim_bern_hypothesis_test <- function(true_p_1, true_p_2, n_1, n_2){
+  
+  s_1 <- rbinom(n = 1, size = n_1, prob = true_p_1)
+  s_2 <- rbinom(n = 1, size = n_2, prob = true_p_2)
+  s <- s_1 + s_2
+  
+  n <- n_1 + n_2
+  
+  # MLEs under the two hypotheses
+  p_hat_null <- s/n
+  p_1_hat_alt <- s_1/n_1
+  p_2_hat_alt <- s_2/n_2
+  
+  # likelihoods under null and alt hypothesis
+  L_0 <- bern_likelihood(p = p_hat_null, s = s, n = n)
+  L_1 <- bern_likelihood(p = p_1_hat_alt, s = s_1, n = n_1) *
+    bern_likelihood(p = p_2_hat_alt, s = s_2, n = n_2)
+  
+  # - 2 log(LR)
+  w_log_ratio <- - 2 * (log(L_0) - log(L_1))
+  
+  # cutoff based on chi-squared distribution
+  test_stat_chi <- qchisq(p = alpha, df = 1, lower.tail = FALSE)
+  
+  reject_decision <- w_log_ratio > test_stat_chi
+  
+  return(reject_decision)
+  
+}
+
+sim_results <- 
+    rerun(.n = 1000, 
+         sim_bern_hypothesis_test(
+            true_p_1 = p_1_hat_alt, 
+            true_p_2 = p_2_hat_alt,
+            n_1 = n_1,
+            n_2 = n_2
+            ) 
+          ) %>%
+    simplify()
+  
+  # Very low power under these sample sizes
+  mean(sim_results)
+  
+```
+
+d. One way to answer is to repeat the simulation above with $n_{1} = n_{2} = b$, with a large enough $b$ to get the desired power.
+
+
+***

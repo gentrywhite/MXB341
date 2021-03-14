@@ -1,0 +1,6 @@
+1. In this question we will compare how the AIC and BIC perform under simulated data. Assume the true data is generated from a Weibull distribution with $\lambda = 2$ and $\kappa = 1$. This can easily be simulated in `R`^[Use the code `rweibull(n = 20, shape = 1, scale = 2)` for a Weibull with scale $\lambda = 2$ and shape $\kappa=1$.]. Start by considering the case where $n=20$.
+
+(a) Write two functions to find the MLEs of the inverse exponential and Weibull distribution^[The Weibull will require a numerical solver such as `optim()`.].
+(b) Write functions to calculate the AIC and BIC for given parameter values of the inverse exponential and Weibull distributions.
+(c) Using the code in the answer template, complete the function that performs one simulation of the information criteria decision we are trying to evaluate.
+(d) Run the simulation under a variety of settings (e.g. small $n$ versus large $n$) and comment on how accurate the information criteria are under each of these scenarios.

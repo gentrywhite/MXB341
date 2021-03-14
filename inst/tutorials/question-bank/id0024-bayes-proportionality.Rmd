@@ -1,0 +1,8 @@
+In Bayesian statistics we often work with density functions up to a constant of proportionality.
+For example, $p(x,y) \propto xy$ implies that $p(x,y) = Cxy$ where $C$ is a constant such that $p(x,y)$ integrates to 1 over the joint support.
+
+(a) Let $p(x,y) \propto 1$, $0 < y < x <1$, this defines uniform probability over a triangle^[The triangle with vertices $(0,0), (1,0), (1,1)$]. Find $p(x|y)$ and $p(y|x)$. Are $x$ and $y$ independent?
+
+(b) Suppose we define the joint probability density by $$p(x,y) \propto \frac{1}{(x+y)^2}, \quad x>0, \, y>0.$$ Find $p(x)$, $p(y)$, $p(x|y)$. Is there anything unusual about $p(x)$, etc?
+
+(c) Suppose $x$ is discrete and $y$ is continuous with $$p(x,y) \propto \frac{1}{x}, \quad x=1,2; \, 0<y<x.$$ Find $p(x)$ and $p(y)$, $p(x|y)$ and $p(y|x)$ properly normalized.

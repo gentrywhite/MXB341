@@ -1,0 +1,95 @@
+
+***
+*Solution*: 
+
+(a)The log-likelihood is
+
+$$
+\log L (\mu, \sigma) = -\frac{n}{2}\left( \log \sigma^2 + \log (2 \pi) \right) - \frac{1}{2}\sum_{i=1}^{n}\left( \frac{(x_{i} - \mu)^2}{\sigma^2}  \right) 
+$$
+$$
+\frac{\partial \log L}{\partial \sigma^2} = -\frac{n}{2}\sigma^{-2}  +  \frac{1}{2}\sum_{i=1}^{n}\left( \frac{(x_{i} - \mu)^2}{\sigma^4} \right) 
+$$
+Solving $\frac{\partial \log L}{\partial \sigma^2} = 0$ gives
+
+$$
+\widehat{\sigma^{2}}_{ML} =  \frac{\sum_{i=1}^{n}(x_{i} - \mu)^2}{n} = \frac{\sum_{i=1}^{n}(x_{i} - \bar{x})^2}{n}
+$$
+
+(b) From the hints we have
+
+- $\sum_{i=1}^{n}(x_{i} - \bar{x})^{2} = \sum_{i=1}^{n}(x_{i} - \mu)^2 - n(\bar{x} - \mu)^2$ (1)
+- $\frac{\sum_{i=1}^{n}(x_{i} - \mu)^{2}}{\sigma^2} \sim \chi^{2}_{n}$ (with mean $n$)
+- $\bar{x} \sim N(\mu, \sigma^2/n)$
+
+You should justify each of these to yourself. We will find the expectation for each term in (1) then combine:
+
+For the first term in (1), if we know that $\operatorname{E}\left[\frac{\sum_{i=1}^{n}(x_{i} - \mu)^{2}}{\sigma^2}\right] = n$, therefore $\operatorname{E}\left[\sum_{i=1}^{n}(x_{i} - \mu)^{2}\right] = \sigma^2n$ by linearity.
+
+As for the second term, $E[n(\bar{x} - \mu)^2] = n\operatorname{E}[(\bar{x} - \mu)^2] = n \operatorname{Var}(\bar{x}) = \sigma^{2}$.
+
+Bringing the two together:
+
+$$
+\operatorname{E}\left[ \frac{\sum_{i=1}^{n}(x_{i} - \bar{x})^{2}}{n} \right] =  \frac{\operatorname{E}\left[\sum_{i=1}^{n}(x_{i} - \mu)^2\right] - \operatorname{E}\left[n(\bar{x} - \mu)^2\right]}{n}
+$$
+$$
+= \frac{n\sigma^{2} - \sigma^{2}}{n}
+$$
+$$
+= \frac{n-1}{n} \sigma^{2}
+$$
+therefore it is not unbiased.
+
+An unbiased estimator would be $\widehat{\sigma^2}_{U} = \frac{n-1}{n} \times \widehat{\sigma^2}_{ML} = \frac{\sum_{i=1}^{n}(x_{i} - \bar{x})^2}{n-1}$. This can be interpreted as losing one degree of freedom in the denominator for estimating $\mu$.
+
+(c) The second order partial derivatives of the log-likelihood is $l = \log L (\mu, \sigma)$ are 
+
+- $\frac{\partial ^2l}{\partial \mu^2} = - \frac{n}{\sigma^2}$
+- $\frac{\partial ^2l}{\partial (\sigma^2)^{2}} = \frac{n}{2 (\sigma^2)^2} - \frac{\sum_{i=1}^{n}(x_{i} - \mu)^2}{(\sigma^2)^3}$
+- $\frac{\partial ^2l}{\partial \mu \partial \sigma^2} = - \frac{n(\bar{x} - \mu)}{(\sigma^2)^2}$
+
+and the expectations of each of these are
+
+- $\operatorname{E}\left[\frac{\partial ^2l}{\partial \mu^2}\right] = - \frac{n}{\sigma^2}$
+- $\operatorname{E}\left[\frac{\partial ^2l}{\partial \sigma^2}\right] = \frac{n}{2 (\sigma^2)^2} - \frac{n \operatorname{Var}(x_{i})}{(\sigma^2)^3} = - \frac{n}{2(\sigma^2)^2}$
+- $\operatorname{E}\left[\frac{\partial ^2l}{\partial \mu \partial \sigma^2}\right] = - \frac{n(E(\bar{x}) - \mu)}{(\sigma^2)^2} = 0$
+
+Therefore the expected Fisher information matrix is
+$$
+\mathcal{I}_{n}(\mu,\sigma^2) = \begin{bmatrix}
+    \frac{n}{\sigma^2} & 0 \\
+    0 & \frac{n}{2(\sigma^2)^2} 
+  \end{bmatrix}
+$$
+as it is the negative of the log-likelihood Hessian matrix.
+
+(d) For the observed information, take the negative of the derivatives $\frac{\partial ^2l}{\partial \mu^2}, \frac{\partial ^2l}{\partial (\sigma^2)^{2}} , \frac{\partial ^2l}{\partial \mu \partial \sigma^2}$
+
+$$
+\mathcal{J}(\mu,\sigma^2) = \begin{bmatrix}
+   \frac{n}{\sigma^2} &  \frac{n(\bar{x} - \mu)}{(\sigma^2)^2} \\
+    \frac{n(\bar{x} - \mu)}{(\sigma^2)^2} & \frac{n}{2 (\sigma^2)^2} - \frac{\sum_{i=1}^{n}(x_{i} - \mu)^2}{(\sigma^2)^3} 
+  \end{bmatrix}
+$$
+
+if evaluated at the MLE, this simplifies to
+
+$$
+\mathcal{J}(\hat{\mu},\hat{\sigma}^2) = \begin{bmatrix}
+   \frac{n}{\hat{\sigma}^2} & 0 \\
+    0& \frac{n}{2 (\hat{\sigma}^2)^2}
+  \end{bmatrix}
+$$
+
+(e) $\hat{\mu}_{ML}$ is unbiased and
+
+$$
+\operatorname{Var}(\hat{\mu}_{ML}) = \operatorname{Var}(\bar{x}) = \frac{\sigma^2}{n}
+$$
+
+For a fixed $\sigma^2$, $\mathcal{I}_{n}(\mu) = \frac{n}{\sigma^2}$ therefore $\operatorname{Var}(\hat{\mu}_{ML}) = \mathcal{I}_{n}(\mu)^{-1}$ and $\hat{\mu}_{ML}$ is efficient. 
+
+$\widehat{\sigma^2}_{ML}$ is not efficient as it is not unbiased.
+
+***

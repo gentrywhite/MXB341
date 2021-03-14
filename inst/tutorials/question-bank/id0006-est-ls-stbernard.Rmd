@@ -1,0 +1,28 @@
+```{r banjo-plot, fig.margin = TRUE, fig.cap = "Banjo is a St. Bernard. He is 80kg is not easily kept out of water.", fig.width=3, fig.height=5, cache=TRUE, echo = FALSE}
+library(png)
+library(grid)
+img <- readPNG("../figures/banjo.png")
+ grid.raster(img)
+```
+
+Suppose you would like to model how quickly St. Bernards grow from 0 to 12 months old and you have been given some data on age and weight of St. Bernards from a tutor who is very interested in large dogs. The data is  contained in the `R` chunk below.
+
+```{r bernard-data, exercise = TRUE}
+age_months <- c(0.4, 2.3, 2.9,  4.5,  4.9,  7.9,  10.1, 11.5)
+weight_kgs <- c(1.8, 7.1, 17.0, 20.4, 36.1, 55.2, 58.4, 77.1)
+```
+    
+(a) Plot the data in `R`.
+    
+(b) Assuming their weight increases linearly, numerically estimate the model 
+$$
+\text{weight}_{i} = \alpha + \beta~\text{age}_{i}
+$$ 
+using the least squares method by following the steps. Fix $\alpha = 1$, that is St. Bernards are assumed to be 1kg when born.
+(i) Define the least squares function to be optimised. It should take the parameter(s) and data as arguments.
+(ii) Optimise the least squares function using `optim`, try using `method = "BFGS"`. 
+  
+(c) Plot the least squares fit against the data. You will need to extract the fit from the result of `optim`. Try using `object_name$par`.
+    
+(d) Compare your answer to the linear model function (`lm`) in `R`. Why are the values of $\beta$ different? Based on this, what should you be cautious about when performing estimation on parameters?
+  

@@ -1,0 +1,11 @@
+A log-normal distribution has density function 
+$$
+f(x~\vert~\mu,\tau) = \frac{\tau^{1/2}}{x\sqrt{2\pi}} \exp\left\{ -\frac{1}{2} \tau (\log x - \mu)^{2}  \right\}
+$$
+where $\mu$ and $\tau>0$ are parameters. 
+
+(a) Show that this probability distribution belongs to the exponential family, when $\mu$ and $\tau$ are unknown parameters.
+
+(b) Determine the form of the conjugate prior up to a constant of proportionality.
+
+(c) Show that the conjugate prior for the log-normal distribution is a normal-gamma prior.

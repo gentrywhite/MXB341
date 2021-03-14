@@ -1,0 +1,116 @@
+
+
+*Solution*: 
+
+a. The log-likelihood is
+$$
+l(\lambda) = -n \log \lambda - 2\sum_{i=1}^{n}\log x_{i} - \frac{1}{\lambda} \sum_{i=1}^{n} x_{i}^{-1}
+$$
+The first partial derivative (or score function) is
+$$
+\frac{\partial l(\lambda)}{\partial \lambda} = -\frac{n}{\lambda} +  \frac{1}{\lambda^2} \sum_{i=1}^{n} x_{i}^{-1}
+$$
+which setting to zero, finds the MLE:
+$$
+\hat{\lambda} =  \frac{\sum_{i=1}^{n} x_{i}^{-1}}{n}
+$$
+b. The likelihood is 
+
+$$
+L(\lambda) = \exp\left(-\lambda \sum_{i=1}^{n}x_{i}^{-1}\right) \lambda^{-n} \left(\prod_{i=1}^{n}x_{i}^2\right)^{-1}
+$$
+which can be written as 
+$$
+L(\lambda) = h(\boldsymbol{x}) g(\lambda,T(\boldsymbol{x}))
+$$
+where 
+$$
+h(\boldsymbol{x}) = \left(\prod_{i=1}^{n}x_{i}^2\right)^{-1}
+$$
+
+$$
+g(\lambda,T(\boldsymbol{x}))= \exp\left(-\lambda T(\boldsymbol{x}) \right) \lambda^{-n}
+$$
+
+$$
+T(\boldsymbol{x}) = \sum_{i=1}^{n}x_{i}^{-1}.
+$$
+
+Therefore by the Fisher–Neyman factorisation theorem, $T(\boldsymbol{x})$ is sufficient.
+
+c. The deviance is comprised of the log-likelihood at the MLE
+$$
+l(\hat\lambda~\vert~\boldsymbol{x}) = -n \log \hat\lambda - 2\sum_{i=1}^{n}\log x_{i} - \frac{1}{\hat\lambda} \sum_{i=1}^{n} x_{i}^{-1}
+$$
+and the log-likelihood for the saturated model. The saturated model occurs when $\lambda$ is unique for each observation. The deviance from one observation is
+$$
+-\log \lambda_{i} - 2\log x_{i} - \frac{1}{\lambda_{i}}  x_{i}^{-1}
+$$
+for which the best $\lambda_{i}$ is $\hat{\lambda}_{i} = x_{i}^{-1}$, or in other words -- the MLE for only one observation, hence the saturated model log-likelihood is
+$$
+l_{S}(\hat{\boldsymbol{\lambda}}_S~\vert~\boldsymbol{x}) = -\sum_{i=1}^{n}\left( \log \hat{\lambda}_{i} + 2\log x_{i} + \frac{1}{\hat{\lambda}_{i}}  x_{i}^{-1}\right) 
+$$
+$$
+= -\sum_{i=1}^{n}\left( \log x_{i}^{-1} + 2\log x_{i} + 1\right)
+$$
+$$
+= -\sum_{i=1}^{n}\log x_{i} - n
+$$
+hence the deviance is:
+$$
+D = 2\left(l_{S}(\hat{\boldsymbol{\lambda}}_S~\vert~\boldsymbol{x}) - l(\hat{\boldsymbol{\lambda}}~\vert~\boldsymbol{x})\right)
+$$
+$$
+= 2 \left(-\sum_{i=1}^{n}\log x_{i} - n + (n \log \hat\lambda + 2\sum_{i=1}^{n}\log x_{i} + \frac{1}{\hat\lambda} \sum_{i=1}^{n} x_{i}^{-1}) \right) 
+$$
+$$
+= 2 \left(\sum_{i=1}^{n}\log x_{i} + n (\log \hat\lambda -1) + \frac{1}{\hat\lambda} \sum_{i=1}^{n} x_{i}^{-1} \right)
+$$
+
+The AIC and BIC are
+
+$$
+\text{AIC} = 2(1) - 2l(\hat\lambda~\vert~\boldsymbol{x}) = 2
+$$
+$$
+\text{BIC} = \log(n)(1) - 2l(\hat\lambda~\vert~\boldsymbol{x})
+$$
+
+respectively.
+
+d. The second derivative of the log-likelihood is
+$$
+\frac{\partial^2 l(\lambda)}{\partial \lambda^2} = \frac{n}{\lambda^2}  -\frac{2}{\lambda^3} \sum_{i=1}^{n} x_{i}^{-1}
+$$
+The expected value $E(x^{-1}) = \lambda$ and so the expected information is
+$$
+\mathcal{I}_{n}(\lambda) = -E\left(\frac{\partial^2 l(\lambda)}{\partial \lambda^2}\right) = \frac{n}{\lambda^2}  -\frac{2}{\lambda^3} n\lambda = \frac{n}{\lambda^2}
+$$
+
+The observed information is
+
+$$
+\mathcal{J}_{n}(\lambda) = \frac{n}{\lambda^2}  -\frac{2}{\lambda^3} \sum_{i=1}^{n} x_{i}^{-1}
+$$
+and if evaluated at the MLE we have:
+
+$$
+\mathcal{J}_{n}(\hat{\lambda}) = \frac{n}{\hat{\lambda}^2}
+$$
+e. Yes, it is in the exponential family:
+
+The likelihood is
+$$
+L(\lambda) = \exp\left(-\lambda \sum_{i=1}^{n}x_{i}^{-1}\right) \lambda^{-n} \left(\prod_{i=1}^{n}x_{i}^2\right)^{-1}
+$$
+which we compare to the exponential family form
+$$
+h(\boldsymbol{x}) \exp\left[\eta(\lambda) \cdot T(\boldsymbol{x}) - A(\lambda)\right]
+$$
+to see that the likelihood has this form with
+
+- $h(\boldsymbol{x})  = \left(\prod_{i=1}^{n}x_{i}^2\right)^{-1}$
+- $\eta(\lambda) = -\lambda$
+- $T(\boldsymbol{x}) = \sum_{i=1}^{n}x_{i}^{-1}$
+- $A(\lambda) = n \log \lambda$
+

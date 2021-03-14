@@ -1,0 +1,458 @@
+---
+title: "MXB341 Worksheet 3 - Maximum Likelihood Estimators"
+output:
+  learnr::tutorial:
+    theme: yeti
+    includes:
+    css: ["css/QUT.css","css/QUTtutorial.css"]
+  progressive: true
+  allow_skip: true
+runtime: shiny_prerendered
+params:
+  show_solutions: TRUE
+---
+
+```{r ws-setup, include=FALSE}
+  # if problems with knitting directory:
+  # set Knit Directory = Document Directory
+
+  # install libraries needed for worksheet
+  library(MXB341)
+
+
+  # Make notes here:
+  # --- chunk `instructions-header` currently turned off. 
+  #     Set `eval = TRUE` to use (and update file).
+  #
+  #
+
+```
+
+```{r, echo = FALSE}
+
+htmltools::includeHTML("header.html")
+
+```
+
+:::{.quote}
+Far better an approximate answer to the *right* question, which is often vague, than an *exact* answer to the wrong question, which can always be made precise.
+
+---John Tukey (1962)^["The future of data analysis". Annals of Mathematical Statistics 33(1), 1962, pg 13.] 
+
+:::
+
+
+# Week 3: Properties of MLEs, Deviance, and Exponential Families
+
+Maximum likelihood estimators, while not the only means (or in some cases the preferred) of estimating the values of parameters, are ubiquitous.  The reason for their popularity is due to their desirable properties, both inherently and asymptotically. These properties ensure that the maximum likelihood estimators satisfy the criteria we have for estimators: unbiasedness, consistency, and efficiency. 
+
+:::{.boxed}
+
+## Maximum Likelihood Estimators {.tabset .tabset-pills}
+Maximum likelihood estimators are the values that maximise the likelihood function. The likelihood function and its behaviour define the estimators and their properties. 
+
+### The Likelihood Function
+
+<p style="margin-bottom:0.3cm;"></p>
+
+Given a probability density function^[This applies as well to the the discrete case, i.e.\ probability mass functions.] $f(x;\theta)$ and a sample $\mathbf{x}=x_1,x_2,\ldots,x_n$ from $f(x;\theta)$ the likelihood function is
+$$
+L(\theta|\mathbf{x})=\prod_{i=1}^nf(x_i;\theta)
+$$
+a function of the parameter $\theta$ conditioned on the random sample $\mathbf{x}$.
+
+In many cases, it is easier to work with the log-likelihood function defined as
+$$
+\begin{align}
+l(\theta|\mathbf{x})&=\log\left(\prod_{i=1}^nf(x_i;\theta)\right)\\
+&=\sum_{i=1}^n
+\log(f(x_i;\theta)).
+\end{align}
+$$
+
+####  The Score Function 
+
+<p style="margin-bottom:0.3cm;"></p>
+
+The score function is the first derivative (or gradient in the multivariate case) of the log-likelihood function with respect to the parameter(s).  By definition, the score function evaluated at any point in the parameter space is the sensitivity of the log-likelihood function with respect to infinitesimal changes to the parameter(s).  
+
+For a log-likelihood function $l(\theta|\mathbf{x})$ the score function is
+$$
+S(\theta)=\frac{d}{d\theta}l(\theta|\mathbf{x}).
+$$
+If the parameter $\theta$ is a vector, i.e. $\boldsymbol{\theta}=(\theta_1,\theta_2,\ldots,\theta_p)$ then the score function is a gradient, or vector of partial derivatives
+$$
+S(\boldsymbol{\theta})=\left(\frac{\partial}{\partial\theta_1}l(\boldsymbol{\theta}|\mathbf{x}),\frac{\partial}{\partial\theta_2}l(\boldsymbol{\theta}|\mathbf{x}),\ldots,\frac{\partial}{\partial\theta_p}l(\boldsymbol{\theta}|\mathbf{x})\right).
+$$
+
+The maximum likelihood estimator $\hat{\theta}$ is defined such 
+$$
+S(\hat{\theta})=0
+$$
+or equivalently the expression 
+$$
+\hat{\theta}=\left\{\theta\in\Theta:\frac{d}{d\theta}l(\theta|\mathbf{x})\bigg|_{\theta=\hat{\theta}}= 0\right\}
+$$
+gives a direct approach to finding the maximum likelihood estimator.
+ 
+### The Hessian and Fisher Information
+
+<p style="margin-bottom:0.3cm;"></p>
+
+The Hessian is the matrix of second partial derivatives of the log-likelihood. For a two-parameter log-likelihood it is: $$ \mathcal{H}(\boldsymbol{\theta}) = \left[\begin{array}{cc} 
+\frac{\partial^{2} \ell}{\partial \theta_{1}^{2}} & \frac{\partial^{2} \ell}{\partial \theta_{1}\partial \theta_{2}}\\
+\frac{\partial^{2} \ell}{\partial \theta_{1}\partial \theta_{2}} & \frac{\partial^{2} \ell}{\partial \theta_{2}^{2}}
+\end{array}\right] $$ If the Hessian is negative semi-definite at the MLE values, then you have found a (local) maximum of the likelihood.
+
+#### Expected (Fisher) information matrix
+The Expected Fisher Information Matrix measures the amount of information the observations carry about the unknown parameter you are estimating. The expected information for $n$ iid observations is equal to 
+$$
+\mathcal{I}_{n}(\boldsymbol{\theta}) = -E\left[\mathcal{H}(\boldsymbol{\theta})\vert~\boldsymbol{\theta})\right]
+$$
+where the expectation is with respect to the observations (treated as random variables)^[Note that the MLE is often used to calculate a numerical value for the expected information using $\mathcal{I}_{n}\left(\hat{\boldsymbol{\theta}}\right)$.]. Often, and somewhat confusingly, the expected information matrix just refers to a singular observation $y$ with pmf or pdf $f(y|\boldsymbol{\theta})$. In this case, for two parameters, the (single observation) expected information is
+$$
+\mathcal{I}(\boldsymbol{\theta}) = -
+\begin{pmatrix}
+E\left(\frac{\partial^2}{\partial \theta_{1}^{2} } \log f(y~\vert~\boldsymbol{\theta}) \right) & E\left(\frac{\partial^2}{\partial \theta_{1} \partial \theta_{2} } \log f(y~\vert~\boldsymbol{\theta})\right) \\
+E\left( \frac{\partial^2}{\partial \theta_{1} \partial \theta_{2} } \log f(y~\vert~\boldsymbol{\theta})\right) & E\left( \frac{\partial^2}{\partial \theta_{2}^{2} } \log f(y~\vert~\boldsymbol{\theta}) \right)
+\end{pmatrix}
+$$
+As before, the expectation is with respect to the random variable $y$. Note that $\mathcal{I}_{n}(\boldsymbol{\theta}) = n \mathcal{I}(\boldsymbol{\theta})$.
+
+#### Observed (Fisher) information matrix
+is the sample-based version of the Fisher information matrix. It is equal to 
+$$
+\mathcal{J}_{n}(\boldsymbol{\theta}) = -\mathcal{H}\left(\boldsymbol{\theta}\right)
+$$
+Note that it is often evaluated at the MLE $\hat{\boldsymbol{\theta}}$, i.e.  $\mathcal{J}_{n}(\hat{\boldsymbol{\theta}})$, and a scaled version is also often used: $\mathcal{J}(\boldsymbol{\theta}) = n^{-1}\mathcal{J}_{n}(\boldsymbol{\theta})$.
+
+
+To find the MLEs when there are multiple parameters, we usually need to use numerical methods, but in general, the same ideas apply as the univariate case. That is, (1) find a potential maximum, and (2) use a graph or the Hessian to determine if it is indeed the local (and hopefully global) maximum.
+
+:::
+
+:::{.boxed}
+
+## The Sufficency and Efficiency of MLEs {.tabset .tabset-pills}
+
+
+### Sufficiency
+
+<p style="margin-bottom:0.3cm;"></p>
+
+A statistic (i.e. some quantity computed from observed data) is sufficient for some model or probability distribution and their unknown parameter(s) if there is no other statistic which contains more information about the parameter.
+
+:::{.boxed}
+Given a sample $\mathbf{x}=(x_1,x_2,\ldots,x_n)$ of the random variable $X\sim f(x;\theta)$ the statistic $T(\mathbf{x})$ is *sufficient* for $\theta$ if
+$$
+f(\mathbf{x}|T(\mathbf{x}),\theta)=f(\mathbf{x}|T(\mathbf{x}))
+$$
+the probability distribution of the data $\mathbf{x}$ conditioned on the statistic $T(\mathbf{x})$ is independent of $\theta$.  
+:::
+
+More simply put, a sufficient statistic contains all the information in the data about the parameter value. 
+
+
+The *Neyman-Fisher* factorisation theorem provides a convenient expression for identifying sufficient statistics.
+
+:::{.boxed}
+**The Neyman-Fisher Factorisation Theorem**\
+If a given probability density $f(x;\theta)$ the statistic $T(x)$ is a sufficient statistic if and only the non-negative functions $g(\cdot)$ and $h(\cdot)$ can be found such that
+$$
+f(x;\theta)=h(x)g(T(x),\theta).
+$$
+:::
+
+The Neyman-Pearson Factorisation theorem is stated in terms of a probability distribution but extends to the likelihood and log-likelihood.  This extension implies that the relationship between the parameter and the data is sufficient statistics; hence MLEs are functions of sufficient statistics.  
+
+### Efficiency
+
+<p style="margin-bottom:0.3cm;"></p>
+
+The efficiency of $\tilde{\theta}$ an unbiased estimator of the parameter $\theta$ is
+$$
+e(\tilde{\theta})=\frac{\mathcal{I}_n^{-1}(\theta)}{\operatorname{Var}(\tilde{\theta})}
+$$
+Using the Cramér–Rao Lower Bound, we can prove that 
+$$
+e(\tilde{\theta})\leq 1.
+$$
+
+:::{.boxed}
+**The Rao-Blackwell Theorem**\
+
+Let $\hat{\theta}$ be an unbiased estimator of the parameter $\theta$ such that 
+$$
+\operatorname{E}\left(\hat{\theta}^2\right)<\infty
+$$
+and let $T$ be a sufficent statistic for $\theta$ and define $\tilde{\theta}=\operatorname{E}(\hat{\theta}|T)$.
+
+Then
+$$
+\operatorname{E}\left[(\tilde{\theta}-\theta)^2
+\right]\leq
+\operatorname{E}\left[(\hat{\theta}-\theta)^2
+\right]
+$$
+:::
+
+In other words, conditioning on sufficient statistics improves estimators' efficiency, unless the estimator has already achieved the Cramér–Rao Lower Bound.
+
+:::
+
+:::{.boxed}
+
+## Asymptotic Properties of MLEs {.tabset .tabset-pills}
+
+Estimators are functions of data, which are random variables, which implies that estimators are also random variables. We can use this fact to make inference or probabilistic statements about estimators and their values, the strength of our belief in those values, and ultimately perform statistical tests based on these estimators and explore decision making under uncertainty.  
+
+### Convergence of the MLE
+
+<p style="margin-bottom:0.3cm;"></p>
+
+The first step to understanding the estimators' asymptotic behaviour is to look at some of the theorems describing the convergence behaviours of estimators to understand the formal approaches underpinning their behaviours.  
+
+**The Central Limit Theorem**
+
+The Central Limit Theorem is shown in elementary statistics units to justify the use of $Z$ or $t$-tests for sample means, and as stated, is an example of *convergence in distribution*
+$$
+\sqrt{n}\left(\bar{x}-\operatorname{E}(X)\right)\stackrel{d}{\rightarrow}N(0,\sigma^2)
+$$
+or that for sufficiently large samples, we can assume that the sample mean follows a Gaussian distribution with the population mean and variance. This convergence is a weak form of convergence but is useful in establishing a basis for inference on the sample mean.  
+
+**The Law of Large Numbers**
+
+The Law of Large Numbers with respect to the sample mean is a stronger statement of convergence, as an example of *convergence in probability* 
+$$
+Pr(|\bar{x}-\operatorname{E}(X)|<\epsilon)\rightarrow 0, n\rightarrow\infty, \forall \epsilon.
+$$
+In other words, if $X$ is a random variable from a probability distribution with $\operatorname{E}(X)$ then for a random sample $\mathbf{x}=x_1,x_2,\ldots,x_n$ from the probability distribution of $X$, the sample mean $\bar{x}$ approaches $\operatorname{E}(X)$ as $n$ approaches infinity.  
+
+The Law of Large Numbers describes the behaviour of the sample mean of samples from a random variable with respect to the expected value of that random variable.  But we will see that we can use the Law of Large Numbers to define consistency for any estimator, not just the sample mean.  
+
+The Law of Large Numbers provides more formal proof of the consistency of the MLE. 
+
+### Asymptotic Normality of the MLE
+
+<p style="margin-bottom:0.3cm;"></p>
+
+We can state the proposition that the maximum likelihood estimator is distributed asymptotically following a Gaussian (Normal) probability density function as
+$$
+\sqrt{n}(\hat{\theta}-\theta_0)\rightarrow N\left(0,\frac{1}{\mathcal{I}(\theta_0)}\right)
+$$
+where $\hat{\theta}$ is the maximum likelihood estimator of the unknown parameter $\theta_0$, and $\mathcal{I}(\theta_0)$ is the Fisher Information for $\theta$ evaluated at $\theta_0$. 
+
+The proof that the maximum likelihood estimator $\hat{\theta}$ is both consistent and 
+$$
+\sqrt{n}(\hat{\theta}-\theta_0)\stackrel{d}{\rightarrow}N\left(0,\frac{1}{\mathcal{I}(\theta_0)}\right)
+$$
+converges in distribution to a Gaussian distribution with a mean of $\theta_0$ and variance of $\mathcal{I}(\theta_0)^{-1}$ require some detail to work out. Still, the results are useful in understanding the ultimate behaviour of the maximum likelihood estimators.  These results allow us to make probabilistic statements about the maximum likelihood estimator and formal statistical inference. 
+
+:::
+
+:::{.boxed}
+
+## Exponential families {.tabset .tabset-pills}
+
+The exponential families of distributions refer to a rather large and ubiquitous set of probability distributions written in a common general form. We use the term "families" to denoting each distribution as a "family", i.e.\ the Gaussian distribution is a family of all possible Gaussian distributions and is a member of the exponential families. 
+The exponential families and their common form have several useful properties that facilitate many inference tasks, including parameter estimation and inference and model construction and evaluation. 
+
+Members of the exponential family of distributions are probability distributions whose support is independent of their parameters, and we can write in a common form
+$$
+f(x;\boldsymbol{\theta})=h(x)\exp\left(\eta(\boldsymbol{\theta})T(x)-A(\boldsymbol{\theta}
+\right).
+$$
+
+* $h(x)>0$ is a function of the data
+* $T(x)$ is the sufficient statistic.  For the likelihood function with samples $x_1,x_2,\ldots,x_n$ the sufficient statistic is $\sum_{i=1}^nT(x_i)$.  
+* If $\eta(\theta)=\theta=\eta$, $\eta$ is called the *natural parameter* and the family is said to be in the canonical form
+
+$$
+f(x;\boldsymbol{\theta})=h(x)\exp\left(\eta T(x)-A(\eta)\right)
+$$
+
+* If $\eta(\theta)=\eta$ and $T(x)=x$ the familiy is called a *natural exponential* family, and  the *natural parameter space* is
+
+$$
+\{\eta:f(x;\theta)<\infty\}.
+$$ 
+
+* The function $A(\theta$ or $A(\eta)$ is defined after finding the other components and is called the log-partition function because it is the natural log of the normalising constant
+
+$$
+A(\eta)=\log\left(
+\int_Xh(x)exp\left(\eta(\theta)T(x)\right)dx
+\right).
+$$
+There are numerous examples of exponential families, and the concept of exponential families is fundamental to generalised linear models and Bayesian statistics.
+
+
+:::
+
+:::{.boxed}
+
+## Deviance and information criteria {.tabset .tabset-pills}
+
+Deviance is a goodness of fit measure for statistical models, comparing a fitted model to a theoretical "best fit" or saturated model
+$$
+D(\mathbf{x},\theta)=2\left\{l(\theta_s|\mathbf{x})-l(\hat{\theta}|\mathbf{x})\right\}
+$$
+where $\theta_s$ is the saturated model estimates of the parameters, and $\hat{\theta}$ are the proposed model parameter estimates (typically the MLE).
+
+While deviance is a relative measure, because the saturated log-likelihood may not be equal to $0$, it can be useful for comparing different models. 
+
+### Akaike Information Criteria
+
+<p style="margin-bottom:0.3cm;"></p>
+
+The Akaike Information Criteria (AIC) estimates the predictive error for a model that includes a penalty term based on $k$ the number of estimated parameters in the model. The (AIC) is twice the number of estimated parameters minus twice the maximum of the log-likelihood (i.e.\ evaluated at the MLE).
+
+$$
+\begin{align}
+\operatorname{AIC} &= 2k-2l(\hat{\theta}|\mathbf{y}).
+\end{align}
+$$
+The AIC is a relative measure, not absolute and is only useful in comparing two (or more) competing models.  There is no guarantee that the best model (the one with the smallest AIC) of a set of models is the overall best model (there may be other unknown or untested models that are better).  
+
+### Bayesian Information Criteria
+
+<p style="margin-bottom:0.3cm;"></p>
+
+The Bayesian Information Criteria (BIC) is similar to the AIC, differing on the surface only in how model complexity in penalised.
+
+Given a sample $\mathbf{y}=y_1,y_2,\ldots,y_n$ the Bayesian Information Criteria is
+$$
+\operatorname{BIC}=n\log(k)-2l(\hat{\theta}|\mathbf{y})
+$$
+
+The BIC is used much the same way as the AIC for comparing two competing models, but it doesn't have the same useful interpretation via the $\chi^2$ distribution as the AIC. Instead, there are some heuristic rules of thumb for interpreting the strength of evidence for differences in BIC.
+
+
+:::{.table}
+|Difference in BIC | Strength of Evidence Against Higher BIC |
+|------------------|-----------------------------------------|
+|0 to 2 | Not worth mention |
+|2 to 6 | Positive |
+|6 to 10 | Strong |
+|>10 | Very Strong |
+
+:::
+
+:::
+## Theory questions
+
+:::{.boxed}
+
+### Question 1
+
+```{r theory-question-1, child='../question-bank/id0011-mmle-inv-exp.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler1()")
+
+div(id = "tq1-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0011-mmle-inv-exp.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler1() {
+  var x = document.getElementById('tq1-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+:::{.boxed}
+
+### Question 2
+
+```{r theory-question-2, child='../question-bank/id0012-mmle-weibull.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler2()")
+
+div(id = "tq2-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0012-mmle-weibull.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler2() {
+  var x = document.getElementById('tq2-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+:::{.boxed}
+
+### Question 3
+
+```{r theory-question-3, child='../question-bank/id0013-mmle-gauss.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution_button", 
+                    label = "Solution", 
+                    onclick = "button_handler3()")
+
+div(id = "tq3-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0013-mmle-gauss.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler3() {
+  var x = document.getElementById('tq3-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+
+## Practical questions
+
+:::{.boxed}
+
+### Question 4
+
+```{r pq4, child='../question-bank/id0014-mmle-ic-comp.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+```{r pq4-solution, child='../solution-bank/id0014-mmle-ic-comp.Rmd', eval = TRUE}
+  
+```
+
+
+

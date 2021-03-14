@@ -1,0 +1,6 @@
+Find the Jeffery's prior for the Gamma distribution with $\alpha = 3$. The Gamma distribution has the denisty
+$$
+p(x~\vert~\alpha,\beta) = \frac{\beta^{\alpha}}{\Gamma(\alpha)} x^{\alpha-1} \exp(-\beta x)
+$$
+
+Is it a proper distribution?

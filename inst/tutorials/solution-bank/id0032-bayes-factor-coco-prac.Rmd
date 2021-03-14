@@ -1,0 +1,171 @@
+
+***
+*Solution*: 
+
+(a) From Q2, the posterior predictive distribution for $M_{1}$ is a Lomax distribution with shape $\alpha + n$ and scale $\beta + s$ where $s = n \bar{x}$ and $n$ is the number of observations.
+
+The posterior predictive distribution for $M_{2}$ is the student-t given in the details of the question.
+
+```{r id0032-sol-1 }
+
+library(extraDistr)
+library(dplyr)
+
+# M1: Exp + Gamma
+m1_postr_predict_median <- function(x, alpha, beta){
+  
+  alpha_p <- alpha + length(x)
+  beta_p <- beta + sum(x)
+  
+  # median of lomax:
+  plomax(0.5, lambda = 1/beta_p, kappa = alpha_p)
+  
+}
+
+m2_postr_predict_median <- function(x, mu0, alpha, beta){
+
+  s1 <- mean( log(x) )
+  s2 <- mean( (log(x) - s1)^2 )
+  n <- length(x)
+  
+  mu_prime <- (n * s1 + mu0) / (n + 1)
+  alpha_prime <- alpha + (n/2)
+  beta_prime <- beta + 
+    (n/2) * ( s2 + ((s1 - mu0)^2)/(n + 1) )
+  
+  # params of t dist
+  t_mean <- mu_prime
+  t_scale <- ( beta_prime * (n + 2) ) / (alpha_prime * (n + 1))
+  t_df <- 2 * alpha_prime
+  
+  # median of log t dist
+  # P(L < t) = 0.5, L ~ log student-t
+  # P(log(T) < t) = P(T < exp(t)) = 0.5, T ~ student-t
+  exp(
+    qlst(p = 0.5, df = t_df, 
+         mu = t_mean, sigma = t_scale)
+    )
+
+}
+
+x <- c(1, 0.8, 0.4, 0.35, 0.45, 0.3, 0.9)
+
+
+m1_alpha <- 4
+m1_beta <- 1
+m1_postr_predict_median(x, m1_alpha, m1_beta)
+
+  
+m2_mu0 <- -1
+m2_alpha <- 10
+m2_beta <- 1
+m2_postr_predict_median(x, m2_mu0, m2_alpha, m2_beta)
+
+```
+
+(b) Marginal evidence:
+
+```{r id0032-sol-2}
+
+m1_marginal_evidence <- function(x, alpha, beta){
+  
+  n <- length(x)
+  alpha_p <- alpha + n
+  beta_p <- beta + sum(x)
+  
+  log_evid <- alpha * log(beta) + lgamma(alpha_p) -
+    alpha_p * log(beta_p) - lgamma(alpha)
+
+  exp(log_evid)
+  
+}
+
+
+m2_marginal_evidence <- function(x, mu0, alpha, beta){
+ 
+  s1 <- mean( log(x) )
+  s2 <- mean( (log(x) - s1)^2 )
+  n <- length(x)
+  
+  mu_prime <- (n * s1 + mu0) / (n + 1)
+  alpha_prime <- alpha + (n/2)
+  beta_prime <- beta + 
+  (n/2) * ( s2 + ((s1 - mu0)^2)/(n + 1) )
+  
+  log_evid <- -(n/2) * log(2 * pi) + 
+    alpha * log(beta) + lgamma(alpha_prime) -
+    alpha_prime * log(beta_prime) - lgamma(alpha) -
+    (1/2) * log(n + 1)
+  
+  exp(log_evid)
+  
+}
+
+m1_evid <- m1_marginal_evidence(x, m1_alpha, m1_beta)
+
+m2_evid <- m2_marginal_evidence(x, m2_mu0, m2_alpha, m2_beta)
+
+# Bayes factor as a function:
+
+m1_m2_bf <- function(x, m1_alpha, m1_beta, m2_mu0, m2_alpha, m2_beta){
+  
+m1_marginal_evidence(x, m1_alpha, m1_beta) /
+m2_marginal_evidence(x, m2_mu0, m2_alpha, m2_beta)
+  
+}
+
+# substantial evidence that M1 is a better model (after full week).
+m1_m2_bf(x, m1_alpha, m1_beta, m2_mu0, m2_alpha, m2_beta)
+
+```
+
+(c) Daily report:
+
+```{r id0032-sol-3 }
+
+x_each_day <- lapply(1:length(x), function(i) x[1:i])
+
+x_each_day[[1]]
+x_each_day[[3]]
+
+# rolling update of posterior predictive median:
+# m1
+m1_pp_med <- sapply(x_each_day, m1_postr_predict_median, 
+                    alpha = m1_alpha, beta = m1_beta)
+
+
+# m2
+m2_pp_med <- sapply(x_each_day, m2_postr_predict_median, 
+                    mu0 = m2_mu0, alpha = m2_alpha, beta = m2_beta)
+
+
+# rolling update of bayes factor:
+bayes_factor <- sapply(x_each_day, m1_m2_bf, 
+                       m1_alpha = m1_alpha, m1_beta = m1_beta, 
+                       m2_mu0 = m2_mu0, m2_alpha = m2_alpha, m2_beta = m2_beta)
+
+bayes_factor
+
+```
+
+(d) 
+
+```{r id0032-sol-4 }
+
+# cumulative mean squared error (PP median versus actual observation)
+
+# model 1
+pp_mse1 <- cummean( (m1_pp_med - x)^2)
+
+# model 2
+pp_mse2 <- cummean( (m2_pp_med - x)^2)
+
+pp_mse1 < pp_mse2
+
+```
+
+According to the Bayes factor in (c), after day 6, the evidence suggests a preference for model 1. However, the evidence is not particularly strong. 
+
+Model 2 has a lower mean squared error for the median of the posterior predictive as the observations are taken into consideration. There is the potential for it to be more useful for prediction but it's hard to determine with so little data.
+
+***

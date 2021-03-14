@@ -1,0 +1,11 @@
+
+***
+*Solution*: 
+
+a. $E(Y) = \frac{\theta}{(\theta + 1)}$.
+
+b. To find the MM estimator set $E(Y) = \bar{Y}$ to see that $\hat{\theta}_{MM} = \bar{Y}/(1-\bar{Y})$.
+
+c. For $(y_{1}, y_{2}, y_{3}, y_{4})$, $\bar{Y} = 0.2575$, therefore $\hat{\theta}_{MM} \approx 0.35$
+
+***

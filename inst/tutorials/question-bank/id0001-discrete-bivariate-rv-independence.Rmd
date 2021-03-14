@@ -1,0 +1,13 @@
+Let $(X,Y)$ be a discrete bivariate random variable with probabilities $P(X = x,Y = y)$ summarised in the following table.
+
+         | $x = 1$  $x = 2$  $x = 3$
+--------  -------- -------- --------
+$y = 1$  | 0.06     0.42     0.08
+$y = 2$  | 0.04     0.28     0.12
+
+(a) Why does the above table define a discrete random variable?
+(b) What are the marginal distributions for $X$ and $Y$?
+(c) What are the expectation and variance of $X$ and $Y$?
+(d) What is the correlation between $X$ and $Y$?
+(e) Show that the random variables $X$ and $Y$ are **not** independent.
+(f) Which two cells of the table can you switch to make $X$ and $Y$ independent? 

@@ -1,0 +1,29 @@
+
+***
+*Solution*: 
+
+
+A conditional distribution $\pi(a~\vert~b)$ is proportional to the joint distribution $\pi(a,b)$ when $b$ is considered a constant. Therefore
+$$
+\pi(\mu~\vert~\tau,\alpha,\boldsymbol{y}) \propto \exp\left\{ - \frac{( \mu - \bar{y})^2}{\tau/n} \right\}
+$$
+which implies that $(\mu~\vert~\tau,\alpha,\boldsymbol{y}) \sim \text{N}(\bar{y},\tau/(2n))$.
+$$
+\pi(\alpha~\vert~\mu,\tau,\boldsymbol{y}) \propto \alpha\exp\{-\alpha(\tau+1)\}
+$$
+which implies $(\alpha~\vert~\mu,\tau,\boldsymbol{y}) \sim \text{Gamma}(2,\tau+1)$.
+$$
+\pi(\tau~\vert~\mu,\alpha, \boldsymbol{y}) \propto \tau^{-n/2}\exp\left\{ - \frac{\sum_{i=1}^{n}( \mu - y_{i})^2}{\tau} -\alpha\tau \right\}
+$$
+This might not have a standard distribution. So we'll just leave it in proportional form^[It is in fact a generalized inverse Gaussian distribution.].
+
+The data model/likelihood is normal:
+$$
+(y_{i}~\vert~\mu,\tau) \sim \text{N}(\mu,\tau/2)
+$$
+whilst the priors are:
+$$
+p(\mu) \propto 1, \quad (\tau~\vert~\alpha) \sim \text{Exp}(\alpha), \quad \alpha \sim \text{Exp}(1)
+$$
+
+***

@@ -1,0 +1,17 @@
+Suppose you wish to conduct an experiment to gauge whether male and female Leonberger dogs have different rates of hip dysplasia^[Hip dysplasia is a serious condition in many giant dog breeds, see [here](https://en.wikipedia.org/wiki/Hip_dysplasia_(canine)), but the occurrence has been reduced in several types of dogs by careful breeding.]. Given you have access to a random sample of Leonbergers where 4 out of 20 males and 2 out of 25 females have hip dysplasia, answer the following questions
+
+
+a. Conduct a generalised likelihood ratio test^[Hint: Assume a Bernoulli probability distribution for occurrence of the disease.]. to consider the evidence that the probability of disease occurence is the same for male and female Leonbergers. Use Wilk's theorem to approximate the distribution of the ratio.
+
+b. What is the $p$-value of the test?
+
+c. Assuming the MLEs are the true parameter values, conduct a simulation study to approximate the power of this (asymptotic) hypothesis test.
+
+d. Imagine you wish to conduct another sample of Leonberger dogs to test for the occurence of dysplasia. By adapting the simulation in c. can you determine the sample size $n$ (number of dogs) required for the power of the test to be 0.9? Assume that you will recruit an equal number of male and female dogs.
+
+
+```{r leonbergers, fig.margin = TRUE, fig.cap = "Wee jock and Loulou with deflated ball.", fig.width=1.2, fig.height=2, cache=TRUE, echo = FALSE}
+
+img <- readPNG("../figures/jock_and_lou_lou.png")
+ grid.raster(img)
+```

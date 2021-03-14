@@ -1,0 +1,85 @@
+
+***
+*Solution*: 
+
+(a)
+
+$$b = \sup_{x}\sqrt{h(x)} = \sup_{x} \exp\{-x/2\} = 1$$
+when $x = 0$.
+
+For values $b$ and $c$, let $g(x) =  x \exp\{-x/2\}$
+
+$$\frac{\partial g}{\partial x} = \exp\{-x/2\} -\frac{x}{2} \exp\{-x/2\}$$
+
+$\frac{\partial g}{\partial x} = 0$ when $x = 2$, which can be confirmed to be a maximum (and hence suprememum). Therefore, $d = \sup_{x} x \sqrt{h(x)}$.
+
+$$d = g(2) = 2 \exp\{-2/2\} = \frac{2}{e}$$
+
+The infimum is therefore at $x=0$ or as $x \rightarrow \infty$.
+
+$g(0) = 0$ and $\lim_{x \rightarrow \infty} g(x) = 0$ also, therefore $d = \sup_{x} x \sqrt{h(x)} = 0$.
+
+(b)
+
+From (a), the bounds for the uniform random variables are:
+
+$0 \leq u_{1} \leq 1$ and $0 \leq u_{2} \leq \frac{2}{e}$
+
+```{r id0041-sol-b}
+
+exp_sampler <- function(){
+  
+  max_attempts <- 100
+  
+  h <- function(x) exp(-x)
+  b <- 1
+  c <- 0
+  d <- 2/exp(1)
+    
+  for(i in 1:max_attempts){
+    u1 <- runif(1, min = 0, max = b)
+    u2 <- runif(1, min = c, max = d)
+    
+    x <- u2/u1
+    accept <- u1 < sqrt(h(x))
+    
+    if(accept) return(x)
+  }
+  
+}
+
+x <- replicate(exp_sampler(), n = 1000)
+y <- rexp(1000, rate = 1)
+
+mean(x);mean(y)
+var(x);var(y)
+
+ggplot(data.frame(x=x,y=y)) + 
+  geom_density(aes(x=x), colour = "red") + 
+  geom_density(aes(x=y), colour = "black")
+
+```
+
+(c) Yes, if $x \sim \text{Exp}(1)$ then $z = \frac{x}{\lambda}$ has distribution $z \sim \text{Exp}(\lambda)$.
+
+```{r id0041-sol-c}
+
+exp_sampler_lambda <- function(lambda){
+  
+  exp_sampler() / lambda
+  
+}
+
+x <- replicate(exp_sampler_lambda(2), n = 1000)
+y <- rexp(1000, rate = 2)
+
+mean(x);mean(y)
+var(x);var(y)
+
+ggplot(data.frame(x=x,y=y)) + 
+  geom_density(aes(x=x), colour = "red") + 
+  geom_density(aes(x=y), colour = "black")
+
+```
+
+***
