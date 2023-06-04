@@ -1,0 +1,225 @@
+---
+title: "MXB341 Worksheet 07 - Bayesian statistics"
+output:
+  learnr::tutorial:
+    theme: yeti
+    includes:
+    css: ["css/QUT.css","css/QUTtutorial.css"]
+  progressive: true
+  allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+# if problems with knitting directory:
+# set Knit Directory = Document Directory
+
+# install libraries needed for worksheet
+knitr::opts_chunk$set(
+  fig.align = 'center',
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(learnr)
+library(kableExtra)
+library(pander)
+library(shiny)
+library(MXB341)
+
+
+```
+
+```{r, echo = FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("./css/QUTtutorial.css")
+htmltools::includeCSS("./css/QUT.css")
+
+```
+
+
+:::{.quote}
+"[Bayes' theorem] is to the theory of probability what the Pythagorean theorem is to geometry."
+
+--- Sir Harold Jeffreys')^["Scientific Inference"", Cambridge University Press, 1973, pg 31.] 
+
+:::
+
+# Recap: Bayesian statistics
+
+## Conditional probability
+
+ If $S$ and $T$ are events then recall that the joint probability can be written as
+ $$
+ \begin{aligned}
+ Pr(S,T) &= Pr(S~\vert~T)Pr(T) \text{ or} \\
+ Pr(S,T) &= Pr(T~\vert~S)Pr(S)
+ \end{aligned}
+ $$
+ If $S$ and $T$ are independent then $P(S~\vert~T) = P(S)$ and $P(T~\vert~S)$ so
+ $$
+ Pr(S,T) = Pr(S)Pr(T)
+ $$
+Also related, is the rule for conditional probability
+$$
+Pr(S~\vert~T) = \frac{Pr(S,T)}{Pr(T)}
+$$
+These rules apply to discrete probabilities, but also when using probability distribution functions for continuous probability distributions. For example if $p(\cdot)$ represents a pdf then
+$$
+\begin{aligned}
+p(x~\vert~y) & = \frac{p(x,y)}{p(y)} &= \frac{p(y~\vert~x)p(x)}{p(y)} \text{ where} \\
+p(y) &= \int_{\mathcal{X}} p(x,y)~dx &= \int_{\mathcal{X}} p(y~\vert~x)p(x)~dx
+\end{aligned}
+$$
+where $\mathcal{X}$ is the support of $x$.
+
+## Bayes Theorem^[Exercise: prove Bayes Theorem using conditional probabilities.]
+
+If $A$ and $B$ are events, and $Pr(B)\neq 0$, then
+$$
+Pr(A~\vert~B) = \frac{Pr(B~\vert~A)Pr(A)}{Pr(B)}
+$$
+When applied to statistical inference, Bayes theorem can be understood as
+$$
+Pr(\text{parameters} ~\vert~ \text{data}) \propto f(\text{data} ~\vert~ \text{parameters}) \times \pi(\text{parameters})
+$$
+where 
+
+- $\pi(\text{parameters}) = \pi(\theta)$ is the prior distribution. The information we have about the parameter of interest before observing the data.
+- $f(\text{data} ~\vert~ \text{parameters}) = f(\boldsymbol{x} ~\vert~ \theta)$ is the likelihood or probability distribution for observing the data. This defines the way we assume the data is generated, if we were given the exact value of the parameters.
+- $Pr(\text{parameters} ~\vert~ \text{data}) = Pr(\theta ~\vert~ \boldsymbol{x})$ is the posterior distribution. Defines our new updated information (beliefs, uncertainty etc.) about the parameters of interest, after observing the data.
+
+The only thing missing is the normalising constant:
+$$
+Pr(\text{data}) = Pr(\boldsymbol{x}) = \int_{\theta}  f(\boldsymbol{x} ~\vert~ \theta) \pi(\theta) \text{ d}\theta
+$$
+To recap, Bayes theorem gives us a method for statistical inference through the posterior:
+$$
+Pr(\theta ~\vert~ \boldsymbol{x}) =\frac{f(\boldsymbol{x} ~\vert~ \theta) \pi(\theta)}{Pr(\boldsymbol{x})}
+$$
+
+## Jeffery's prior
+
+Jeffery's prior are motivated by wanting priors that are uninformative, in the sense that the prior has little effect on the statistical inference being performed. In otherwords, the data informs the posterior distribution as much as possible. This can be a desirable property in some analysese but is not always wanted. For example, shrinkage priors are known to be helpful in high dimensional parameter settings. 
+
+The Jeffery's prior is given by
+$$
+\pi(\boldsymbol{\theta}) \propto \sqrt{\det \left[ \mathcal{I}(\boldsymbol{\theta}) \right]}
+$$
+where $\mathcal{I}(\boldsymbol{\theta})$ is the Fisher information matrix (or value).
+
+## Theory questions
+
+## Question 1
+
+:::{.boxed}
+```{r theory-question-1, child='../question-bank/id0023-bayes-cond-prob.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r,theory-question-1-solution, child="../solution-bank/id0023-bayes-cond-prob.Rmd"}
+
+```
+:::
+
+
+## Question 2
+
+:::{.boxed}
+```{r theory-question-2, child='../question-bank/id0024-bayes-proportionality.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r theory-question-2-solution, child='../solution-bank/id0024-bayes-proportionality.Rmd', eval = TRUE}
+  
+```
+:::
+
+
+## Question 3
+
+:::{.boxed}
+```{r theory-question-3, child='../question-bank/id0025-bayes-credit-worth.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r theory-question-3-solution, child='../solution-bank/id0025-bayes-credit-worth.Rmd', eval = TRUE}
+  
+```
+:::
+
+
+## Question 4
+
+:::{.boxed}
+```{r theory-question-4, child='../question-bank/id0026-bayes-binomial.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r theory-question-4-solution, child='../solution-bank/id0026-bayes-binomial.Rmd', eval = TRUE}
+  
+```
+:::
+
+## Question 5
+
+:::{.boxed}
+```{r theory-question-5, child='../question-bank/id0027-bayes-jeffery.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r theory-question-5-solution, child='../solution-bank/id0027-bayes-jeffery.Rmd', eval = TRUE}
+  
+```
+:::
+
+# Practical questions
+
+## Question 6
+:::{.boxed}
+```{r prac-question-6, child='../question-bank/id0028-bayes-quiz-prac-bin.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r prac-question-6-solution, child='../solution-bank/id0028-bayes-quiz-prac-bin.Rmd', eval = TRUE}
+  
+```
+:::
+
+
+```{r,echo=FALSE}
+htmltools::includeHTML("footer.html")
+```
+
+

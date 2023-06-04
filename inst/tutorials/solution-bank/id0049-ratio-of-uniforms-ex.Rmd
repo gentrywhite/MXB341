@@ -1,0 +1,87 @@
+Given data from a Poisson likelihood 
+$$
+f(\mathbf{y}|\lambda)=\frac{\lambda^{\sum_{i=1}^ny_i}e^{-n\lambda}}{\prod_{i=1}^ny_i!}
+$$
+consider the prior 
+$$
+\pi(\lambda)=\frac{1}{(\lambda+1)^2}
+$$
+Given some data 
+```{r echo=FALSE}
+set.seed(14061972)
+y<-rpois(10,3.2)
+```
+$y=$ `r y` implement a ratio of uniforms sampling scheme to draw 1000 samples from the posterior
+$$
+\pi(\lambda|\mathbf{y})\propto f(\mathbf{y}|\lambda)\pi(\lambda)
+$$
+Compare the posterior mean of $\lambda$ to the MLE $\hat{\lambda}$.
+
+**Solution**\
+
+```{r}
+y<-c(5,1,5,1,0,7,5,3,2,1)
+n<-10
+
+##  We are going to numerically find the limits for the uniform samples
+
+##  Define the function sqrt(h(x)) to find b
+
+h_b<-function(x)
+{
+  a<-dpois(y,x,log = TRUE)%>%sum()-2*log(x+1)
+  exp(a/2)
+}
+
+##  Define function xsqrt(h(x)) to find c and d
+
+h_d<-function(x)
+{
+  a<-dpois(y,x,log = TRUE)%>%sum()-2*log(x+1)
+  x*exp(a/2)
+}
+
+##  Use optimise to find b,c, and d
+
+b<-optimise(h_b,c(0,10),maximum = TRUE)$objective
+c<-optimise(h_d,c(0,10))$objective
+d<-optimise(h_d,c(0,10),maximum = TRUE)$objective
+
+##  Set number of samples desired
+
+N<-1000
+
+##  Declare an empty vector of undetermined length to store samples 
+##  This is not the most efficient way to do this, but it does work
+
+lambda<-numeric()
+
+##  Define a while loop to accept or reject samples of u2/u1 as being from the target density
+##  There are other ways to do this that might be more efficient
+
+while(length(lambda)<1001)
+{
+  u1<-runif(1,0,b)
+  u2<-runif(1,c,d)
+  if(u1<h_b(u2/u1))
+  {
+    lambda<-c(lambda,u2/u1) ##  If the acceptance criteria are met add u2/u1 to the vector lambda
+  }
+  else  ##  if the acceptance conditions are not met do nothing
+  {
+    lambda<-lambda
+  }
+}
+
+##  Plot the results
+
+ggplot(data = tibble(lambda))+
+  geom_histogram(aes(x=lambda, y = ..density..),binwidth = 0.1)
+
+##  Compare the posterior mean to the MLE
+
+mean(lambda)
+mean(y)
+
+
+```

@@ -1,0 +1,102 @@
+Given 
+```{r echo=FALSE}
+set.seed(14061972)
+
+x<-runif(20,-1,1)
+
+lambda<-exp(3.1*x-1.7)
+
+y<-rpois(20,lambda=lambda)
+
+```
+$y=$ `r round(y,2)`  and \
+$x =$ `r round(x,2)`
+
+(a) Fit a model assuming that $y_i\sim Pois(\lambda_i)$, $\log(\lambda_i)=\beta_0+\beta_1x_i$
+(b) Compute the $p_D$, $p_V$, $\bar{D}$ and $DIC$ and compare the results.
+
+**Solution:**\
+
+```{r}
+library(mvtnorm)
+
+x<-c(0.59, -0.67, 0.7, -0.86, -0.99, 0.92, 0.57, -0.04, -0.57, -0.74, 0.98, -0.81, -0.79, 0.51, 0.09, 0.13, 0.28, 0.14, 0.37, 0.6)
+y<-c(4, 0, 2, 0, 0, 4, 2, 0, 0, 0, 4, 0, 0, 3, 0, 0, 0, 0, 0, 1 )
+
+X<-cbind(1,x)
+
+##  log-likelihood function
+
+log_like<-function(beta)
+{
+  nu<-X%*%beta%>%exp()
+  dpois(y,nu,log=TRUE)%>%sum()
+}
+
+bayes_pois<-function(x,y,init,n)
+{
+  
+  ##  Initialise beta
+
+  beta<-matrix(NA,ncol = 2, nrow = n)
+  beta[1,]<-init
+  dev<-numeric(length = n)
+  dev[1]<--2*log_like(init)
+
+  ##  Set up MCMC
+
+  beta_cov<-crossprod(X)%>%solve()
+  beta_sd<-1
+
+  n.accept<-0
+
+  set.seed(14061972)
+
+  for(i in 2:n)
+  {
+    bc<-rmvnorm(1,beta[i-1,],beta_sd*beta_cov)%>%t()
+    alpha<-(log_like(bc)-log_like(beta[i-1,]))%>%exp()
+    u<-runif(1)    
+    if(u<alpha)
+    {
+      beta[i,]<-bc
+      n.accept%<>%+(1)
+    }
+    else
+    {
+      beta[i,]<-beta[i-1,]
+    }
+    accept.rate<-n.accept/i
+  
+    ##  Automatically tune the candidate distribution
+  
+    if(accept.rate<0.2|accept.rate>0.4)
+    {
+      beta_sd%<>%multiply_by(0.7+accept.rate)
+    }
+    dev[i]<--2*log_like(beta[i,])
+  }
+  pD<-mean(dev)+2*log_like(colMeans(beta))
+  pV<-var(dev)/2
+  Dbar<-mean(dev)
+  DICd<-Dbar+pD
+  DICv<-Dbar+pV
+  
+  return(list(beta = beta, accept.rate = accept.rate, DICd = DICd, DICv = DICv, pD = pD, pV = pV, Dbar = Dbar))
+}
+
+out<-bayes_pois(x,y,c(0,0),10000)
+DICd<-out$DICd%>%round(2)
+DICv<-out$DICv%>%round(2)
+pD<-out$pD%>%round(2)
+pV<-out$pV%>%round(2)
+Dbar<-out$Dbar%>%round(2)
+
+```
+
+:::{.table-narrow}
+| $\bar{D}$ |$p_D$  |$p_v$   |$DIC_{p_D}$ |$DIC_{p_V}$ |
+|-----------|-------|--------|------------|------------|
+| `r Dbar`  |`r pD` | `r pV` |`r DICd`    |`r DICv`    |
+
+:::

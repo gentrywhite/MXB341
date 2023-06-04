@@ -4,9 +4,4 @@ Implement a Gibbs sampler for the model in question 1 (theory) using `R`.
 (b) Write a Gibbs sampler for $(\mu,\alpha~\vert~\tau, \boldsymbol{y})$. Check that it works as expected.
 (c) Write a MH-within-Gibbs sampler for the full distribution using the solutions to (a) and (b). The Gibbs step for $\tau$ should simply use the MH step in (a).
 
-Finally, comment on the performance of this algorithm using
-
-- trace plots
-- running mean plots
-- auto-correlation plots
-- effective sample size approximation
+Finally, comment on the performance of these algorithms

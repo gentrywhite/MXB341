@@ -8,29 +8,33 @@ output:
   progressive: true
   allow_skip: true
 runtime: shiny_prerendered
-params:
-  show_solutions: TRUE
 ---
 
 ```{r ws-setup, include=FALSE}
-  # if problems with knitting directory:
-  # set Knit Directory = Document Directory
+# if problems with knitting directory:
+# set Knit Directory = Document Directory
 
-  # install libraries needed for worksheet
-  library(MXB341)
+# install libraries needed for worksheet
+knitr::opts_chunk$set(
+  fig.align = 'center',
+  collapse = TRUE,
+  comment = "#>"
+)
 
-
-  # Make notes here:
-  # --- chunk `instructions-header` currently turned off. 
-  #     Set `eval = TRUE` to use (and update file).
-  #
-  #
-
+library(learnr)
+library(kableExtra)
+library(pander)
+library(shiny)
+library(MXB341)
+library(gridExtra)
+library(grid)
 ```
 
 ```{r, echo = FALSE}
 
 htmltools::includeHTML("header.html")
+htmltools::includeCSS("./css/QUTtutorial.css")
+htmltools::includeCSS("./css/QUT.css")
 
 ```
 
@@ -58,7 +62,7 @@ A simple-versus-simple hypothesis test occurs the null, and the alternative hypo
 $$
 H_{0}:\theta = \theta_{0}\mbox{ and } H_{1}:\theta = \theta_{1}
 $$
-.]. The likelihood ratio is
+ The likelihood ratio is
 
 $$\Lambda = \frac{L(\theta_{0}~\vert~\boldsymbol{y})}{L(\theta_{1}~\vert~\boldsymbol{y})}.$$
 For this case, the Neyman–Pearson Lemma states that this likelihood-ratio test is the most powerful for all $\alpha$-level tests. Note: $\Lambda$ is a statistic and depends on the data; as such, before we can treat it as a random variable before observing the data. For a fixed constant $c$, the decision rule for this hypothesis test is:

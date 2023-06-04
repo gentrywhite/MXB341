@@ -1,0 +1,225 @@
+---
+title: "MXB341 Worksheet 08 - Bayesian Inference"
+output:
+  learnr::tutorial:
+    theme: yeti
+    includes:
+    css: ["css/QUT.css","css/QUTtutorial.css"]
+  progressive: true
+  allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+# if problems with knitting directory:
+# set Knit Directory = Document Directory
+
+# install libraries needed for worksheet
+knitr::opts_chunk$set(
+  fig.align = 'center',
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(learnr)
+library(kableExtra)
+library(pander)
+library(shiny)
+library(MXB341)
+
+
+```
+
+```{r, echo = FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("./css/QUTtutorial.css")
+htmltools::includeCSS("./css/QUT.css")
+
+```
+
+
+:::{.quote}
+ Informed decision-making comes from a long tradition of guessing and then blaming others for inadequate results.
+--- Scott Adams (Gilbert comic strip)
+:::
+
+```{r instructions-header, child='../src/instructions-header.Rmd', eval = FALSE, echo=FALSE}
+  
+```
+
+# Bayesian Inference
+
+The distinguishing aspect of Bayesian statistics is the
+conceptualisation of the parameter as a probability distribution rather
+than a fixed quantity. We can use this to make inference directly rather
+than interpret the uncertainty in terms of the random sample via the
+sampling distribution because we express the uncertainty about the
+parameter as a probability distribution. We can use the posterior
+distribution to make direct probabilistic statements about the parameter
+in some ways (confidence or credible intervals). While this makes
+interpreting interval estimates more straightforward, it is more
+computationally demanding as it requires choosing an appropriate prior
+and evaluating the posterior distribution. In some cases, there are no
+analogous procedures to classical or frequentist approaches
+(i.e. hypothesis testing). Lastly, it is important to recognise and
+understand the influence of the parameter's prior distribution on the
+results of analyses.
+
+Thus we will examine three approaches to inference in the Bayesian
+paradigm: interval estimation, hypothesis testing, and decision theory.
+Each of these approaches has its analogue with classical techniques, and
+we will explore these contrasts and comparisons as part of exploring
+these concepts.
+
+##    Credible Intervals
+
+Interval estimation in the Bayesian context uses the posterior
+distribution to directly compute an interval-based on a specified
+probability
+
+::: {.boxed}
+**Credible Intervals**\
+
+Given the posterior distribution $\pi(\theta|\mathbf{x})$ the $1-\alpha$
+***credible set*** is
+$$C(\theta)=\left\{\theta:Pr\left(\theta\in C(\theta)\right)=1-\alpha\right\}$$
+For univariate cases this can be defined by the interval $[a,b]$ $$
+\int_a^b\pi(\theta|\mathbf{y})d\theta=1-\alpha
+$$ thus $$
+C(\theta)=\{\theta:\theta\in[a,b]\}.
+$$ As in the case of confidence intervals, there are limited analytical
+tools available to minimise $b-a$ for a given $1-\alpha$. In many
+instances, numerical techniques are necessary.
+
+A set $C^*(\theta)=[a,b]$ that minimises $b-a$ for a given $1-\alpha$ $$
+C(\theta)=\min_{b-a}\int_{a}^b\pi(\theta|\mathbf{y})d\theta=1-\alpha
+$$ is the ***highest posterior density*** credible interval.
+:::
+
+
+##    Hypothesis Testing
+
+For hypotheses of the form 
+$$
+H_0:\theta\in \theta_0\quad\mbox{vs}\quad H_A:\theta\in \theta_0^c
+$$ 
+the posterior probabilities are equivalent to testing the hypotheses
+$$
+\begin{align}
+Pr(\theta\in\theta_0|\mathbf{y})&\equiv Pr(\mbox{H_0 is True}|\mathbf{y})\\
+Pr(\theta\in\theta_0^c|\mathbf{y})&\equiv Pr(\mbox{H_0 is False}|\mathbf{y}).
+\end{align}
+$$
+
+But in the case of the point-null hypothesis 
+$$
+H_0:\theta=\theta_0\quad\mbox{vs}\quad H_A:\theta\neq \theta_0
+$$ 
+$Pr(\theta=\theta_0)=0$ which prevents meaningful hypothesis testing.
+(The exception being when the parameter space is discrete, but this is a
+rare occurrence.)
+
+## Bayes Factors
+Bayes factors are one alternative to classical hypothesis testing. If there are two competing models, $M_{1}$ and $M_{2}$, we compare the marginal likelihood of the hypotheses they represent. The marginal likelihood is the probability of observing the data for a given model, i.e. $P(\text{data}) = P(\boldsymbol{x})$  (this is the normalising constant in Bayes rule above!). Since we have two different models we add the conditioning:
+$$
+Pr(\mathbf{x}\vert~M_{i}) = Pr(\boldsymbol{x}\vert M_{i}) = \int_{\theta_{i}} f(\boldsymbol{x}\vert\theta_{i}, M_{i})\pi(\theta_{i}\vert M_{i}) \text{ d}\theta_{i}
+$$
+but can also be written as
+$$
+Pr(\boldsymbol{x}\vert M_{i}) =\frac{Pr(M_{i} \vert \boldsymbol{x})Pr(\boldsymbol{x})}{Pr(M_{i})}
+$$
+using Bayes rule. The Bayes factor comparing these two models is
+$$
+BF_{12} = \frac{Pr(\boldsymbol{x}~\vert~M_{1})}{Pr(\boldsymbol{x}\vert M_{2})} = \frac{Pr(M_{1} \vert \boldsymbol{x}) Pr(M_{2})}{Pr(M_{2}\vert\boldsymbol{x}) Pr(M_{1})}
+$$
+the interpretation of $BF_{12}$ is given by tables, but there is more than one that can be used.
+
+##    Bayesian Decision Theory
+
+
+
+## Theory questions
+
+
+### Question 1
+
+:::{.boxed}
+
+```{r theory-question-1, child='../question-bank/id0030-bayes-lomax.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r theory-solution-1, child='../solution-bank/id0030-bayes-lomax.Rmd', eval = TRUE}
+  
+```
+:::
+
+
+### Question 2
+
+:::{.boxed}
+
+```{r theory-question-2, child='../question-bank/id0048-bayes-credible-interval.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r theory-solution-2, child='../solution-bank/id0048-bayes-credible-interval.Rmd', eval = TRUE}
+
+```
+:::
+
+
+### Question 3
+
+:::{.boxed}
+
+```{r theory-question-3, child='../question-bank/id0035-decision-bayes-risk-sim-prac.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r theory-solution-3, child='../solution-bank/id0035-decision-bayes-risk-sim-prac.Rmd', eval = TRUE}
+
+```
+:::
+
+## Practical questions
+
+
+### Question 4
+
+:::{.boxed}
+
+```{r prac-question-4, child='../question-bank/id0032-bayes-factor-coco-prac.Rmd', eval = TRUE}
+  
+```
+
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r prac-solution-4, child='../solution-bank/id0032-bayes-factor-coco-prac.Rmd', eval = TRUE}
+  
+```
+:::
+
+```{r,echo=FALSE}
+htmltools::includeHTML("footer.html")
+```

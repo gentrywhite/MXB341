@@ -1,0 +1,158 @@
+Given 
+$$
+y=-3.48, -2.82, -1.96,  0.48, -2.59,  2.48,  3.06,  4.05,  3.80,  6.12,  5.98
+$$
+and
+$$
+x = -5, -4, -3, -2, -1,  0,  1,  2,  3,  4,  5
+$$
+Implement a Gibbs sampler for the model in question 2 (theory) using `R`. 
+
+(a) Write a one-dimensional MH sampler for the conditional distribution $(\sigma^2~\vert~\beta,\alpha, \boldsymbol{y})$ assuming that the prior 
+$$
+\pi(\sigma^2)=\frac{1}{(1+\sigma^2)^2}
+$$ 
+Check that it works.
+(b) Write a Gibbs sampler for $(\beta,\alpha~\vert~\sigma^2, \boldsymbol{y})$. Check that it works as expected.
+(c) Write a MH-within-Gibbs sampler for the full distribution using the solutions to (a) and (b). The Gibbs step for $\sigma^2$ should simply use the MH step in (a).
+
+Finally, comment on the performance of these algorithms
+
+**Solution:**\
+
+a.  
+
+```{r part-a}
+x<-c(-5,-4,-3,-2,-1,0,1,2,3,4,5)
+y<-c( -3.48, -2.82, -1.96,  0.48, -2.59,  2.48,  3.06,  4.05,  3.80,  6.12,  5.98)
+xbar<-mean(x)
+
+log_like<-function(alpha,beta,sigma2)
+{
+  dnorm(y, mean = alpha+beta*(x-xbar),sd=sqrt(sigma2),log = TRUE)%>%sum()
+}
+
+##  Fix beta=alpha=1
+
+beta<-1
+alpha<-1
+
+n<-1000
+
+s2<-numeric(length = n)
+
+s2[1]<-1
+
+for(i in 2:n)
+{
+  sc<-rexp(1,rate = 1/s2[i-1])
+  num<-log_like(alpha,beta,sc)-2*log(sc+1)-s2[i-1]/sc
+  den<-log_like(alpha,beta,s2[i-1])-2*log(s2[i-1]+1)-sc/s2[i-1]
+  a<-(num-den)%>%exp()
+  u<-runif(1)
+  if(u<a)
+  {
+    s2[i]<-sc
+  }else
+    s2[i]<-s2[i-1]
+}
+
+```
+
+b. 
+
+```{r part-b}
+
+x<-c(-5,-4,-3,-2,-1,0,1,2,3,4,5)
+y<-c( -3.48, -2.82, -1.96,  0.48, -2.59,  2.48,  3.06,  4.05,  3.80,  6.12,  5.98)
+xbar<-mean(x)
+
+log_like<-function(alpha,beta,sigma2)
+{
+  dnorm(y, mean = alpha+beta*(x-xbar),sd=sqrt(sigma2),log = TRUE)%>%sum()
+}
+
+n<-1000
+
+##  Fix s2<-1
+
+s2<-1
+
+beta<-numeric(length = n)
+alpha<-numeric(length = n)
+beta[1]<-0
+alpha[1]<-0
+
+for(i in 2:n)
+{
+  bc<-rnorm(1,mean=beta[i-1],sd=0.3)
+  ac<-rnorm(1,mean=alpha[i-1],sd=0.3)
+  num<-log_like(ac,bc,s2)
+  den<-log_like(alpha[i-1],beta[i-1],s2)
+  a<-(num-den)%>%exp()
+  u<-runif(1)
+  if(u<a)
+  {
+    alpha[i]<-ac
+    beta[i]<-bc
+  }else
+    {
+    alpha[i]<-alpha[i-1]
+    beta[i]<-beta[i-1]
+    }  
+}
+
+
+```
+
+c.    
+
+```{r part-c}
+
+x<-c(-5,-4,-3,-2,-1,0,1,2,3,4,5)
+y<-c( -3.48, -2.82, -1.96,  0.48, -2.59,  2.48,  3.06,  4.05,  3.80,  6.12,  5.98)
+xbar<-mean(x)
+
+log_like<-function(alpha,beta,sigma2)
+{
+  dnorm(y, mean = alpha+beta*(x-xbar),sd=sqrt(sigma2),log = TRUE)%>%sum()
+}
+
+n<-1000
+
+beta<-numeric(length = n)
+alpha<-numeric(length = n)
+s2<-numeric(length = n)
+beta[1]<-0
+alpha[1]<-0
+s2[1]<-1
+
+for(i in 2:n)
+{
+  bc<-rnorm(1,mean=beta[i-1],sd=0.05)
+  ac<-rnorm(1,mean=alpha[i-1],sd=0.05)
+  num<-log_like(ac,bc,s2[i-1])
+  den<-log_like(alpha[i-1],beta[i-1],s2[i-1])
+  a<-(num-den)%>%exp()
+  u<-runif(1)
+  if(u<a)
+  {
+    alpha[i]<-ac
+    beta[i]<-bc
+  }else
+    {
+    alpha[i]<-alpha[i-1]
+    beta[i]<-beta[i-1]
+    }  
+  sc<-rexp(1,rate = 1/s2[i-1])
+  num<-log_like(alpha[i],beta[i],sc)-2*log(sc+1)-s2[i-1]/sc
+  den<-log_like(alpha[i],beta[i],s2[i-1])-2*log(s2[i-1]+1)-sc/s2[i-1]
+  a<-(num-den)%>%exp()
+  u<-runif(1)
+  if(u<a)
+  {
+    s2[i]<-sc
+  }else
+    s2[i]<-s2[i-1]
+}
+

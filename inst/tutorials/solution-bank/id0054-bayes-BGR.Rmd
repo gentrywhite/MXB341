@@ -1,0 +1,136 @@
+Given 
+```{r echo=FALSE}
+set.seed(14061972)
+
+x<-runif(20,-1,1)
+
+lambda<-exp(3.1*x-1.7)
+
+y<-rpois(20,lambda=lambda)
+
+```
+$y=$ `r round(y,2)`  and \
+$x =$ `r round(x,2)`
+
+(a) Fit a model assuming that $y_i\sim Pois(\lambda_i)$, $\log(\lambda_i)=\beta_0+\beta_1x_i$.
+(b) Plot the cummulative mean of the parameters and calculate the BGR for three chains.
+
+**Solution:**\
+Write a function to evaluate the model:
+```{r}
+library(mvtnorm)
+
+x<-c(0.59, -0.67, 0.7, -0.86, -0.99, 0.92, 0.57, -0.04, -0.57, -0.74, 0.98, -0.81, -0.79, 0.51, 0.09, 0.13, 0.28, 0.14, 0.37, 0.6)
+y<-c(4, 0, 2, 0, 0, 4, 2, 0, 0, 0, 4, 0, 0, 3, 0, 0, 0, 0, 0, 1 )
+
+X<-cbind(1,x)
+
+##  log-likelihood function
+
+log_like<-function(beta)
+{
+  nu<-X%*%beta%>%exp()
+  dpois(y,nu,log=TRUE)%>%sum()
+}
+
+bayes_pois<-function(x,y,init,n)
+{
+  
+  ##  Initialise beta
+
+  beta<-matrix(NA,ncol = 2, nrow = n)
+  beta[1,]<-init
+
+  ##  Set up MCMC
+
+  beta_cov<-crossprod(X)%>%solve()
+  beta_sd<-1
+
+  n.accept<-0
+
+  set.seed(14061972)
+
+  for(i in 2:n)
+  {
+    bc<-rmvnorm(1,beta[i-1,],beta_sd*beta_cov)%>%t()
+    alpha<-(log_like(bc)-log_like(beta[i-1,]))%>%exp()
+    u<-runif(1)    
+    if(u<alpha)
+    {
+      beta[i,]<-bc
+      n.accept%<>%+(1)
+    }
+    else
+    {
+      beta[i,]<-beta[i-1,]
+    }
+    accept.rate<-n.accept/i
+  
+    ##  Automatically tune the candidate distribution
+  
+    if(accept.rate<0.2|accept.rate>0.4)
+    {
+      beta_sd%<>%multiply_by(0.7+accept.rate)
+    }
+  }
+  return(list(beta = beta, accept.rate = accept.rate))
+}
+
+##  Now run multiple chains
+
+N<-10000
+
+beta0<-numeric()
+beta1<-numeric()
+
+init<-rbind(c(-1,-1),c(0,0),c(1,1))
+
+for(j in 1:3)
+{
+  out<-bayes_pois(x,y,init[j,],N)
+  beta0%<>%c(out$beta[,1])
+  beta1%<>%c(out$beta[,2])
+}
+
+##  Plot the results
+
+iteration<-rep(1:N,3)
+chain<-c(rep("1",N),rep("2",N),rep("3",N))
+name<-c(rep("beta[0]",3*N),rep("beta[1]",3*N))
+
+df<-tibble(beta=c(beta0,beta1),iteration = rep(iteration,2),chain = rep(chain,2),name)
+
+##  Cummulative Mean Plots
+
+ggplot(filter(df,chain=="1")%>%group_by(name)%>%summarise(beta=cummean(beta), iteration = iteration), aes(x = iteration, y = beta, group = name))+
+  geom_line()+
+  facet_wrap(~name, labeller = label_parsed)
+
+##  BGR Plot
+
+ggplot(df,aes(x=iteration, y = beta, group = chain, color = chain ))+
+  geom_line()+
+  facet_wrap(~name, labeller = label_parsed)
+
+
+
+##  Compute BGR for beta_0
+
+S<-aggregate(beta~chain,FUN = var, data = filter(df, name =="beta[0]"))
+W<-mean(S$beta)
+B<-var(S$beta)
+VAR<-(1-1/N)*W+B
+Rhat0<-(VAR/W)%>%sqrt()
+
+##  Compute BGR for beta_1
+
+S<-aggregate(beta~chain,FUN = var, data = filter(df, name =="beta[1]"))
+W<-mean(S$beta)
+B<-var(S$beta)
+VAR<-(1-1/N)*W+B
+Rhat1<-(VAR/W)%>%sqrt()
+
+```
+
+The Brooks-Gelman-Rubin potential scale reduction factor for $\beta_0$ is $\hat{R}=$ `r round(Rhat0,6)`.\
+The Brooks-Gelman-Rubin potential scale reduction factor for $\beta_1$ is $\hat{R}=$ `r round(Rhat1,6)`.

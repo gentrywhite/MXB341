@@ -1,0 +1,341 @@
+Given 
+```{r echo=FALSE}
+set.seed(14061972)
+
+x<-runif(20,-1,1)
+
+lambda<-exp(3.1*x-1.7)
+
+y<-rnbinom(20,mu=lambda,size = 0.7)
+
+```
+$y=$ `r round(y,2)`  and \
+$x =$ `r round(x,2)`
+
+(a) Fit a model assuming that $y_i\sim Pois(\lambda_i)$, $\log(\lambda_i)=\beta_0+\beta_1x_i$
+(b) Fit a model assuming that $y_i\sim NegBinom(\mu_i,\eta)$, $\log(\mu_i)=\beta_0+\beta_1x_i$
+For each model: 
+(c)   Plot the trace of the parameters; 
+(d)   plot the cummulative mean of the parameters and calculate the BGR for three chains; 
+(e)   plot the ACF and compute the effective sample size for each parameter; and 
+(f)   compute the $p_D$, $p_V$, $\bar{D}$ and $DIC$ for each of these models and compare the results.
+
+```{r, warning=FALSE,message=FALSE}
+library(mvtnorm)
+
+x<-c(0.59, -0.67, 0.7, -0.86, -0.99, 0.92, 0.57, -0.04, -0.57, -0.74, 0.98, -0.81, -0.79, 0.51, 0.09, 0.13, 0.28, 0.14, 0.37, 0.6)
+y<-c(6, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0)
+
+##  log-likelihood function
+
+bayes_pois<-function(x,y,init,n)
+{
+
+set.seed(14061972)
+  
+  X<-cbind(1,x)
+  
+  log_like<-function(beta)
+    {
+      nu<-X%*%beta%>%exp()
+      dpois(y,nu,log=TRUE)%>%sum()
+    }
+  
+  ##  Initialise beta
+
+  beta<-matrix(NA,ncol = 2, nrow = n)
+  beta[1,]<-init
+  dev<-numeric(length = n)
+  dev[1]<--2*log_like(init)
+
+  ##  Set up MCMC
+
+  beta_cov<-crossprod(X)%>%solve()
+  beta_sd<-1
+
+  n.accept<-0
+
+  set.seed(14061972)
+
+  for(i in 2:n)
+  {
+    bc<-rmvnorm(1,beta[i-1,],beta_sd*beta_cov)%>%t()
+    alpha<-(log_like(bc)-log_like(beta[i-1,]))%>%exp()
+    u<-runif(1)    
+    if(u<alpha)
+    {
+      beta[i,]<-bc
+      n.accept%<>%+(1)
+    }
+    else
+    {
+      beta[i,]<-beta[i-1,]
+    }
+    accept.rate<-n.accept/i
+  
+    ##  Automatically tune the candidate distribution
+  
+    if(accept.rate<0.2|accept.rate>0.4)
+    {
+      beta_sd%<>%multiply_by(0.7+accept.rate)
+    }
+    dev[i]<--2*log_like(beta[i,])
+  }
+  pD<-mean(dev)+2*log_like(colMeans(beta))
+  pV<-var(dev)/2
+  Dbar<-mean(dev)
+  DICd<-Dbar+pD
+  DICv<-Dbar+pV
+  return(list(beta = beta, accept.rate = accept.rate, Dbar = Dbar, DICd = DICd, DICv = DICv, pD = pD, pV= pV))
+}
+
+#####################
+
+bayes_nbinom<-function(x,y,init,n)
+{
+  
+set.seed(14061972)
+  
+  log_like<-function(BETA,ETA)
+  {
+    mu<-X%*%BETA%>%exp()
+    dnbinom(y,size = ETA,mu = mu, log = TRUE)%>%sum()
+  }
+  
+  X<-cbind(1,x)
+  
+  beta<-matrix(NA,ncol = 2, nrow = n)
+  eta<-numeric(length = n)
+  dev<-numeric(length = n)
+  dev[1]<-dnbinom(y,size = init[3],mu = exp(X%*%init[1:2]),log = TRUE)%>%sum()%>%multiply_by(-2)
+  beta[1,]<-init[1:2]
+  eta[1]<-init[3]
+  beta_cov<-crossprod(X)%>%solve()
+  beta_sd<-1.5
+  eta_var<-1
+  beta.accept<-0
+  eta.accept<-0
+  
+    for(i in 2:n)
+  {
+    bc<-rmvnorm(1,mean = beta[i-1,],sigma = beta_sd*beta_cov)%>%t()
+    alpha<-(log_like(bc,eta[i-1])-log_like(beta[i-1,],eta[i-1]))%>%exp()
+    u<-runif(1)
+    if(alpha>u)
+    {
+      beta[i,]<-bc
+      beta.accept%<>%+(1)
+    }
+    else
+    {
+      beta[i,]<-beta[i-1,]
+    }
+    beta.accept.rate<-beta.accept/i
+        
+    ##  Automatically tune the candidate distribution
+  
+    if(beta.accept.rate<0.2|beta.accept.rate>0.4)
+    {
+      beta_sd%<>%multiply_by(0.7+beta.accept.rate)
+    }
+    
+
+  ##  update eta
+
+    ac<-eta[i-1]^2/eta_var
+    bc<-eta[i-1]/eta_var
+
+    ec<-rgamma(1,ac,bc)
+
+    a<-ec^2/eta_var
+    b<-ec/eta_var
+
+    alpha<-(log_like(beta[i,],ec)-log_like(beta[i,],eta[i-1])+dgamma(eta[i-1],a,b,log=TRUE)-dgamma(ec,ac,bc,log = TRUE)-ec+eta[i-1])%>%exp()
+
+  u<-runif(1)
+  if(alpha>u)
+  {
+    eta[i]<-ec
+    eta.accept%<>%+(1)
+  }
+  else
+  {
+    eta[i]<-eta[i-1]
+  }
+
+    ##  Automatically tune the candidate distribution
+  
+    eta.accept.rate<-eta.accept/i
+  
+    if(eta.accept.rate<0.2|eta.accept.rate>0.4)
+    {
+      eta_var%<>%multiply_by(0.7+eta.accept.rate)
+    }
+  
+    dev[i]<--2*log_like(beta[i,],eta[i])
+    }
+  pD<-mean(dev)+2*log_like(colMeans(beta),mean(eta))
+  pV<-var(dev)/2
+  Dbar<-mean(dev)
+  DICd<-Dbar+pD
+  DICv<-Dbar+pV
+  return(list(beta = beta, eta = eta, beta.accept = beta.accept, beta.accept.rate = beta.accept.rate,eta.accept = eta.accept, eta.accept.rate = eta.accept.rate, Dbar = Dbar, DICd = DICd, DICv = DICv, pD = pD, pV= pV))
+}
+
+##  Now run multiple chains
+
+N<-10000
+
+pois_out<-list()
+nb_out<-list()
+
+init<-rbind(c(-1.7,3.1,1),c(0,1,2),c(0,0,3))
+
+
+for(j in 1:3)
+{
+  pois_out[[j]]<-bayes_pois(x,y,init[j,1:2],N)
+  nb_out[[j]]<-bayes_nbinom(x,y,init[j,],N)
+}
+
+p.Dbar<-pois_out[[1]]$Dbar
+p.pD<-pois_out[[1]]$pD
+p.pV<-pois_out[[1]]$pV
+p.DICd<-pois_out[[1]]$DICd
+p.DICv<-pois_out[[1]]$DICv
+
+nb.Dbar<-nb_out[[1]]$Dbar
+nb.pD<-nb_out[[1]]$pD
+nb.pV<-nb_out[[1]]$pV
+nb.DICd<-nb_out[[1]]$DICd
+nb.DICv<-nb_out[[1]]$DICv
+
+##  Plot the results for Poisson
+
+iteration<-rep(1:N,3)
+chain<-c(rep("1",N),rep("2",N),rep("3",N))
+name<-c(rep("beta[0]",3*N),rep("beta[1]",3*N))
+
+beta.pois<-rbind(pois_out[[1]]$beta,pois_out[[2]]$beta,pois_out[[3]]$beta)
+
+df.pois<-tibble(beta=c(beta.pois),iteration = rep(iteration,2),chain = rep(chain,2),name)
+
+##  Trace Plots
+
+ggplot(filter(df.pois,chain =="1"), aes(x= iteration, y = beta))+
+  geom_line()+
+  facet_wrap(~name, labeller = label_parsed)
+
+##  Cummulative Mean Plots
+
+ggplot(filter(df.pois,chain=="1")%>%group_by(name)%>%summarise(beta=cummean(beta), iteration = iteration), aes(x = iteration, y = beta, group = name))+
+  geom_line()+
+  facet_wrap(~name, labeller = label_parsed)
+
+##  BGR Plot
+
+ggplot(df.pois,aes(x=iteration, y = beta, group = chain, color = chain ))+
+  geom_line()+
+  facet_wrap(~name, labeller = label_parsed)
+
+##  Plot the results for Negative Binomial
+
+iteration<-rep(1:N,3)
+chain<-c(rep("1",N),rep("2",N),rep("3",N))
+name<-c(rep("beta[0]",3*N),rep("beta[1]",3*N),rep("eta",3*N))
+
+beta.nb<-rbind(nb_out[[1]]$beta,nb_out[[2]]$beta,nb_out[[3]]$beta)
+eta<-c(nb_out[[1]]$eta,nb_out[[2]]$eta, nb_out[[3]]$eta)
+
+df.nb<-tibble(beta=c(beta.nb,eta),iteration = rep(iteration,3),chain = rep(chain,3),name)
+
+##  Trace Plots
+
+ggplot(filter(df.nb,chain =="1"), aes(x= iteration, y = beta))+
+  geom_line()+
+  facet_wrap(~name, labeller = label_parsed)
+
+##  Cummulative Mean Plots
+
+ggplot(filter(df.nb,chain=="1")%>%group_by(name)%>%summarise(beta=cummean(beta), iteration = iteration), aes(x = iteration, y = beta, group = name))+
+  geom_line()+
+  facet_wrap(~name, labeller = label_parsed)
+
+##  BGR Plot
+
+ggplot(df.nb,aes(x=iteration, y = beta, group = chain, color = chain ))+
+  geom_line()+
+  facet_wrap(~name, labeller = label_parsed)
+
+##  BGR Computations
+
+BGR<-function(par,DF)
+{
+  S<-aggregate(beta~chain,FUN = var, data = filter(DF, name == par))
+  W<-mean(S$beta)
+  B<-var(S$beta)
+  VAR<-(1-1/N)*W+B
+  Rhat<-(VAR/W)%>%sqrt()
+  return(Rhat)
+}
+
+bgr.pois<-sapply(unique(df.pois$name),function(x) BGR(x, df.pois))
+bgr.nb<-sapply(unique(df.nb$name),function(x) BGR(x, df.nb))
+
+##  ACF and ESS
+
+##  For Poisson
+
+acf_beta_0<-acf(pois_out[[1]]$beta[,1],plot = FALSE)$acf
+acf_beta_1<-acf(pois_out[[1]]$beta[,2],plot = FALSE)$acf
+lag<-rep(1:length(acf_beta_0),2)
+name<-c(rep("beta[0]",length(acf_beta_0)),rep("beta[1]",length(acf_beta_1)))
+
+df<-tibble(acf = c(acf_beta_0,acf_beta_1),lag,name)
+
+ggplot(df,aes(x = lag, y = acf))+
+  geom_bar(stat = "identity",alpha = 0.5)+
+  geom_hline(yintercept = 0.05,linetype = "dashed")+
+  facet_wrap(~name,labeller = label_parsed)
+
+##  For negative-binomial
+
+acf_beta_0<-acf(nb_out[[1]]$beta[,1],plot = FALSE)$acf
+acf_beta_1<-acf(nb_out[[1]]$beta[,2],plot = FALSE)$acf
+acf_eta<-acf(nb_out[[1]]$eta,plot = FALSE)$acf
+lag<-rep(1:length(acf_beta_0),3)
+name<-c(rep("beta[0]",length(acf_beta_0)),rep("beta[1]",length(acf_beta_1)),rep("eta",length(acf_eta)))
+
+df<-tibble(acf = c(acf_beta_0,acf_beta_1,acf_eta),lag,name)
+
+ggplot(df,aes(x = lag, y = acf))+
+  geom_bar(stat = "identity",alpha = 0.5)+
+  geom_hline(yintercept = 0.05,linetype = "dashed")+
+  facet_wrap(~name,labeller = label_parsed)
+
+pois.ess<-mcmcse::ess(pois_out[[1]]$beta)
+nb.ess<-mcmcse::ess(cbind(nb_out[[1]]$beta,nb_out[[1]]$eta))
+
+```
+
+###   Brooks-Gelman-Rubin Potential Scale Reductions Factors
+
+|  Model     |  $\beta_0$              |  $\beta_1$              |  $\eta$               |
+|------------|-------------------------|-------------------------|-----------------------|
+|  Poisson   | `r round(bgr.pois[1],3)`| `r round(bgr.pois[2],3)`|  -                    |
+|  Neg-Binom | `r round(bgr.nb[1],3)`  |  `r round(bgr.nb[2],3)` | `r round(bgr.nb[3],3)`|
+
+###   Effective Sample Sizes
+
+|  Model     |  $\beta_0$              |  $\beta_1$              |  $\eta$               |
+|------------|-------------------------|-------------------------|-----------------------|
+|  Poisson   | `r round(pois.ess[1],3)`| `r round(pois.ess[2],3)`|  -                    |
+|  Neg-Binom | `r round(nb.ess[1],3)`  |  `r round(nb.ess[2],3)` | `r round(nb.ess[3],3)`|
+
+###   Deviance Information Criteria
+
+|Model      | $\bar{D}$  |$p_D$    |$p_v$     |$DIC_{p_D}$ |$DIC_{p_V}$ |
+|-----------|------------|---------|----------|------------|------------|
+|Poisson    | `r p.Dbar` |`r p.pD` | `r p.pV` |`r p.DICd`  |`r p.DICv`  |
+| Neg-Binom | `r nb.Dbar`|`r nb.pD`|`r nb.pV` |`r nb.DICd` |`r nb.DICv` |
+

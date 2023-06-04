@@ -9,29 +9,33 @@ output:
   progressive: true
   allow_skip: true
 runtime: shiny_prerendered
-params:
-  show_solutions: TRUE
 ---
 
-```{r ws-setup, include=FALSE}
-  # if problems with knitting directory:
-  # set Knit Directory = Document Directory
+```{r setup, include=FALSE}
+# if problems with knitting directory:
+# set Knit Directory = Document Directory
 
-  # install libraries needed for worksheet
-  library(MXB341)
+# install libraries needed for worksheet
+knitr::opts_chunk$set(
+  fig.align = 'center',
+  collapse = TRUE,
+  comment = "#>"
+)
 
+library(learnr)
+library(kableExtra)
+library(pander)
+library(shiny)
+library(MXB341)
 
-  # Make notes here:
-  # --- chunk `instructions-header` currently turned off. 
-  #     Set `eval = TRUE` to use (and update file).
-  #
-  #
 
 ```
 
 ```{r, echo = FALSE}
 
 htmltools::includeHTML("header.html")
+htmltools::includeCSS("./css/QUTtutorial.css")
+htmltools::includeCSS("./css/QUT.css")
 
 ```
 
@@ -296,6 +300,6 @@ function button_handler3() {
 
 &thinsp;
 
-```{r prac-solution-4, child='../solution-bank/id0022-confint-poisson-prac.Rmd', eval = params$show_solutions}
+```{r prac-solution-4, child='../solution-bank/id0022-confint-poisson-prac.Rmd', eval = TRUE}
   
 ```

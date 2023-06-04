@@ -2,12 +2,12 @@
 ***
 *Solution*: 
 
-a. For the mean of $s_{1}$: $E(y_{i}) = \theta/2$, therefore $E(s_{1}) = n\theta/2$. Whereas for the variance: $\opertorname{var}(y_{i}) = \theta^{2}/12$, so $\opertorname{var}(s_{1}) = n\theta^{2}/12$._
+a. For the mean of $s_{1}$: $E(y_{i}) = \theta/2$, therefore $E(s_{1}) = n\theta/2$. Whereas for the variance: $\operatorname{var}(y_{i}) = \theta^{2}/12$, so $\operatorname{var}(s_{1}) = n\theta^{2}/12$._
 
 Let $y_{(n)}$ be the maximum of the sample ($n$th order statistic).
     $P(y_{(n)} < x) = P(y_{1} < x, \ldots, y_{n} < x) = \prod_{i=1}^{n}P(y_{i} < x) = (x/\theta)^{n}$. For $0 \leq x \leq \theta$. From this, the PDF for $y_{(n)}$ is 
 $$
-    p(x) = \frac{nx^{n-1}}{\theta^{n}} \quad \opertorname{ for } 0 \leq x \leq \theta,
+    p(x) = \frac{nx^{n-1}}{\theta^{n}} \quad \operatorname{ for } 0 \leq x \leq \theta,
 $$ 
 the expectation is 
 $$
@@ -33,7 +33,7 @@ $$
 \operatorname{Var}(\hat{\theta}_{A}) = \left(\frac{2}{n}\right)^{2}\operatorname{Var}(s_{1}) = \left(\frac{2}{n}\right)^{2} \frac{n\theta^{2}}{12} = \frac{\theta^{2}}{3n}
 $$
 $$
-\operatorname{Var}(\hat{\theta}_{B}) = \frac{(n+1)^{2}}{n^{2}}\opertorname{var}(s_{2}) = \frac{(n+1)^{2}}{n^{2}} \frac{n \theta^{2}}{(n+1)^{2}(n+2)} = \frac{\theta^{2}}{n(n+2)}.
+\operatorname{Var}(\hat{\theta}_{B}) = \frac{(n+1)^{2}}{n^{2}}\operatorname{var}(s_{2}) = \frac{(n+1)^{2}}{n^{2}} \frac{n \theta^{2}}{(n+1)^{2}(n+2)} = \frac{\theta^{2}}{n(n+2)}.
 $$
 Since $n(n+2) \geq 3n$ for $n \geq 1$, $\operatorname{Var}(\hat{\theta}_{B})$ is always smaller of the two variances.
 

@@ -1,0 +1,19 @@
+Given data from the OLS model
+$$
+f(\mathbf{y}|\beta_0,\beta_1)=\left(\frac{1}{2\pi\sigma^2}\right)^{n/2}\exp\left(-\frac{\sum_{i=1}^n(y_i-\beta_0-\beta_1x_i)^2}{2}\right)
+$$
+for the priors
+$$
+\begin{align}
+\pi(\beta_0,\beta_1)&\propto 1
+\end{align}
+$$
+Given some data 
+```{r echo=FALSE}
+x<-runif(15,-3,3)
+y<-1.3-6*x+rnorm(15,sd=1)
+```
+$x=$ `r round(x,2)` $y=$ `r round(y,2)` implement a hit and run sampler scheme to draw 1000 samples from the posterior
+$$
+\pi(\beta_0,\beta_1|\mathbf{y})\propto f(\mathbf{y}|\beta_0,\beta_1)\pi(\beta_0,\beta_1).
+$$

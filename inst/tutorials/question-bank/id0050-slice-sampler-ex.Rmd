@@ -1,0 +1,17 @@
+Given data from a Poisson likelihood 
+$$
+f(\mathbf{y}|\lambda)=\frac{\lambda^{\sum_{i=1}^ny_i}e^{-n\lambda}}{\prod_{i=1}^ny_i!}
+$$
+consider the prior 
+$$
+\pi(\lambda)=\frac{1}{(\lambda+1)^2}
+$$
+Given some data 
+```{r echo=FALSE}
+y<-rpois(10,3.2)
+```
+$y=$ `r y` implement a slice sampler scheme to draw 1000 samples from the posterior
+$$
+\pi(\lambda|\mathbf{y})\propto f(\mathbf{y}|\lambda)\pi(\lambda)
+$$
+Compare the posterior mean of $\lambda$ to the MLE $\hat{\lambda}$.

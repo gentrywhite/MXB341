@@ -1,0 +1,912 @@
+---
+title: "Week 4"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Week 4}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(tidyverse)
+
+```
+
+```{r, echo=FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("QUTReadings.css")
+
+```
+
+#   Hypothesis Testing\
+
+:::{.sidenote}
+<center>
+![Philosopher Karl Popper.](Popper.jpeg)
+</center>
+
+**What Makes a Good Hypothesis?**\
+Surprisingly this is not a straightforward question, and it wasn't until
+the 1920's that the philosopher Karl Popper proposed a measure of
+whether or not a hypothesis was "scientific". This measure is
+*falisifiability*, meaning that for any hypothesis to be "scientific", it must be able to be disproven or falsifiable.
+This concept is useful when constructing statistical hypotheses.
+:::
+
+
+Modern Science relies on principles first described almost 400 years
+ago.
+
+1.  Hypothesise questions that you can answer by collecting data or
+    making observations
+
+2.  Collect your data or make your observations carefully --- beware of
+    mistakes or biases that can infiltrate the processes.
+
+3.  Test your hypothesis rigorously --- question everything
+
+4.  Update your beliefs
+
+This document focuses on interpreting these steps in a probabilistic
+and statistical framework, with particular attention paid to Steps 1 and
+3.
+
+##    Falsifiability
+
+
+For a hypothesis to scientifically valid, it must able to proven wrong.  Consider the statement:
+
+:::{.quote}
+"All swans are white."
+:::
+
+The case of black swans is a rather famous example. The assertion that all swans are white is straightforward but disprovable; all that is
+needed is to find one counterexample. Until 1697 the term "black swan"
+meant an impossibility, but in 1697 Dutch explorers in western Australia
+found black swans. Today the term refers to either exceedingly rare
+event or examples of a perceived impossibility that is disprovable.
+
+:::{.quote}
+"Ghosts are real."
+:::
+
+The existence of ghosts would seem on the surface to be a falsifiable
+hypothesis, but it isn't. No matter how many times I conduct a search
+for ghosts and don't find one, the counter-argument will be that I just
+need to keep looking.  The phrase "absence of evidence is not evidence of an absence" applies here. The complement to this argument that
+ghosts aren't real is a scientific hypothesis because, as in the case of all swans being white, all you would need is to find a single ghost to disprove the statement that ghosts aren't real.  
+
+:::{.boxed}
+**Falsifiable Statements:**\
+Typically affirmative statements are not falsifiable, while negative statements usually are. This property will be a crucial element of constructing statistical hypotheses.  
+
+While the statement "all swans are white" is affirmative, it is equivalent to "there are no non-white swans" is a negative statement. 
+::::
+
+&nbsp;
+
+##    Statistical Hypotheses
+
+:::{.sidenote}
+**Example:**\
+Consider a coin that you want to use to play some coin-tossing game.
+Naturally, you want to know if the coin is "fair", i.e.\ is it an equal
+probability that the coin will land heads up or tails up. Your
+hypotheses would then be: 
+$$
+H_0:p=0.5\qquad H_A:p\neq 0.5
+$$ 
+and to test
+this set of hypotheses, you might toss the coin $n$ times and record $y$ the number of
+heads (or tails) and then make a decision based on the probability of
+getting $y$ heads (or tails) given that $p=0.5$.
+:::
+
+The steps in scientific induction outlined above seem straightforward, but all data are "noisy" in the real world. We consider that observed data are
+random variables; thus, decisions made based on observed data must take this into account.  This uncertainty implies that we should evaluate hypotheses based on probabilistic statements based on the probability distribution of the data; we always conduct a scientific enquiry under the
+veil of uncertainty. We can make probabilistic statements to evaluate hypotheses by phrasing them in terms of the data's hypothesised probability distribution.  
+
+Statistical hypotheses are ultimately statements of belief about the
+the probability distribution
+believed to describe with the data (later we will see that they
+might be statements about the values of parameters of a probability distribution as well).
+
+:::{.boxed}
+Assume we have a sample
+$\mathbf{y}=(y_1,y_2,\ldots,y_n)', \: y_i\in\mathbb{R}$ believed to follow
+some probability distribution $f(y;\theta)$. Then we might make the
+following set of statements concerning the value of $\theta$.
+$$
+H_0:\theta = \theta_0\qquad H_A:\theta\neq\theta_0
+$$ 
+where $H_0$ is
+called the null hypothesis and is specifically a *point-null* hypothesis
+because it states that $\theta$ is equally to a single specific (point)
+value, $\theta_0$.
+:::
+
+In the case of the point-null hypothesis, the criterium of falsifiability isn't strictly
+applicable, because $y$ is a continuous random variable; it is highly
+unlikely (impossible) to observe a case where $y_i=\theta_0$. Instead,
+we have to assess the hypotheses based on a probabilistic assessment of
+the data, and use the probability associated with the data to make
+decisions about whether to reject or fail to reject the null hypothesis,
+i.e. we might choose to reject $H_0$ if
+$Pr(\mathbf{y}|\theta=\theta_0)<\epsilon$ where $\epsilon$ represents some lower limit, below which we would reject the null hypothesis because the data are too unlikely given that the null hypothesis is true. We will develop this reasoning more formally, but it is important to consider the more general idea of rejecting the null hypothesis if it makes the observed data too unlikely.
+
+#   Likelihood Ratio Tests
+
+:::{.sidenote}
+**Example:**\
+We might try to decide whether a Poisson or Binomial distribution better described our data:
+$$
+H_0:Y\sim\text{Pois}(\lambda)\qquad H_A:Y\sim \text{Binom}(n,p).
+$$
+Or for some probability distribution $f(y;\theta)$ we might want to choose between two possibilities for $\theta$
+$$
+H_0:\theta=\theta_0\qquad H_A:\theta=\theta_A.
+$$
+:::
+
+The basic idea of hypothesis testing is to compare the likelihood of the data given two possible choices.  We typically express theses choices as options in terms of a probability distribution, either the choice between two probability distributions or the between possible parameter values for a given probability distribution.
+
+The most straightforward way to do this is to compare the value of two likelihoods computed under the competing hypotheses.  In this case, we calculate the ratio of the two likelihoods and reject the null hypothesis if the ratio is too small (assuming that the likelihood under the null hypothesis is in the numerator). This procedure is the Likelihood Ratio Test (LRT).
+
+For example,the likelihood ratio test statistic for testing $H_0: \theta=\theta_0$
+versus $H_A:\theta=\theta_A$ is
+$$
+\Lambda(\mathbf{y})=\frac{L(\theta_0|\mathbf{y})}{L(\theta_A|\mathbf{y})}
+$$ 
+where we define
+the rejection region as
+$$
+\{\mathbf{y}:\Lambda(\mathbf{y})\leq c\},\:0\leq c\leq 1.
+$$
+
+:::{.sidenote}
+**Example:**\
+Given $\mathbf{y}=(y_1,y_2,\ldots,y_n)',\:y_i\sim Exp(\lambda)$ find the likelihood ratio test of
+$$
+H_0:\lambda=\lambda_0\qquad H_A:\lambda=\lambda_A.
+$$ 
+:::
+
+This definition of the likelihood ratio test and the value $c$ is rarely applied directly to an actual testing situation.  Instead, we will see that the likelihood ratio test has some nice properties. The choice of $c$ depends on the probability distribution of the likelihood ratio, which may not be available. Note that we define the rejection region in terms of the observed data $\mathbf{y}$. We could also base the rejection region on a function of the observed data, i.e.· a sufficient statistic; this implies an equivalent test based on another (sufficient) statistic with an accessible probability distribution.  
+
+:::{.boxed}
+###   Exponential Distribution Likelihood Ratio Test {.tabset .tabset-pills}
+
+####    Solution
+Given $\mathbf{y}=(y_1,y_2,\ldots,y_n)',\:y_i\sim Exp(\lambda)$ and the hypotheses
+$$
+H_0:\lambda=\lambda_0\qquad H_A:\lambda=\lambda_A
+$$ 
+the Likelihood Ratio Test depends on the ratio 
+$$
+\begin{aligned}
+\Lambda(\mathbf{y})&=\frac{L(\lambda_0|\mathbf{y})}{L(\lambda_A|\mathbf{y})}\\
+&=\frac{\prod_{i=1}^n\lambda_0e^{-\lambda_0 y_i}}{\prod_{i=1}^n\lambda_Ae^{-\lambda_A y_i}}\\
+&=\frac{\lambda_0^ne^{-\lambda_0\sum_{i=1}^ny_i}}{\lambda_A^ne^{-\lambda_A\sum_{i=1}^ny_i}}\\
+&=\left(\frac{\lambda_0}{\lambda_A}\right)^n\exp\left(-(\lambda_0-\lambda_A)\sum_{i=1}^ny_i\right).
+\end{aligned}
+$$
+which is a function of a sufficient statistic
+$T(\mathbf{y})=\sum_{i=1}^ny_i$. Note that the other terms in the likelihood ratio are constants, so the likelihood ratio test is equivalent
+to a test based solely on the distribution of the sufficient statistic
+$T(\mathbf{y})$.
+
+
+
+:::
+
+&nbsp;
+
+:::{.sidenote}
+**Example:**\
+Given $\mathbf{y}=(y_1,y_2,\ldots,y_n)',\:y_i\sim N(\mu,1)$, construct a
+generalised likelihood ratio test of the hypotheses
+$$
+H_0:\mu=\mu_0\qquad H_A:\mu\neq \mu_0
+$$ 
+:::
+
+Note that constructing an alternative test based on the statistic $T(\mathbf{y})$ can require some additional work, as it is not possible to compute the probability
+$$
+Pr\left(T(\mathbf{y}|\theta_0)\right)
+$$
+if the statistic $T(\mathbf{y})$ follows a continuous distribution $T(\mathbf{y})\sim f(t;\theta)$. We will return to this idea when we develop a more formal approach to constructing and evaluating hypothesis tests later in this document. 
+<!---
+$$
+y_i\sim \text{Exp}(\lambda),\:\forall i
+$$ 
+then the sufficient statistic 
+$$
+T(\mathbf{y})=\sum_{i=1}^ny_i\sim\text{Ga}(n,\lambda),
+$$ 
+which we can use to perform the hypothesis test. Because we would base the equivalent test based on the sufficient statistic on the idea that we would reject the null hypothesis if 
+$$
+Pr\left(T(\mathbf{y})|\lambda_0\right)<\epsilon
+$$
+we would need to specify our hypothesis test and our rejection region in slightly different terms.  
+--->
+
+:::{.boxed}
+###   The Gaussian Likelihood Ratio Test {.tabset .tabset-pills}
+
+Given $\mathbf{y}=(y_1,y_2,\ldots,y_n)',\:y_i\sim N(\mu,1)$, construct a
+generalised likelihood ratio test of the hypotheses
+$$
+H_0:\mu=\mu_0\qquad H_A:\mu\neq \mu_0
+$$ 
+
+####    Solution
+
+Because $H_A:\mu\neq\mu_0$ and $\hat{y}$ the MLE of $\mu$ is used for calculating $L(\theta|\mathbf{y})$
+thus the Likelihood Ratio Test 
+$$
+\begin{aligned}
+\Lambda(\mathbf{y})&=\frac{(2\pi)^{-n/2}\exp\left[-\sum_{i=1}^n(y_i-\mu_0)^2/2\right]}{(2\pi)^{-n/2}\exp\left[-\sum_{i=1}^n(y_i-\bar{y})^2/2\right]}\\
+&=\exp\left[\left(-\sum_{i-1}^n(y_i-\mu_0)^2+\sum_{i=1}^n(y_i-\bar{y})^2\right)/2\right]\\
+&=\exp\left[-\frac{n(\bar{y}-\mu_0)^2}{2}\right]
+\end{aligned}
+$$ 
+which
+will reject for small values of $\Lambda(\mathbf{y})$ based on the
+probability distribution of $\bar{y}$. This result leads directly to the standard test procedure for testing hypotheses about the mean and the subsequent $t$-tests and tests of sample proportions.
+
+
+:::
+
+##    Generalised Likelihood Ratio Tests
+
+:::{.sidenote}
+A **composite hypothesis** covers a range of possible values. Composite hypotheses arise in particular when performing tests regarding model parameter values.  Thus we construct null and alternative hypotheses as disjoint spaces covering the entire parameter space, e.g.
+$$
+H_0:\theta\leq\theta_0\qquad H_A:\theta>\theta_0.
+$$
+Note that the case of the point-null hypothesis
+$$
+H_0:\theta=\theta_0\qquad H_A:\theta\neq\theta_0
+$$
+is not a composite hypothesis but is commonly applied to tests of parameters or other continuous quantities. 
+
+We can test composite hypotheses using the Generalised Likelihood Ratio Test (GLRT).
+
+:::
+
+The Likelihood ratio test as shown applies to simple hypotheses,
+e.g. $H_0:\theta=\theta_0$, or the comparison of two simple hypotheses.  This property can be a very useful framework but can make it difficult to construct equivalent tests based on sufficient statistics when they are continuous quantities.  We can generalise the likelihood ratio test to more complex (or composite) hypotheses 
+The test can be further generalised to apply
+to more complicated or complex hypotheses
+$$
+H_0:\theta\in\Theta_0\qquad H_A:\theta\in\Theta_A
+$$ 
+where $\Theta_0\cap\Theta_A=\emptyset$, i.e.· the null and alternative parameter spaces are disjoint, but their intersection doesn't necessarily equal the entire parameter space.  
+In this case, the likelihood ratio becomes
+$$
+\Lambda(\mathbf{y})=\frac{\max_{\theta\in\Theta_0}L(\theta|\mathbf{y})}{\max_{\theta\in\Theta_A}L(\theta|\mathbf{y})}.
+$$
+The generalised likelihood ratio test has the advantage of being able to address more complicated questions concerning model parameters; in many cases, it is possible to find a closed-form of the probability distribution of the likelihood ratio or its equivalent for
+a sufficient statistic. However, with more complicated hypotheses, this
+may not be true. 
+
+In this case, Wilk's Theorem is a useful tool for making an inference based on the likelihood ratio's asymptotic properties. 
+
+:::{.boxed}
+**Wilk's Theorem:**\
+If $H_0:\theta\in\Theta_0$ is true then as the sample size
+$n\rightarrow\infty$
+$$
+\Lambda_0=-2\log\left\{\frac{\max_{\theta\in\Theta_0}L(\theta|\mathbf{y})}{\max_{\theta\in\Theta_A}L(\theta|\mathbf{y})}\right\}\sim \chi^s_{\nu}
+$$
+where $\nu$ is the difference in the number of parameters in the numerator
+and denominator.
+:::
+
+&nbsp;
+
+:::{.sidenote}
+**GLRT for the Binomial Distribution**\
+Given outcomes $(y_1,y_2,\ldots,y_n)$ from $n$ independent Bernoulli trials
+test the hypotheses 
+$$
+H_0:p=\frac{1}{2}\qquad H_A:p\neq\frac{1}{2}.
+$$ 
+:::
+
+Specifically, Wilk's theorem states that as the number of observations $n\rightarrow\infty$ the distribution of the statistic $-2$ times the log of the likelihood ratio (or the difference in the log-likelihoods) under the null hypothesis (i.e. if the null hypothesis is true). This result means that we can make direct probabilistic statements about the hypotheses we can test easily using the $\chi^2$ distribution.  
+
+We should take caution when computing the degrees of freedom for the Wilk's Theorem test statistic $-2\log\left(\Lambda(\mathbf{y})\right)$. The degrees of freedom is the difference in the number of free parameters between the null and alternative models:
+$$
+\nu=\text{df}_A-\text{df}_0
+$$
+where df$_A$ is the degree of freedom under the alternative hypothesis, and df$_0$ is the degree of freedom under the null hypothesis. Calculating the degrees of freedom for a test based on Wilk's Theorem is illustrated in the following example. 
+
+:::{.boxed}
+
+###   Generalised Likelihood Test for the Binomial Distribution {.tabset .tabset-pills}
+
+Given a set of outcomes from $n$ Bernoulli trials let $y$ equal to the number of successes in $n$ trials and test the hypotheses 
+$$
+H_0:p=\frac{1}{2}\qquad H_A:p\neq\frac{1}{2}
+$$ 
+
+####    Solution
+
+The likelihood ratio, in this case, reduces to
+$$
+\Lambda(p)=\frac{\left(\frac{1}{2}\right)^n}{\left(\frac{y}{n}\right)^y\left(\frac{n-y}{n}\right)^{n-y}}
+$$
+and
+$$
+-2\log\left\{\frac{\left(\frac{1}{2}\right)^n}{\left(\frac{x}{n}\right)^y\left(\frac{n-y}{n}\right)^{n-y}}\right\}\sim\chi^2_1
+$$
+Note that $\nu=1$ because there are no estimated parameters in
+the likelihood under $H_0$ and we use the MLE for $p=\frac{y}{n}$ in the likelihood under $H_A$ is a single estimated parameter, thus
+$$
+\nu=1-0=1
+$$
+so the test is performed using the $\chi^2_1$ distribution. 
+
+
+
+:::
+
+
+##    Pearson's Goodness of Fit Test
+
+:::{.sidenote}
+Scientists measure radioactive decay by counting the number of alpha particles
+emitted in fixed intervals of time. These counts follow a Poisson
+distribution. 
+
+:::{.table}
+
+     0   1   2   3   4   5   6   7   8+
+--- --- --- --- --- --- --- --- --- ---
+ n   121 281 337 242 118 62  31  5  3
+ 
+:::
+
+using the data in the table above of $M=1200$
+observations of $n$, the number of emissions in 10-second intervals, test the hypothesis that these data follow a Poisson distribution with rate $\lambda=3$.
+:::
+
+Pearson's Goodness of Fit Test, or Pearson's $\chi^2$ Test, is one of the
+oldest statistical tests in existence. Pearson's goodness of fit test can be applied to various circumstances and is quite flexible. The test is based on
+the discrepancy between the data and the theoretical model. The test statistic is 
+$$
+X^2=\sum_{i=1}^N\frac{(O_i-E_i)^2}{E_i}
+$$ 
+where $O_i$ is the observed
+value and $E_i$ is the expected or theoretical values calculated based
+on the assumptions of the null hypothesis. The sum $X^2$ is a random
+variable and as such has a probability distribution which under the null
+hypothesis 
+$$
+X^2\sim \chi^2_{\nu}
+$$ 
+where $\nu$ is equal to the number of observations $N$ minus the number of estimated parameters $p$ minus 1
+$$
+\nu=N-p-1.
+$$
+We can apply this idea to a wide variety of situations, and while it is
+not necessarily the most powerful test, it can be useful in many
+situations where a means of using the Neyman-Pearson Lemma to construct
+a test is not immediately obvious.
+
+
+:::{.boxed}
+
+###   Radioactive Decay Test {.tabset .tabset-pills}
+
+Scientists measure radioactive decay by the number of alpha particles
+emitted in fixed intervals of time, which follow a Poisson
+distribution. Using the data in the table below for $M=1200$ observations of $n$ the number of particles emitted in a ten-second interval, using Pearson's goodness of fit test, test the hypotheses
+$$
+H_0:\lambda=2.4\qquad H_A:\lambda\neq 2.4.
+$$
+
+:::{.table}
+
+     0   1   2   3   4   5   6   7   8+
+--- --- --- --- --- --- --- --- --- ---
+ n   121 281 337 242 118 62  31  5  3
+ 
+:::
+
+####    Solution
+
+The test statistic $X^2$ is based on the counts in $N=9$ categories
+$$
+X^2=\sum_{i=1}^{9}\frac{(n_i-E_i)^2)}{E_i}
+$$
+where if $\sum_{i=1}^9n_i$
+$$
+\begin{align}
+E_1&=M\times  Pr(X=0|\lambda_0)\\
+&=M\times\exp(-\lambda)\\
+E_2&=M\times Pr(X=1|\lambda_0)\\
+&=M\times\frac{\lambda\exp{-\lambda}}{1!}\\
+\vdots & \\
+E_9&=M\times\left(1-\sum_{x=0}^7Pr(x|\lambda_0)\right).
+\end{align}
+$$
+The table below shows the results with the resulting $X^2$ test statistic.
+
+
+:::{.table}
+  n    Observed   Expected   $\frac{(n_i-E_i)^2}{E_i}$
+  ---- ---------- ---------- ----------
+  0    121        108.9      1.353
+  1    281        261.3      1.490
+  2    337        313.5      1.758
+  3    242        250.8      0.310
+  4    118        150.5      7.014
+  5    62         72.24      1.450
+  6    31         28.89      0.153
+  7    5          9.907      2.430
+  8+   3          4.006      0.252
+  Total  1200       1200    16.21
+::: 
+where we would reject the null hypothesis if
+$$
+X^2>\chi^2_{\nu,\alpha}
+$$
+and $\nu=9-1-1=7$ degrees of freedom and the critical value $\chi^2_{\nu,1-\alpha}$ is chosen based on some probability of observing the data given the null hypothesis such that
+$$
+\alpha=Pr\left(X^2>\chi^2_{\nu,1-\alpha}\right).
+$$
+In other words, we would reject the null hypothesis if the probability of observing a value of $X^2$ we so large that observing a value that large or larger is less than $\alpha$, given that $X^2\sim\chi^2_{\nu}$.
+
+Note that for $alpha = 0.05$ the critical value is $14.067$ and since
+$$
+16.21>14.067
+$$
+we would reject our null hypothesis.
+
+
+####    Code
+
+```{r echo=TRUE, eval=TRUE}
+##  The total number of observations
+
+M<-1200
+
+##  The count of each time the numbers 0,1,2,3,4,5,6,7,8+ occur
+
+ obs<-c(121,281,337,242,118,62,31,5,3)
+ 
+##  Calculate the expected value as M*Pr(X=x|\lambda_0)
+ 
+ lambda_0<-2.4
+ 
+ p<-dpois(0:7,lambda_0)
+ p_plus<-1-dpois(0:7,lambda_0)%>%sum()
+ 
+ E<-M*c(p,p_plus)
+ 
+ ## Compute the test statistic
+ 
+ X<-(obs-E)^2/E
+ 
+ X_test<-sum(X)
+ 
+ X_test
+ 
+```
+
+
+
+:::       
+
+
+
+#     Evaluating Tests
+
+We have seen that we can use some logical arguments for guiding us in constructing hypotheses for formal testing as part of scientific (statistical) inference and that the likelihood ratio test is a logical test statistic.  The likelihood ratio statistic (or generalised likelihood ratio test) is often the function of the sufficient (or other) statistics, and tests based on these statistics are equivalent to the likelihood ratio tests.  Within this framework, there are options for constructing a test, and it is useful to have some means of evaluating, comparing, and optimally constructing tests. The Neyman-Pearson Lemma provides these capabilities.   
+
+##    Neyman-Pearson Lemma:</br> &nbsp;&nbsp;&nbsp;&nbsp; Uniformly Most Powerful Tests
+
+:::{.sidenote}
+**Errors in Statistical Testing**\
+Because statistical hypothesis tests are based on random variables, random errors in decisions based on the test's results can occur.
+
+
+**Probabilities of Error by Type for Statistical Tests**
+
+                       Fail to Reject              Reject
+  ----------------  ---------------------- -----------------------                 
+   $H_0$ is True         $1-\alpha$         Type I Error $\alpha$
+   $H_0$ is False   Type II Error $\beta$     Power $=1-\beta$
+  ---------------- ----------------------- -----------------------
+  
+We design tests by setting the Type I error rate $\alpha$ to a predetermined value (typically $\alpha=0.05$). Power ($1-\beta$), the probability of correctly rejecting $H_0$ when it is false, is computed as a function of the Type I error rate and the difference between the "true" and hypothesised parameter values. 
+
+:::
+
+The Neyman-Pearson Lemma provides an important framework for evaluating and constructing tests and understanding the uncertainty surrounding statistical hypothesis testing. Most importantly, these are specified directly based on the observed data (or sufficient statistic) and the rejection region. 
+
+The Neyman-Pearson Lemma and corresponding paradigm for statistical hypothesis testing and decisions are predicated on the notion that we always decide to either reject or fail to reject the null hypothesis for any test.  Strictly speaking, the failure to reject the null hypothesis is not an implicit acceptance of the null hypothesis; instead, it indicates a lack of evidence to reject the null hypothesis. This distinction is especially apparent in point null hypotheses. If the parameter in question is a continuous quantity, the likelihood that the point null hypothesis value is equal to the true value is nil. In this case, "accepting" the null hypothesis is perhaps foolhardy.  Instead, it makes more sense to consider that the evidence is insufficient to detect a significant difference between the observed (via the data) parameter value and the hypothesised value.  
+
+A test's power refers to its capability to identify this significant difference; the smaller the difference between the observed and hypothesised value that a test can significantly detect, the more powerful the test.  The Neyman-Pearson Lemma is concerned with constructing and identifying the **Uniformly Most Powerful (UMP)** tests. 
+
+**The design objective for statistical tests is that for a
+given Type I Error Rate $\alpha$, we want the test with the largest
+power. The Neyman-Pearson Paradigm and Lemma give us guidelines for
+identifying and constructing these kinds of tests.**  
+
+:::{.boxed}
+**The Neyman-Pearson Lemma**\
+Given data $\mathbf{y}=(y_1,y_2,\ldots,y_n)',\:y_i\sim f(\mathbf{y}|\theta)$ and
+$$
+H_0:\theta=\theta_0\qquad H_A:\theta=\theta_A
+$$ 
+with the rejection
+region $R$ defined as the region where we reject $H_0$ if
+$\mathbf{y}\in R$
+
+A statistical test where $Pr(\mathbf{y}\in R)=\alpha$ and for $k>0$
+$$
+\mathbf{y}\in R\:
+\mbox{ if } f(\mathbf{y}|\theta_A)>kf(\mathbf{y}|\theta_0)
+$$ 
+and
+$$
+\mathbf{y}\in R^c \mbox{ if }f(\mathbf{y}|\theta_A)<kf(\mathbf{y}|\theta_0)
+$$
+
+is called the *Uniformly Most Powerful Test* (UMP) for a given $\alpha$, meaning that there is no other statistical test with the same Type I
+Error Rate $\alpha$ that has greater power.
+
+::::
+
+It is easy to see how the likelihood ratio test arises as a UMP from the Neyman-Pearson Lemma.  We reject the null hypothesis if
+$$
+\mathbf{y}\in R \mbox{ if }\frac{f(\mathbf{y}|\theta_0)}{f(\mathbf{y}|\theta_A)}<\frac1k
+$$
+where we choose 1/k$ depending on the Type I error rate $\alpha$.
+
+Additionally, the Neyman-Pearson Lemma implies that tests based on sufficient statistics are UMP. 
+
+:::{.boxed}
+**The Neyman-Pearson Lemma for Sufficient Statistics:**\
+Given data $\mathbf{y}=(y_1,y_2,\ldots,y_n)',\:y_i\sim f(\mathbf{y}|\theta)$. It
+$T(\mathbf{y})$ is a sufficient statistic for $\theta$ with
+$t=T(\mathbf{y})\sim g(t|\theta)$ and
+$$
+H_0:\theta=\theta_0\qquad H_A:\theta=\theta_A
+$$ 
+with rejection region
+$S$ defined as the region where we reject $H_0$ if $t\in S$
+
+A statistical test where $Pr(\mathbf{y}\in R)=\alpha$ and for $k>0$
+$$
+t\in S\:
+\mbox{ if } g(t|\theta_A)>kg(t|\theta_0)
+$$ 
+and
+$$
+t\in S^c \mbox{ if }g(t|\theta_A)<kg(t|\theta_0)
+$$ 
+is the Uniformly Most Powerful test.
+
+
+<p align="center">
+**Thus tests based on sufficient statistics are UMP
+test.**
+</p>
+
+:::
+
+Recall that in the earlier example of the Likelihood Ratio Test for the mean of a Gaussian distribution, the test statistic
+$$
+\begin{aligned}
+\Lambda(\mathbf{y})&=\exp\left[-\frac{n(\bar{y}-\mu_0)^2}{2}\right]
+\end{aligned}
+$$
+which is equivalent to the test statistic based on the sufficient statistic $\bar{y}\sim N\left(\mu_0,\sigma^2\right)$.  This form is the standard form of the $Z$-test (and with a slight modification the $t$-test) based on the sampling distribution of $\bar{y}$, which, as we have shown, is UMP for a hypothesis about the population mean.
+
+:::{.boxed}
+###   Is a coin fair? {.tabset .tabset-pills}
+
+We can pose this question as a statistical hypothesis with: 
+$$
+H_0:p=0.5\qquad H_A:p\neq 0.5.
+$$
+
+####    Solution
+
+We have previously seen that we can write the test of "fairness" for our coin as a Generalised Likelihood Ratio Test with the test statistic 
+$$
+\Lambda(y)=\frac{\left(\frac{1}{2}\right)^n}{\left(\frac{y}{n}\right)^y\left(\frac{n-y}{n}\right)^{n-y}}
+$$
+and use Wilk's Theorem to perform the actual test.  It is more convenient to note that the test statistic based on $y$, the sum of heads in $n$ coin tosses is sufficient and $Y\sim Binom(n,p)$.  So we can define our rejection region in terms of the Binomial distribution based on a specified Type I error rate.  
+
+Since if $H_0$ were true the expected value of $Y=n/2$, so we would define our rejection region as values of $y$ that are sufficiently "far" away from $n/2$ that 
+$$
+R=\left(Y<\frac n2-c\right)\cup\left(Y>\frac n2+c\right)
+$$
+where we choose $c$ such that 
+$$
+Pr(y\in R)\leq\alpha.
+$$
+As an example, if $n=10$ then for $\alpha=0.05$ we would choose $c=3$ as if
+$$
+R=(Y<2)\cup(Y>8)
+$$
+and 
+and 
+$$
+Pr(y\in R)=0.022
+$$
+because
+$$
+Pr(Y<2)=Pr(Y>8)=0.011.
+$$
+
+####    Plot
+
+The plot below shows the rejection region $R$ shaded in dark grey. 
+```{r,echo = FALSE,out.width="75%"}
+df<-tibble(x=0:11,y = dbinom(0:11,10,0.5))
+
+df_areaStep <- bind_rows(old = df, 
+                         new = df %>% mutate(y = lag(y)),
+                         .id = "source") %>%
+               arrange(x, source)
+
+ggplot(df,aes(x = x,y = y))+
+  geom_segment(aes(x = x, xend = x, y = 0, yend = y ))+
+  geom_step()+
+        geom_ribbon(data=subset(df_areaStep,x>=9),aes(ymin = 0, ymax=y),
+                  fill="grey20", colour = NA, alpha = 0.5)+
+        geom_ribbon(data=subset(df_areaStep,x<=2),aes(ymin = 0, ymax=y),
+                  fill="grey20", colour = NA, alpha = 0.5)+
+  ylab("Pr(Y=y)")+xlab("Y")+
+  theme(panel.grid.minor = element_line(colour="white", size=0.5)) +
+    scale_y_continuous(minor_breaks = seq(0 , 10, 5), breaks = seq(0, 10, 1))
+  
+
+```
+
+
+
+:::
+
+##    Power
+
+<!--
+:::{.sidenote}
+**Example:**\
+Given $\mathbf{y}=(y_1,y_2,\ldots,y_n)',\:y_i\sim N(\mu,1)$ and the
+hypotheses $$H_0:\mu=\mu_0\qquad H_A:\mu\neq\mu_0$$ compute the power of
+a test the null hypotheses where the true value of $\mu$ is $\mu=\mu^*$.
+:::
+-->
+
+We define the power of a statistical test as the compliment of the Type II error rate.  Recall that the Type II error rate is the probability that we do not reject the null hypothesis given that it is false, the power is $1-$Type II error rate or the probability that we reject the null hypothesis given that it is false. Intuitively, a test's power depends on the difference between the null hypothesis and the "truth", the Type I error rate and the sample statistic's distribution.  If we define a hypothesis test as 
+$$
+H_0:\theta = \theta_0\qquad H_A:\theta=\theta_A
+$$
+we can assume that there is a "true" value of $\theta^*$ such that $\theta^*\neq \theta_0$, in this case, given the test statistic $\mathbf{y}$ and rejection region $R$ the power of this test is 
+$$
+\text{Power} = Pr(\mathbf{y}\in R|\theta=\theta^*).
+$$
+It seems evident that by definition, power depends on the true value of $\theta$, $\theta^*$ relative to $\theta_0$ and the Type I error rate, as both are needed to calculate the rejection region $R$.  What is not as evident is that the power will also depend on the probability distribution of the sample statistic, particularly the variance, which is inversely proportional to the sample size.  In plain terms: the more samples, the more powerful the test.  
+
+We can illustrate this by looking at the example of the "fair" coin test. 
+
+For the hypotheses:
+$$
+H_0:p = 0.5\qquad H_A:p \neq 0.5
+$$
+our test statistic is $y$, the number of heads in $n$ coin tosses. The sampling distribution of $y$ is $x\sim Binom(n,p_0)$.  If we set the Type I error rate at $\alpha = 0.05$, then we can compute the rejection region as $np_0\pm c$ for various values of $n$ and then compute the power for various values of $p^*$ and $n$.  
+
+:::{.boxed}
+###   Power of Test of "Fair" Coin {.tabset .tabset-pills}
+Under the hypotheses for our "fair" coin 
+$$
+H_0:p = 0.5\qquad H_A:p \neq 0.5
+$$
+compute the power for $p^*=0.75$.  
+
+####    Solution
+
+The probability distributions for null hypothesis (on the left) and the for $p^*=0.75$ (on the right) show the difference between the two distributions.
+```{r,echo = FALSE,out.width="100%"}
+df<-tibble(x = rep(0:11,2),y = c(dbinom(0:11,10,0.5),dbinom(0:11,10,0.75)),prob = c(rep("p = 0.5",12),rep("p = 0.75",12)))
+
+ggplot(df,aes(x = x,y = y))+
+  geom_segment(aes(x = x, xend = x, y = 0, yend = y ))+
+  geom_step()+
+  ylab("Pr(X=x)")+
+  theme(panel.grid.minor = element_line(colour="white", size=0.5)) +
+    scale_y_continuous(minor_breaks = seq(0 , 10, 5), breaks = seq(0, 10, 1))+
+  facet_wrap(~prob)
+  
+
+```
+Overlaying the two distributions with $p=0.5$ (dashed line) and $p^*=0.75$ (solid line) illustrates the power as the shaded region representing the probability $Pr(y\in R|p=0.75)=$ `r dbinom(9:10,10,0.75)%>%sum()%>%round(2)`. 
+
+```{r,echo = FALSE,out.width="75%"}
+df<-tibble(x=0:11,y = dbinom(0:11,10,0.5))
+
+df_areaStep <- bind_rows(old = df, 
+                         new = df %>% mutate(y = lag(y)),
+                         .id = "source") %>%
+               arrange(x, source)
+df_star<-tibble(df,ystar = dbinom(0:11,10,0.75))
+
+df_starareaStep <- bind_rows(old = df_star, 
+                         new = df_star %>% mutate(ystar = lag(ystar)),
+                         .id = "source") %>%
+               arrange(x, source)
+
+ggplot(df,aes(x = x,y = y))+
+  geom_segment(aes(x = x, xend = x, y = 0, yend = y ),linetype = 2)+
+  geom_step(linetype = 2)+
+  geom_segment(data = df_star, aes(x = x, xend = x, y = 0, yend = ystar ))+
+  geom_step(data = df_star,aes(x=x,y = ystar))+
+        geom_ribbon(data = subset(df_starareaStep,x>=9),aes(ymin = 0,ymax = ystar), fill = "grey20", colour = NA,alpha = 0.5)+
+  ylab("Pr(X=x)")+
+  theme(panel.grid.minor = element_line(colour="white", size=0.5)) +
+    scale_y_continuous(minor_breaks = seq(0 , 10, 5), breaks = seq(0, 10, 1))
+  
+
+```
+The table below illustrates the effect of increasing the sample size $n$ on power for this example.  
+
+:::{.table-narrow}
+Table of Power for $n$ with Type I Error Rate $\alpha = 0.05$ and $p^*=0.75$
+
+| $n$     | Rejection Region $R$                    | Power |
+| :---:   |    :----:                               | :---: |
+| 10      | $\left(x<2\right)\cup\left(x>9\right)$  |  0.24 |
+| 20      | $\left(x<6\right)\cup\left(x>14\right)$ |  0.62 |
+| 30      | $\left(x<10\right)\cup\left(x>20\right)$ | 0.80 |
+| 40      | $\left(x<14\right)\cup\left(x>26\right)$ | 0.90 |
+:::
+
+####    Plot
+
+The figure below is also helpful in visualising the effect of sample size on power. 
+Note that the power is essentially the proportion of the "true" distribution (dashed line) to the right of the upper limit that defines the rejection region under the null hypothesis. As $n$ increases, the two distributions become more and more distinct, and the portion of the "true" distribution in the rejection region increases.  
+
+```{r, echo = FALSE}
+
+n<-seq(10,40,10)
+x<-rep(c(0:11,0:21,0:31,0:41),2)
+y<-c(dbinom(0:11,10,0.5),dbinom(0:21,20,0.5),dbinom(0:31,30,0.5),dbinom(0:41,40,0.5))
+y_star<-c(dbinom(0:11,10,0.75),dbinom(0:21,20,0.75),dbinom(0:31,30,0.75),dbinom(0:41,40,0.75))
+
+df<-tibble(x = x, 
+           y = c(y,y_star),
+           n = rep(c(rep("n = 10",12),rep("n = 20",22),rep("n = 30",32),rep("n = 40",42)),2),
+           Probability = c(rep("p=0.5",108),rep("p=0.75",108)))
+
+df_starareaStep <- bind_rows(old = df, 
+                         new = df %>% mutate(y = lag(y)),
+                         .id = "source") %>%
+               arrange(x, source)
+
+ggplot(df,aes(x = x,y = y))+
+  geom_segment(aes(x = x, xend = x, y = 0, yend = y,linetype = Probability))+
+  geom_step(aes(linetype=Probability))+
+  ylab("Pr(X=x)")+
+  theme(panel.grid.minor = element_line(colour="white", size=0.5)) +
+    scale_y_continuous(minor_breaks = seq(0 , 40, 5), breaks = seq(0, 40, 5))+
+  theme(legend.position = "top")+
+  facet_wrap(~n)
+
+```
+
+
+
+:::
+
+
+
+
+
+
+##    $p$-values
+
+:::{.sidenote}
+**$p$-values for a test of the mean of a Gaussian distribution:**\
+Given $\mathbf{y}=(y_1,y_2,\ldots,y_n)',\:y_i\sim N(\mu,1)$ compute the
+$p$-value associated with the hypotheses
+$$H_0:\mu=\mu_0\qquad H_A:\mu\neq\mu_0$$ for $\mu_0=4$ and the test
+statistic $\bar{y}=5.3$.
+:::
+
+The basis of the Neyman-Pearson paradigm for hypothesis testing is the idea of defining a rejection region based on the probability
+distribution of a sample statistic and then making decisions about
+rejecting the null hypothesis based on whether the test statistic falls
+within the rejection region. The rejection region is defined by first
+selecting the Type I error rate $\alpha$ and then finding $R$ such that
+$Pr(\mathbf{y}\in R)=\alpha$.
+
+Alternatively, we can perform our hypotheses tests by finding a test statistic
+and computing the rejection region $R^*$ that would be defined using
+that test statistic and then calculating the $p$-value or $Pr(y\in R^*)$
+and then making decisions about the null hypothesis based on that
+probability. The $p$-value is essentially a measure of the strength of
+the evidence in favour of rejecting the null hypothesis; the smaller the
+$p$-value the more substantial the evidence in support of rejecting the
+null hypothesis. This approach provides for a more nuanced interpretation of test
+results and allows for a more subjective or qualitative
+interpretation of the test.
+
+:::{.boxed}
+###   Computing the $p$-value {.tabset .tabset-pills}
+
+Given a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)'$ of size $n=23$, and variance $\sigma^2=3.6$  compute the
+$p$-value associated with the hypotheses
+$$H_0:\mu=\mu_0\qquad H_A:\mu\neq\mu_0$$ for $\mu_0=4$ and the test
+statistic $\bar{y}=4.7$.
+
+####    Solution
+
+We note that the sampling distribution of the test statistic $\bar{y}$ is
+$$
+\bar{y}\sim N\left(\mu_0,\frac{\sigma^2}{n}\right)
+$$
+which we can use to compute the limits of the rejection region, and the $p$-value
+
+In this instance, we define the rejection region as 
+$$
+R=\left(\bar{y}<\mu_0-c\right)\cup\left(\bar{y}>\mu_0+c\right)
+$$
+where $c$ is defined such that
+$$
+\alpha = Pr(\bar{y}<\mu_0-c)+Pr(\bar{y}>\mu_0+c)
+$$
+Given $\Delta=|\mu_0-\bar{y}|=0.7$ then the $p$-value is
+$$
+\begin{align}
+p\text{-value} &= Pr(\bar{y}<\mu_0-\Delta)+Pr(\bar{y}>\mu_0+\Delta)\\
+&=Pr(\bar{y}<3.3)+Pr(\bar{y}>4.7)\\
+&=Pr\left(Z<\frac{3.3-4.0}{\sqrt{3.6/23}}\right)+Pr\left(Z>\frac{4.7-4.0}{\sqrt{3.6/23}}\right)\\
+&=2\times Pr\left(Z<\frac{3.3-4.0}{\sqrt{3.6/23}}\right)\\
+&=2\times 0.038\\
+&=0.077
+\end{align}
+$$
+
+####    Plot
+
+The vertical dashed lines represent the rejection region for $\alpha=0.05$ and the shaded area in the plot below represents the $p$-value as computed above.
+
+```{r, echo=FALSE}
+df <- tibble(x = seq(2.8,5.2,len = 1000),y = dnorm(x,mean = 4,sd = sqrt(3.6/23)))
+
+ggplot(df,aes(x = x, y = y))+
+  geom_line()+
+  geom_ribbon(data = subset(df,x<3.3),aes(ymin=0,ymax=y), alpha = 0.5)+
+  geom_ribbon(data = subset(df,x>4.7),aes(ymin=0,ymax=y), alpha = 0.5)+
+  geom_segment(data=tibble(x = 4-1.96*sqrt(3.6/23),y = dnorm(4-1.96*sqrt(3.6/23),mean = 4, sd = sqrt(3.6/23))),aes(x = x, xend = x,y=0,yend = y),linetype = 2)+
+  geom_segment(data=tibble(x = 4+1.96*sqrt(3.6/23),y = dnorm(4+1.96*sqrt(3.6/23),mean = 4, sd = sqrt(3.6/23))),aes(x = x, xend = x,y=0,yend = y),linetype = 2)+
+  xlab(expression(mu[0]))+
+  ylab("Density")
+
+```
+
+
+
+:::
+
+
+
+
+
+
+
+
+

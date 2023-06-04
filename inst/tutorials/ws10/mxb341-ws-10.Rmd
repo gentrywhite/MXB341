@@ -1,0 +1,265 @@
+---
+title: "MXB341 Worksheet 10 - Bayesian Computation"
+output:
+  learnr::tutorial:
+    theme: yeti
+    includes:
+    css: ["css/QUT.css","css/QUTtutorial.css"]
+  progressive: true
+  allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+# if problems with knitting directory:
+# set Knit Directory = Document Directory
+
+# install libraries needed for worksheet
+knitr::opts_chunk$set(
+  fig.align = 'center',
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(learnr)
+library(kableExtra)
+library(pander)
+library(shiny)
+library(MXB341)
+
+
+```
+
+```{r, echo = FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("./css/QUTtutorial.css")
+htmltools::includeCSS("./css/QUT.css")
+
+```
+
+:::{.quote}
+Experiment escorts us last -
+\
+ His pungent company
+\
+ Will not allow an Axiom
+\
+ An Opportunity 
+
+--- Emily Dickinson^["Experiment escorts us last", poem, 1770.]
+:::
+
+
+
+# Recap: Bayesian computation
+
+So far we have worked with priors (mostly conjugate) and likelihoods that result in analytically tractable^[In other words, we could recognise the form of the posterior and hence state the resulting distribution.] posterior distributions and related quantities. In almost all cases, we can state the posterior distribution up to a proportional constant. What is missing is the normalising constant. Whilst it is only a constant, without it we can't compute many basic posterior properties analytically, for example the mean or variance. 
+
+Where does this leave us? Whilst the exact mean and variance (among other quantities) are out of reach analytically, there are a number of methods that can simulate from a posterior distribution using only the posterior density up to a constant. If we can simulate from the posterior distribution, then we can approximate the quantities using Monte Carlo methods^[Repeated random sampling to obtain numerical results.] or simulation.
+
+## The Ratio of Uniforms
+
+The ratio of uniforms method offers a distinct advantage over other methods based on rejection sampling that require a specified candidate distribution. Like any rejection based method, there
+is some acceptance rate less than one that can hamper the efficiency of
+the sampling scheme. 
+
+:::{.boxed}
+**The Ratio of Uniforms Algorithm:**\
+
+1.  Generate the pair $(u_1,u_2)$ as a random sample from the rectangle
+    enclosing the area $$
+    0\leq u_1\leq\sqrt{h(u_1/u_2)}
+    $$
+
+2.  If 
+$$
+0\leq u_1\leq\sqrt{h(u_1/u_2)}
+$$ 
+let $x=u_1/u_2$ otherwise reject the sample $x=u_1/u_2$.
+:::
+
+## Slice Sampling
+
+A second methods demonstrated here is the slice sampler. Slice sampling is a Markov Chain Monte Carlo Scheme that can prove more efficient than the Metropolis-Hastings algorithm, and only requires knowing the target density up to its proportionality constant.
+
+:::{.boxed}
+**The Slice Sampler:**\
+
+The basic algorithm for the slice sampler is simple, but you will
+quickly see that it can get complicated in actual implementation. For a
+target density $g(x)$ we can generate $T$ draws from $g$ as follows:
+
+1.  Choose and initial value for $x$, $x_0$ from the domain of $g$.
+
+```{r,echo=FALSE, warning=FALSE}
+x<-seq(-3,3,len=1000)
+y<-dnorm(x)
+df<-tibble(x,y)
+
+set.seed(14061972)
+
+x_0<-runif(1,-2,2)
+f0<-dnorm(x_0)
+
+ggplot(df)+
+  geom_line(aes(x=x,y=y))+
+  geom_point(data=tibble(x_0=x_0,y=0),aes(x=x_0,y=y),cex = 1)+
+  annotate("text",x = x_0,y = -0.02,label = expression(x[0]))
+
+
+```
+2.  For $t=0,\ldots, T$ generate a random value $y$, $y\sim U(0,g(x_t))$
+```{r echo=FALSE,warning=FALSE}
+
+set.seed(14061972)
+
+y0<-runif(1,0,f0)
+
+ggplot(df)+
+  geom_line(aes(x=x,y=y))+
+  geom_point(data=tibble(x_0=x_0,y=0),aes(x=x_0,y=y),cex = 1)+
+  annotate("text",x = x_0,y = -0.02,label = expression(x[0]))+
+  geom_segment(aes(x = x_0,y = 0,xend = x_0,yend = f0 ))+
+  geom_point(aes(x = x_0, y = y0))+
+  annotate("text", x = x_0-0.25, y =y0-0.01,label=expression(y[0]) )
+
+
+```
+
+3.  Draw a horizontal line from $y$ across the density $g$
+
+```{r echo = FALSE, warning=FALSE}
+set.seed(14061972)
+
+llim<-(sqrt(2*pi)*y0)%>%log()%>%multiply_by(-2)%>%sqrt()%>%multiply_by(-1)
+ulim<-(sqrt(2*pi)*y0)%>%log()%>%multiply_by(-2)%>%sqrt()  
+x1<-runif(1,llim,ulim)
+
+ggplot(df)+
+  geom_line(aes(x=x,y=y))+
+  geom_point(data=tibble(x_0=x_0,y=0),aes(x=x_0,y=y),cex = 1)+
+  annotate("text",x = x_0,y = -0.02,label = expression(x[0]))+
+  geom_segment(aes(x = x_0,y = 0,xend = x_0,yend = f0 ))+
+  geom_point(aes(x = x_0, y = y0))+
+  annotate("text", x = x_0-0.15, y =y0-0.025,label=expression(y[0]) )+
+  geom_segment(aes(x = llim, y=y0,xend = ulim, yend = y0 ))
+
+
+```
+
+4.  Draw $x_{t+1}$ a uniform random sample on the horizontal line
+    bounded by $g$.
+```{r echo = FALSE, warning=FALSE}
+set.seed(14061972)
+
+llim<-(sqrt(2*pi)*y0)%>%log()%>%multiply_by(-2)%>%sqrt()%>%multiply_by(-1)
+ulim<-(sqrt(2*pi)*y0)%>%log()%>%multiply_by(-2)%>%sqrt()  
+x1<-runif(1,llim,ulim)
+
+ggplot(df)+
+  geom_line(aes(x=x,y=y))+
+  geom_point(data=tibble(x_0=x_0,y=0),aes(x=x_0,y=y),cex = 1)+
+  annotate("text",x = x_0,y = -0.02,label = expression(x[0]))+
+  geom_segment(aes(x = x_0,y = 0,xend = x_0,yend = f0 ))+
+  geom_point(aes(x = x_0, y = y0))+
+  annotate("text", x = x_0-0.15, y =y0-0.025,label=expression(y[0]) )+
+  geom_segment(aes(x = llim, y=y0,xend = ulim, yend = y0 ))+
+  geom_point(aes(x = x1, y = y0))+
+  annotate("text", x1,-0.02, label = expression(x[1]))+
+  geom_segment(aes(x = x1, y = 0, xend = x1, yend = y0), linetype = "dashed")+
+  geom_point(aes(x1,0))
+
+```    
+
+5.  Return to Step 2 and repeat until $t=T$.
+
+The resulting samples $x_0,x_1,\ldots,x_T\sim g(x)$.
+
+:::
+
+## The Hit and Run Sampler
+
+The Hit and Run sampler is a variation on the
+random walk Metropolis-Hastings algorithm that reduces the problem of
+identifying a good high-dimensional candidate distribution by taking
+steps of random direction and size in the target density domain. Once
+the random direction is selected, the Metropolis-Hastings algorithm is
+applied to the step size, requiring only a viable candidate distribution
+in one dimension.
+
+:::{.boxed}
+**The Hit and Run Sampler**\
+
+To draw a sample from a target distribution for a random vector
+$\mathbf{\theta}\in\mathbf{\Theta}$ of length $m$. At time step $t$:
+
+1.  Generate a random vector $\mathbf{r}$ of length $m$ from some
+    distribution such that $\mathbf{r}\in\mathbf{\Theta}$ in and $||\mathbf{r}||=1$,
+    e.g.\ if $\mathbf{\Theta} = \mathbb{R}^m$ then draw $\mathbf{r}$ from a unit
+    hyper-sphere of dimension $m$.
+
+2.  Generate $\lambda>0$ from some probability distribution and
+
+3.  Let $\mathbf{\theta}^{(t+1)}=\mathbf{\theta}^{(t)}+\lambda\mathbf{r}$ with
+    probability
+$$
+\alpha=\min\left(1,\frac{f(\mathbf{y}|\mathbf{\theta}^{(t)}+\lambda\mathbf{r})\pi(\mathbf{\theta}^{(t)}+\lambda\mathbf{r})}{f(\mathbf{y}|\mathbf{\theta}^{(t)})\pi(\mathbf{\theta}^{(t)})}\right).
+$$
+
+:::    
+
+# Practical questions
+
+## Question 1
+:::{.boxed}
+
+```{r prac-question-2, child='../question-bank/id0049-ratio-of-uniforms-ex.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r prac-solution-2, child='../solution-bank/id0049-ratio-of-uniforms-ex.Rmd', eval = TRUE}
+  
+```
+:::
+## Question 2
+
+:::{.boxed}
+
+```{r prac-question-3, child='../question-bank/id0050-slice-sampler-ex.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r prac-solution-3, child='../solution-bank/id0050-slice-sampler-ex.Rmd', eval = TRUE}
+  
+```
+:::
+
+## Question 3
+:::{.boxed}
+```{r prac-question-4, child='../question-bank/id0051-hit-and-run-sampler-ex.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r prac-solution-4, child='../solution-bank/id0051-hit-and-run-sampler-ex.Rmd', eval = TRUE}
+```
+:::
+
+```{r,echo=FALSE}
+htmltools::includeHTML("footer.html")
+```

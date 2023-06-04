@@ -1,0 +1,272 @@
+---
+title: "MXB341 Worksheet 09 - Bayesian Inference"
+output:
+  learnr::tutorial:
+    theme: yeti
+    includes:
+    css: ["css/QUT.css","css/QUTtutorial.css"]
+  progressive: true
+  allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+# if problems with knitting directory:
+# set Knit Directory = Document Directory
+
+# install libraries needed for worksheet
+knitr::opts_chunk$set(
+  fig.align = 'center',
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(learnr)
+library(kableExtra)
+library(pander)
+library(shiny)
+library(MXB341)
+
+
+```
+
+```{r, echo = FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("./css/QUTtutorial.css")
+htmltools::includeCSS("./css/QUT.css")
+
+```
+
+
+:::{.quote}
+"Most of us have grown so blase about computer developments and capabilities — even some that are spectacular — that it is difficult to believe or imagine there was a time when we suffered the noisy, painstakingly slow, electromechanical devices that chomped away on punched cards."
+--- Nick Metropolis
+:::
+
+#   Recap: Sampling Based Methods for Bayesian Results
+
+## Monte Carlo Integration
+
+:::{.boxed}
+The basic idea of Monte Carlo integration is
+$$
+\int_0^1f(x)dx\approx\frac{1}{N}\sum_{i=1}^Nf(x_i),\:x_i\stackrel{iid}{\sim}U(0,1)
+$$
+or that the value of the integral is the expected value of the
+probability density function with respect to a uniform density over
+the range of integration
+
+This integral, or expectation, can be approximated by the sample mean of the density function evaluated at random values drawn uniformly over $(0,1)$.
+The sample mean converges to the true value and is an unbiased
+estimator of the integrand. 
+
+This can be generalised over any interval
+$$
+\int_a^bf(x)dx\approx(b-a)\frac{1}{N}\sum_{i=1}^Nf(x_i),\:x_i\stackrel{iid}{\sim}U(a,b).
+$$
+
+Rather than sampling from a uniform distribution and evaluating the
+probability density function, if samples can be drawn from the
+probability density function, then one can write the integral in terms
+of the sample expectation of the indicator function
+$$
+\int_a^bf(x)dx\approx(b-a)\frac{1}{N}\sum_{i=1}^Nf(x_i),\:x_i\stackrel{iid}{\sim}U(a,b)\\
+\equiv \frac{1}{N}\sum_{i=1}^N\mathbb{I}_{x_i\in(a,b)},\:x_i\stackrel{iid}{\sim}f(x).
+$$
+and for any function $h(x)$
+$$
+E(h(x))\approx\frac{1}{N}\sum_{i=1}^Nh(x_i),\:x_i\stackrel{iid}{\sim}f(x).
+$$
+
+:::
+
+## The Fundamental Theorem of Simulation
+
+:::{.boxed}
+**The Fundamental Theorem of Simulation**\
+One definition of the Fundamental Theorem of Simulation is that 
+$$
+F(x)\sim U(0,1).
+$$ 
+or that if $x$ is is a realisation of the random vaiable $X\sim f(x)$ then cdf $F(x)$ evaluated at $x$ follows a uniform distribution over the interval $(0,1)$. 
+:::
+
+:::{.boxed}
+**The Fundamental Theorem of Simulation (cont'd)**\
+Note the identity for any density $f$:
+$$
+f(x)=\int_0^{f(x)}1du
+$$ 
+this is the equivalent of saying that $f$ is
+the marginal density of $X$ for the joint distribution:
+$$
+(X,U)\sim\{(x,u):0<u<f(x)\}.
+$$
+
+:::
+
+## Rejection Sampling
+
+:::{.boxed}
+**Rejection Sampling:**\
+We can generalise the algorithm developed above and state that given a target distribution for some random variable $Y$ with density function $g(y)$, possibly known up to a proportionality constant, (i.e. $\int_Yg(y)dy\propto 1$), we can generate samples from $g(y)$ by drawing samples from some arbitrary but known probability distribution for $X$ with density function $f(x)$ and accepting the generate $x$ as a sample from $g(y)$ with the probability $g(x)/Mf(x)$.
+
+In the actual implementation, we initialise the algorithm by identifying some candidate distribution $f(x)$ that we can readily use to generate random samples and compute $M$ such that
+$$
+g(y)\leq Mf(y)\: \forall\, y\in Y
+$$
+meaning that
+$$
+M = \sup_Y \frac{g(y)}{f(y)}.
+$$
+Then the resulting algorithm is 
+
+1.  Draw a sample $x$ from the candidate density $f(x)$ and a random sample $u\sim U(0,1)$.
+2.  Compute $u^*= \frac{g(x)}{Mf(x)}$
+3.  If $u\leq u^*$ accept $x$ as a random sample from $g(\cdot)$. Else reject $x$
+4.  Repeat until the desired number of samples is reached.  
+
+Provided that both densities are normalised, on average, it will take $M$ draws from $X$ to generate 1 sample from $Y$. 
+
+:::
+
+##    Monte Carlo Markov Chain (MCMC) and the Metropolis Hastings Algorithm
+
+:::{.boxed}
+
+### The Metropolis-Hastings Algorithm {#the-metropolis-hastings-algorithm .unnumbered}
+
+For some some target density $f(x)$ let $g(x)\propto f(x)$.
+
+1.  Pick and initial value for $x_0$
+
+2.  for $t$ in $1:T$:
+
+3.  Given an current value of $x_t$ choose an arbitrary distribution $q$
+    that has the same support as $f$ and is symmetric,
+    i.e. $q(x|y)=q(y|x)$ and generate a proposed new value $x'$.
+
+4.  Calculate the acceptance probability:
+    $$\alpha=\min\left(1,\frac{g(x')}{g(x_t)}\right)$$
+
+5.  Accept $x_{t+1}=x'$ with probability $\alpha$, else $x_{t+1}=x_t$.
+
+
+$$
+\alpha=\min\left(1,\frac{g(x')q(x_t|x')}{g(x_t)q(x'|x_t)}\right)
+$$
+
+It is important to note that working with the function $g$ instead of
+the proper density works because the normalising constant will be the
+same for $f(x_t)$ and $f(x')$, thus they would cancel out in the ratio,
+making the acceptance probability the same if calculated with $f$ or
+$g$. In a Bayesian context, this is useful because if
+$g(\theta) = f(\mathbf{y}|\theta)\pi(\theta)$ from Bayes theorem, then it
+the Metropolis-Hastings algorithm for drawing samples from a posterior
+distribution is
+
+1.  Pick and initial value for $\theta_0$
+
+2.  for $t$ in $1:T$:
+
+3.  Given an current value of $\theta_t$ choose an arbitrary
+    distribution $q$ that has the same support as $\pi(\theta|\mathbf{y})$
+    to generate a proposed new value $\theta'$.
+
+4.  Calculate the acceptance probability:
+    $$\alpha=\min\left(1,\frac{f(\mathbf{y}|\theta')\pi(\theta')q(\theta_t|\theta')}{f(\mathbf{y}|\theta_t)\pi(\theta_t)q(\theta'|\theta_t)}\right)$$
+
+5.  Accept $\theta_{t+1}=\theta'$ with probability $\alpha$, else
+    $\theta_{t+1}=\theta_t$.
+
+Running these algorithms for time $T$ results in a sample of size $T$ of
+random samples from the target density function.
+
+:::
+
+:::{.boxed}
+
+**The Random Walk Metropolis-Hastings Algorithm**\
+
+1.  Pick and initial value for $x_1$
+
+2.  for $t$ in $1:T$:
+
+3.  Choose a distribution $q(x'|x_t)$ such that $E(x'|x_t)=x_t$
+    that has the same support as $f$ and generate a proposed new value $x'$.
+
+4.  Calculate the acceptance probability:
+    $$\alpha=\min\left(1,\frac{g(x')q(x_t|x')}{g(x_t)q(x'|x_t)}\right)$$
+
+5.  Accept $x_{t+1}=x'$ with probability $\alpha$, else $x_{t+1}=x_t$.
+
+
+$$
+\alpha=\min\left(1,\frac{g(x')q(x_t|x')}{g(x_t)q(x'|x_t)}\right)
+$$
+
+:::
+
+# Theory questions
+
+## Question 1
+
+:::{.boxed}
+
+```{r theory-question-1, child='../question-bank/id0036-bayes-comp-antibiotics.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r theory-solution-1, child='../solution-bank/id0036-bayes-comp-antibiotics.Rmd', eval = TRUE}
+  
+```
+:::
+
+## Question 2
+
+:::{.boxed}
+
+```{r theory-question-2, child='../question-bank/id0037-bayes-comp-simple-ex.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r theory-solution-2, child='../solution-bank/id0037-bayes-comp-simple-ex.Rmd', eval = TRUE}
+  
+```
+:::
+
+# Practical questions
+
+
+## Question 3
+:::{.boxed}
+
+
+```{r prac-question-3, child='../question-bank/id0038-bayes-comp-antibiotics-prac.Rmd', eval = TRUE}
+  
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r prac-solution-3, child='../solution-bank/id0038-bayes-comp-antibiotics-prac.Rmd', eval = TRUE}
+  
+```
+:::
+
+```{r,echo=FALSE}
+htmltools::includeHTML("footer.html")
+```

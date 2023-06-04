@@ -1,5 +1,53 @@
 
 ***
-*Solution*: Answers contained in text of question.
+**Solution**: 
+
+Noting that if 
+$$
+\pi(\log(\sigma^2))\propto 1
+$$
+then 
+$$
+\pi(\sigma^2)\propto\frac{1}{\sigma^2}
+$$
+the joint posterior is
+$$
+\pi(\alpha,\beta,\sigma^2|\mathbf{y})\propto\left(\frac{1}{2\pi\sigma^2}\right)^{n/2}\exp\left(-\frac{\sum_{j=1}^n(\alpha-\beta(x_j-\bar{x})-y_j)^2}{2\sigma^2}\right)\frac{1}{\sigma^2}
+$$
+We can immediately write that 
+$$
+\pi(\sigma^2|\alpha,\beta,\mathbf{y})\propto (\sigma^2)^{-n/2-1}\exp\left(-\frac{1}{\sigma^2}\frac{\sum_{j=1}^n(\alpha-\beta(x_j-\bar{x})-y_j)^2}{2}\right)
+$$
+which implies that
+$$
+\sigma^2|\alpha,\beta,\mathbf{y}\sim\operatorname{InvGa}\left(\frac{n}{2},\frac{\sum_{j=1}^n(\alpha-\beta(x_j-\bar{x})-y_j)^2}{2}\right)
+$$
+which it can be shown that this is the equivalent to 
+$$
+\frac{\sum_{j=1}^n(\alpha-\beta(x_j-\bar{x})-y_j)^2}{\sigma^2}\sim\chi^2_{n}.
+$$
+The likelihood can be re-written as 
+$$  
+\alpha|\beta,\sigma^2,\mathbf{y}\sim N\left(\frac{\sum_{j=1}^n(y_j-\beta(x_j-\bar{x}))}{n},\frac{\sigma^2}{n}\right)
+$$
+noting that $\sum_{j=1}^n(x_j-\bar{x})=0$ this simplifies to 
+$$
+\alpha|\sigma^2,\mathbf{y}\sim N\left(\bar{y},\frac{\sigma^2}{n}\right).
+$$
+Note that is this parameterisation, $\alpha$ and $\beta$ are independent, thus a naive candidate for a RWMH would be reasonable (provided the proposal variances are appropriately scaled).
+
+Finally for $\beta|\alpha,\sigma^2,\mathbf{y}$, we expand the quadratic term in the likelihood and find that 
+$$
+\operatorname{Var}(\beta|\sigma^2,\mathbf{y})=\frac{\sigma^2}{\sum_{j=1}^n(x_j-\bar{x})^2}
+$$
+and
+$$
+\operatorname{E}(\beta|\alpha,\sigma^2,\mathbf{y})=\frac{\sum_{j=1}^n(x_j-\bar{x})(y_j-\alpha)}
+{\sum_{j=1}^n(x_j-\bar{x})^2}
+$$
+noting that $\alpha\sum_{j=1}^n(x_j-\bar{x})=0$ this simplifies to 
+$$
+\beta|\sigma^2,\mathbf{y}\sim N\left(\frac{\sum_{j=1}(x_j-\bar{x})y_j}{\sum_{j=1}^n(x_j-\bar{x})^2},\frac{\sigma^2}{\sum_{j=1}^n(x_j-\bar{x})^2}\right)
+$$
 
 ***

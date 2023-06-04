@@ -1,0 +1,941 @@
+---
+title: "Week 9"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Week 9}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(tidyverse)
+library(pracma)
+```
+
+```{r, echo=FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("QUTReadings.css")
+
+```
+
+
+
+#   The Problem with Bayesian Inference
+
+:::{.sidenote}
+**Historical convergence:**\
+While Bayes' Theorem is almost 300 years old, Bayesian Statistics has only recently flourished in its own right.  It wasn't until the development of inexpensive, powerful computers coinciding with the development of computational algorithms in the late 1980s and early 1990s that Bayesian methods became applicable to broad classes of statistical models.
+
+:::
+
+So far, we have seen that Bayesian methods have analogues with classical or frequentist approaches to statistical inference.  Given a posterior distribution, we can compute Bayes Factors, credible intervals, and engage decision-theoretic approaches to problems.  But the key weakness in this process is the availability of a posterior distribution.  
+
+In many cases, for well-known distributions (particularly members of the exponential families), there are conjugate priors or at least analytically tractable solutions to finding the posterior distribution of the parameters of interest.  In reality, these options can be fairly limiting. It is very easy once we move beyond trivial models to find cases where either the structure of the model or distributions for modelling frustrate these attempts. There is not a readily available posterior distribution to use for analytical inference. 
+
+In all cases, however, we can note that the posterior distribution is:
+$$
+\pi(\theta|\mathbf{y})=\frac{f(\mathbf{y}|\theta)\pi(\theta)}{\int_{\Theta}f(\mathbf{y}|\theta)\pi(\theta)d\theta}
+$$
+and that the numerator is just the product of two functions, but the denominator is the integral of the numerator, and integration can be challenging or intractable using analytical methods. 
+
+Because the denominator is not a function of the parameter(s) of interest and is just a proportionality or normalising coefficient, we will see that if we know the posterior distribution up to this coefficient
+$$
+\pi(\theta|\mathbf{y})\propto f(\mathbf{y}|\theta)\pi(\theta)
+$$ 
+then as long as the constraint that 
+$$
+\int_{\Theta}f(\mathbf{y}|\theta)\pi(\theta)d\theta<\infty
+$$
+we can computationally or numerically evaluate the posterior to make an inference.  
+
+
+ In this case, there is a suite of approaches to make inference based on the posterior using Monte Carlo integration. Monte Carlo simulation is a numerical method that relies on
+the ability to draw samples from the posterior distribution, which is
+possible if we can write the posterior as proportional to the product of
+the likelihood and the prior and that the normalising constant of the
+posterior is finite.
+
+## Monte Carlo Integration for Inference
+
+:::{.sidenote}
+**The Origins of Monte Carlo Methods**\
+<center>
+![Nicholas Metropolis.](Nicholas Metropolis026.jpg){width=50%}
+</center>
+
+&nbsp;
+
+The Manhattan Project during World War Two brought together physicists with intractable mathematical problems and some of the earliest computers.  Enrico Fermi originally proposed stochastic numerical integration techniques were in the 1930s. Still, they didn't see practical use until Johnny Von Neumann, and Stanislaw Ulam developed algorithms to solve some other computational challenges of designing the first nuclear weapons.  Fellow scientist Nicholas Metropolis cheekily suggested "Monte Carlo" as a code name for their stochastic approach to numerical integration. 
+
+
+:::
+
+Bayesian inference is characterised in contrast to classical
+methods by relying more on integration than optimisation. Bayesian statistics base decision-theoretic
+point estimators on the posterior expected loss (an integral solution), credible
+intervals based on finding bounds from the solution to the integral of the posterior
+distribution, and the computation of Bayes Factors require the computation
+of an expectation (an integration solution). It is fair to say that Bayesian inference requires the ability to integrate complex and often high-dimensional problems in one form or another. 
+
+Analytic methods for computing integrals exist but can become
+intractable in higher dimensions and require a proper posterior
+distribution for numerical stability. In this instance, Monte Carlo integration, which based on
+the ability to draw samples from the posterior distribution, is useful.
+What is especially convenient is that many sampling methods are
+available, which only rely on knowing the posterior distribution up to its
+normalising constant.
+
+:::{.boxed}
+The basic idea of Monte Carlo integration is
+$$
+\int_0^1f(x)dx\approx\frac{1}{N}\sum_{i=1}^Nf(x_i),\:x_i\stackrel{iid}{\sim}U(0,1)
+$$
+or that the value of the integral is the expected value of the
+probability density function with respect to a uniform density over
+the range of integration
+
+This integral, or expectation, can be approximated by the sample mean of the density function evaluated at random values drawn uniformly over $(0,1)$.
+The sample mean converges to the true value and is an unbiased
+estimator of the integrand. 
+
+This can be generalised over any interval
+$$
+\int_a^bf(x)dx\approx(b-a)\frac{1}{N}\sum_{i=1}^Nf(x_i),\:x_i\stackrel{iid}{\sim}U(a,b).
+$$
+
+Rather than sampling from a uniform distribution and evaluating the
+probability density function, if samples can be drawn from the
+probability density function, then one can write the integral in terms
+of the sample expectation of the indicator function
+$$
+\int_a^bf(x)dx\approx(b-a)\frac{1}{N}\sum_{i=1}^Nf(x_i),\:x_i\stackrel{iid}{\sim}U(a,b)\\
+\equiv \frac{1}{N}\sum_{i=1}^N\mathbb{I}_{x_i\in(a,b)},\:x_i\stackrel{iid}{\sim}f(x).
+$$
+and for any function $h(x)$
+$$
+E(h(x))\approx\frac{1}{N}\sum_{i=1}^Nh(x_i),\:x_i\stackrel{iid}{\sim}f(x).
+$$
+
+:::
+
+Given this, we can use random samples from the posterior to perform
+inference based on point estimators, credible intervals, or functions of
+the parameters. All that remains is to identify a means of drawing
+samples from the posterior.
+
+##    The Fundamental Theorem of Simulation
+
+:::{.sidenote}
+**Drawing samples from the Exponential Distribution**\
+Use the Fundamental Theorem of Simulation and inverting the CDF to generate random samples from $Y\sim f(y)$ where
+$$
+f(y)=\frac{1}{\lambda}e^{-y/\lambda}.
+$$
+
+:::
+
+There are several statements attributed as the Fundamental Theorem of
+Simulation; in practice, they provide a set of tools for sampling from
+probability density functions. 
+
+:::{.boxed}
+**The Fundamental Theorem of Simulation**\
+One definition of the Fundamental Theorem of Simulation is that 
+$$
+F(x)\sim U(0,1).
+$$ 
+or that if $x$ is is a realisation of the random vaiable $X\sim f(x)$ then cdf $F(x)$ evaluated at $x$ follows a uniform distribution over the interval $(0,1)$. 
+:::
+
+This definition of the Fundamental Theorem of Simulation leads to one of the most elementary means of generating values from a random variable. 
+
+:::{.boxed}
+### Generating Random Variates by Exponential Inverting the CDF {.tabset .tabset-pills}
+Use the Funadamental Theorem of Simulation and inverting the cdf to generate random samples from $Y\sim f(y)$ where
+$$
+f(y)=\frac{1}{\lambda}e^{-y/\lambda}.
+$$
+
+####    Solution
+
+Given the pdf 
+$$
+f(y)=\frac{1}{\lambda}e^{-y/\lambda}
+$$
+the CDF is 
+$$
+\begin{align}
+F(y) &= \int_0^yf(u)du\\
+&=\int_0^y\frac{1}{\lambda}e^{-u/\lambda}du\\
+&=\left.-e^{-u/\lambda}\right\vert_0^y\\
+&=-e^{-y/a}-(-1)\\
+&=1-e^{-y/\lambda}.
+\end{align}
+$$
+Now, solve the equation 
+$$
+u=1-e^{-y/\lambda}
+$$
+for $y$.
+$$
+\begin{align}
+u&=1-e^{-y/\lambda}\\
+e^{-y/\lambda}&=1-u\\
+-y/
+\lambda&=\log(1-u)\\
+y&=-\lambda\log(1-u).
+\end{align}
+$$
+Now generate random samples from $U\sim U(0,1)$ and substitute these to solve for $y$, these resulting samples will be from $Y\sim\exp(\lambda)$. Note that $u$ and $1-u$ both follow the same $U(0,1)$ distribution, and thus we can substitute $u$ for $1-u$ in the solution. 
+
+####    Code
+
+```{r}
+
+##  Generate variates from a U(0,1) distributions
+
+u <- runif(1000)
+
+##  Compute y = F^-1(u) for lambda = 3
+
+y <- -3*log(u)
+
+```
+
+####    Plot
+
+```{r, echo=FALSE}
+
+##  Generate variates from a U(0,1) distributions
+
+u <- runif(1000)
+
+##  Compute y_s = F^-1(u) for lambda = 3
+
+y_s <- -3*log(u)
+
+##  Plot the histogram of the samples against the Exp(3)
+
+y <- seq(0,max(y_s),len=1000)
+
+df <- tibble(y,y_s, f = exp(-y/3)/3 )
+
+ggplot(df)+
+  geom_histogram(aes(x = y_s, y =  ..density..),alpha = 0.5, position = "identity", binwidth = 0.5)+
+  geom_line(aes(x = y, y = f))+
+  xlab(expression(y[s]))+
+  ggtitle("Histogram of Samples and Target Density")+ 
+  theme(plot.title = element_text(hjust = 0.5))
+  
+
+```
+
+:::
+
+Computing the inverse of the CDF is only useful when it is available in an analytically tractable form.  This is typically a limited number of cases, but it is useful to illustrate the basics of the Fundamental Theorem of simulation. 
+
+:::{.sidenote}
+**Generating Samples via Accept Reject Methods**\
+Consider the posterior of the beta-binomial model defined up to the
+normalising constant as the product of the likelihood and the prior
+$$
+\pi(\theta|\mathbf{y})\propto g=\theta^{\alpha+\sum y-1}(1-\theta)^{\beta+n-\sum y -1}
+$$
+apply the Fundamental Theorem of Simulation to draw samples from
+$\pi(\theta|\mathbf{y})$.
+
+:::
+
+Inverting the CDF has limited practical application, specifically when an analytically tractable form of posterior is available.  It is in just this case that Monte Carlo based approaches aren't necessary.  
+Instead, we need a more generalised approach to generating samples, especially in cases where the target density (i.e. the density to be sampled from) is only known up to a proportionality constant. This additional statement of the Fundamental Theorem of Simulation provides some guidance towards finding more general accept-reject approaches to generating samples.
+
+:::{.boxed}
+**The Fundamental Theorem of Simulation (cont'd)**\
+Note the identity for any density $f$:
+$$
+f(x)=\int_0^{f(x)}1du
+$$ 
+this is the equivalent of saying that $f$ is
+the marginal density of $X$ for the joint distribution:
+$$
+(X,U)\sim\{(x,u):0<u<f(x)\}.
+$$
+
+:::
+
+The utility of this expression may not be immediately obvious but becomes clearer in practice.  
+
+:::{.boxed}
+
+### Generating Samples via Accept Reject Methods    {.tabset .tabset-pills}
+
+Consider the posterior of the beta-binomial model defined up to the
+normalising constant as the product of the likelihood and the prior
+$$
+\pi(\theta|\mathbf{y})\propto g=\theta^{\alpha+\sum y-1}(1-\theta)^{\beta+n-\sum y -1}
+$$
+apply the Fundamental Theorem of Simulation to draw samples from
+$\pi(\theta|\mathbf{y})$.
+
+#### Solution
+
+The solution to this sampling scheme is an example of accept-reject (or acceptance-rejection, or just rejection) sampling. We start by noting that we want to generate a pair of random variates $(y,u$ where $u$ is bounded from above by $f(y)$ our target density.  This suggests that we generate samples over a uniform region of space and then only retain the samples where the condition $0<u<f(y)$ is true. Specifically
+
+1.  Generate $(x,u)$ from $X\sim U(0,1)$ and $U\sim U(0,m)$ where $m$ is the maximum
+    value of $g$, which we can find analytically in this case
+$$
+m = g\left(\frac{\alpha + \sum_{i=1}^ny_i-1}{\alpha+\beta+n-2}\right)
+$$
+
+2.  Let $y=x$ for $\{x:u<g(x)\}$, i.e. keep the $x$s whose corresponding $u$s satisfy the condition $0<u<f(x)$.
+
+The resulting $X$'s are samples from the posterior $\pi(\theta|\mathbf{y})$.  Note that this is true even though we only knew the posterior up to a proportionality constant. 
+This illustrates an approach called the Accept-Reject Algorithm.
+
+####    Code
+
+```{r, include = TRUE}
+##  Let alpha and beta = 1
+
+alpha <- 1
+beta <- 1
+
+##  Let n = 10
+
+n <- 10
+
+##  Generate some data from a Bernoulli (or binomial) distribution 
+
+set.seed(14061972)
+
+z<-rbinom(1,10,0.5)
+
+## Define function g()
+
+g<-function(x)
+{
+  a <- alpha + sum(z) - 1
+  b <- beta + n - sum(z) - 1
+  (x^a)*((1-x)^b)
+}
+
+##  Find m
+  
+  m <- g((alpha + sum(z)-1)/(alpha + beta + n-2))
+  
+##  Generate N = 1000 samples from X and U
+  
+  x <- runif(1000)
+  u <- runif(1000,0,m)
+  
+##  Keep the samples where 0 < u < g(x)
+  
+  y <- x[u<g(x)]
+
+  length(y)
+```
+Note that we only accepted 373 or 37.3\% of the 1000 samples generated, so it took 1000 samples from x to generate 375 samples from $\theta|\mathbf{y}$.
+
+
+####    Plot
+
+```{r, echo=FALSE}
+
+x_ordered <- seq(0,1,len = 1000)
+gx <- g(x_ordered)
+
+df <- tibble(u,x,x_ordered,gx)
+
+ggplot(df)+
+  geom_point(aes(x = x, y = u))+
+  geom_line(aes(x = x_ordered, y = gx))+
+  xlab("x")+
+  ylab("u")+
+  ggtitle("Plot of Sampled Pairs (x,u) and g(x)")+ 
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggplot(df)+
+  geom_line(aes(x_ordered,gx))+
+  geom_point(data = filter(df,u<g(x)),aes(x = x, y = u))+
+  xlab("x")+
+  ylab("u")+
+  ggtitle("Plot of Accepted Sampled Pairs (x,u) and g(x)")+ 
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggplot(filter(df,u<g(x)))+
+  geom_histogram(aes(x = x, y =  ..density..),alpha = 0.5, position = "identity", binwidth = 0.05)+
+  geom_line(aes(x=x_ordered,y=dbeta(x_ordered,sum(z)+1,n-sum(z)+1)))+
+  ylab(expression(pi(theta*"|"*bold(y))))+
+  xlab(expression(theta))+
+  ggtitle("Histogram of Accepted Samples and Target Density")+ 
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+:::
+
+##   A General Accept-Reject Algorithm
+
+:::{.sidenote}
+**Example:**\
+
+Condsider data $\mathbf{y}=y_1,\ldots,y_n$ from the random variable $Y\sim Pois(\lambda)$ where $\log(\lambda)=\eta$ where $\eta$ follows the prior distribution $\eta\sim N(0,1)$.  
+
+Use a rejection sampling algorithm to draw samples from the posterior $\pi(\eta|\mathbf{y})$.
+
+:::
+
+The example above works by generating samples from a uniform probability distribution over a rectangle that encompasses the target density as a "candidate", then only accepts samples that fall under the curve of the target density. This method has several drawbacks. First, the target density may not have a finite domain, so specifying a rectangle to encompass the target density is not impossible. Second, the algorithm may generate a relatively large number of unaccepted samples, making the sampling scheme inefficient.  Note that the efficiency of a sampling scheme is the proportion of generated samples accepted; this is equal to the proportion of the area under the curve of the target density and the area of the uniform rectangle used to generate the candidates. 
+
+This suggests a general approach to accept-reject algorithms.  
+
+:::{.boxed}
+**Rejection Sampling:**\
+We can generalise the algorithm developed above and state that given a target distribution for some random variable $Y$ with density function $g(y)$, possibly known up to a proportionality constant, (i.e. $\int_Yg(y)dy\propto 1$), we can generate samples from $g(y)$ by drawing samples from some arbitrary but known probability distribution for $X$ with density function $f(x)$ and accepting the generate $x$ as a sample from $g(y)$ with the probability $g(x)/Mf(x)$.
+
+In the actual implementation, we initialise the algorithm by identifying some candidate distribution $f(x)$ that we can readily use to generate random samples and compute $M$ such that
+$$
+g(y)\leq Mf(y)\: \forall\, y\in Y
+$$
+meaning that
+$$
+M = \sup_Y \frac{g(y)}{f(y)}.
+$$
+Then the resulting algorithm is 
+
+1.  Draw a sample $x$ from the candidate density $f(x)$ and a random sample $u\sim U(0,1)$.
+2.  Compute $u^*= \frac{g(x)}{Mf(x)}$
+3.  If $u\leq u^*$ accept $x$ as a random sample from $g(\cdot)$. Else reject $x$
+4.  Repeat until the desired number of samples is reached.  
+
+Provided that both densities are normalised, on average, it will take $M$ draws from $X$ to generate 1 sample from $Y$. 
+
+:::
+
+:::{.boxed}
+###   Rejection Sampling Poisson-Gaussian Example {.tabset .tabset-pills}
+
+Condsider data $\mathbf{y}=y_1,\ldots,y_n$ from the random variable $Y\sim Pois(\lambda)$ where $\log(\lambda)=\eta$ where $\eta$ follows the prior distribution $\eta\sim N(0,1)$.  
+
+Use a rejection sampling algorithm to draw samples from the posterior $\pi(\eta|\mathbf{y})$.
+
+#### Solution
+
+For the given likelihood
+$$
+f(\mathbf{y}|\eta)=\frac{\left(e^{\eta}\right)^{\sum+{i=1}^ny_i}e^{-ne^\eta}}{\prod_{i=1}^ny_i!}
+$$
+and prior
+$$
+\pi(\eta)\propto e^{-\frac{\eta^2}{2}}.
+$$
+The posterior is 
+$$
+\pi(\eta|\mathbf{y})\propto\left(e^{\eta}\right)^{\sum+{i=1}^ny_i}e^{-ne^\eta}e^{-\frac{\eta^2}{2}}
+$$
+The posterior (up to a constant) is our target distribution $g$.  For the candidate distribution $f$ we will use a Cauchy distribution.
+$$
+f(\eta)=\frac{1}{\pi\gamma\left[1+\left(\frac{\eta-\eta_0}{\gamma}\right)^2\right]}
+$$
+where $\eta_0$ is the mode of the posterior and $\gamma$ is proportional to the inverse of the Hessian computed at the posterior mode.  The proportinality constant $M$ is
+
+$$
+M = \sup_Y \frac{g(y)}{f(y)}.
+$$
+which can be found numerically based on the data. 
+
+Given thesse pieces we can generate samples from the Cauchy distribution and apply the rejection sampling algorithm.  
+
+1.  Draw a sample $\eta$ from the candidate density $f(\eta)$ and a random sample $u\sim U(0,1)$.
+2.  Compute $u^*= \frac{f(\eta)}{M\pi(\eta|\mathbf{y})}$
+3.  If $u\leq u^*$ accept $\eta$ as a random sample from $\pi(\eta|\mathbf{y})$. Else reject $\eta$
+4.  Repeat until the desired number of samples is reached. 
+
+#### Code
+
+```{r}
+##  Example using a Cauchy candidate distribution for a sampling from the posterior with a  
+##  Poisson likelihood and log-normal prior.
+
+##  Initialise the random number generator for replicable results
+
+set.seed(14061972)
+
+##  See the number of samples and generate samples from a Poisson distribution
+
+n<-10
+
+z<-rpois(n,1)
+
+##  Define the log-posterior function
+
+log.post<-function(x)
+{
+  x*sum(z)-n*exp(x)-x^2/2
+}
+
+##  Find the mode of the posterior and the Hessian to estimate the mode and posterior variance
+##  Using nlm() instead of optimise() because it returns the Hessian and the mode.
+
+MAP<-nlm(function(x) -log.post(x), p = 1, hessian = TRUE)
+
+m<-MAP$estimate
+
+var<-1/MAP$hessian
+
+##  Define the range of etas to solve for M
+
+eta<-seq(-1,1,len = 1000)
+
+##  Select the dispersion for the Cauchy distribution
+
+gamma<-1.5*sqrt(var)
+
+##  Solve for M
+
+M<-max(exp(log.post(eta))/dcauchy(eta,m,gamma))
+
+##  Implement the rejection sampling algorithm
+
+x<-rcauchy(10000,m,gamma)
+u<-runif(10000)  
+u_star<-exp(log.post(x))/(M*dcauchy(x,m,gamma))
+y<-x[u<u_star]
+
+##  Estimate the acceptance rate from M and the normalising constant for the posterior 
+
+A<-integral(function(x) log.post(x)%>%exp(), -3,3)
+
+accept_rate<-A/M
+
+##  Compute acceptance rate based on algorithm results
+
+accept_rate_actual<-length(y)/length(x)
+
+```
+
+#### Plot
+
+```{r,echo=FALSE}
+
+##  Make Plots 
+
+g <- log.post(eta)%>%exp()
+f <- M*dcauchy(eta,m,gamma)
+Eta<-rep(eta,2)
+density <- c(rep("target",length(eta)),rep("candidate",length(eta)))
+
+df<-tibble(Eta,y=c(g,f),density)
+
+ggplot(df,aes(x=Eta,y=y,color=density))+
+  geom_line()+
+  xlab(expression(eta))+
+  ylab("density")
+#
+#hist(y, freq = FALSE)
+#curve(1.9*exp(log.post(x))/M,from = -1, to = 1, add = TRUE)
+
+post <- log.post(eta)%>%exp()%>%`/`(A)
+
+ggplot()+
+  geom_histogram(data = tibble(y),aes(x = y,y=..density..),alpha=0.5,binwidth = 0.05)+
+  geom_line(data=tibble(eta,post),aes(x=eta,y=post))
+
+
+
+
+```
+
+::::
+
+
+
+The basic idea of accept-reject sampling methods doesn't rely on the
+posterior being proper. This basic idea developed over time to encompass
+a wide variety of techniques and an entire discipline, Computational
+Bayesian Statistics focuses solely on finding ways of evaluating
+models using sampling-based approaches. Some of these methods include:
+
+-   Envelope Accept Reject Algorithm(s)
+
+-   Adaptive-Rejection Sampling
+
+-   Metropolis-Hastings Algorithm
+
+-   Slice Sampling
+
+-   Gibbs Sampling
+
+-   Approximate Bayesian Computation (ABC)
+
+Many of these methods are easily
+implemented (often in pre-existing packages) in R, and all they require
+is knowing a density function up to the normalising constant.
+
+##    Simple Markov Chain Monte Carlo Sampling
+
+:::{.sidenote}
+**Nick Metropolis Strikes Again**\
+The Metropolis-Hastings algorithm enjoys a rich and storied past. The
+original idea (as the Metropolis) algorithm was first presented in the paper "Equation of State
+Calculations by Fast Computing Machine" in 1953 as a generalisation of
+the Accept-Reject Algorithm and used to compute intractable problems in
+statistical thermodynamics as a part of designing the first hydrogen
+bomb. The basic algorithm works for any density function known up to its
+normalising constant.
+
+The final form of the algorithm used today is known as the Metropolis-Hastings algorithm after a generalisation to asymmetric proposal distributions provided in "Monte Carlo Sampling Methods Using Markov Chains and Their Applications" by Wilfred Hastings in 1970.  
+
+:::
+
+Rejection sampling, as outlined above, requires that we know the posterior or target distribution mode location and can evaluate the posterior or target density at its mode. Robust methods for drawing samples from the posterior or target distribution for Monte Carlo integration are useful when these quantities are unknown or unobtainable.  In this case, we rely on a class of methods based on Markov Chains, or more correctly, the Markov property of constructed sampling schemes.  These schemes fall into the broad category of Markov Chain Monte Carlo (MCMC)
+techniques. 
+
+The Metropolis-Hasting Algorithm is a more flexible and robust
+approach that exploits properties of random walks to create a Markov
+Chain, despite its age and potential drawbacks, the Metropolis-Hastings algorithm is 
+still widely used across many fields. 
+
+The details of the Metropolis-Hastings algorithm are relatively straightforward, though the formal derivation is more involved and will not be thoroughly or rigorously explored. 
+
+:::{.boxed}
+
+### The Metropolis-Hastings Algorithm {#the-metropolis-hastings-algorithm .unnumbered}
+
+For some some target density $f(x)$ let $g(x)\propto f(x)$.
+
+1.  Pick and initial value for $x_0$
+
+2.  for $t$ in $1:T$:
+
+3.  Given an current value of $x_t$ choose an arbitrary distribution $q$
+    that has the same support as $f$ and is symmetric,
+    i.e. $q(x|y)=q(y|x)$ and generate a proposed new value $x'$.
+
+4.  Calculate the acceptance probability:
+    $$\alpha=\min\left(1,\frac{g(x')}{g(x_t)}\right)$$
+
+5.  Accept $x_{t+1}=x'$ with probability $\alpha$, else $x_{t+1}=x_t$.
+
+
+$$
+\alpha=\min\left(1,\frac{g(x')q(x_t|x')}{g(x_t)q(x'|x_t)}\right)
+$$
+
+It is important to note that working with the function $g$ instead of
+the proper density works because the normalising constant will be the
+same for $f(x_t)$ and $f(x')$, thus they would cancel out in the ratio,
+making the acceptance probability the same if calculated with $f$ or
+$g$. In a Bayesian context, this is useful because if
+$g(\theta) = f(\mathbf{y}|\theta)\pi(\theta)$ from Bayes theorem, then it
+the Metropolis-Hastings algorithm for drawing samples from a posterior
+distribution is
+
+1.  Pick and initial value for $\theta_0$
+
+2.  for $t$ in $1:T$:
+
+3.  Given an current value of $\theta_t$ choose an arbitrary
+    distribution $q$ that has the same support as $\pi(\theta|\mathbf{y})$
+    to generate a proposed new value $\theta'$.
+
+4.  Calculate the acceptance probability:
+    $$\alpha=\min\left(1,\frac{f(\mathbf{y}|\theta')\pi(\theta')q(\theta_t|\theta')}{f(\mathbf{y}|\theta_t)\pi(\theta_t)q(\theta'|\theta_t)}\right)$$
+
+5.  Accept $\theta_{t+1}=\theta'$ with probability $\alpha$, else
+    $\theta_{t+1}=\theta_t$.
+
+Running these algorithms for time $T$ results in a sample of size $T$ of
+random samples from the target density function.
+
+:::
+
+Note that even though running the Metropolis-Hastings algorithm for $T$ steps results in a sample of size $T$, it is possible that there could be $T$ identical samples.  Recall that inference is typically predicated on a "good" sample, meaning, in most cases, independent samples.  Samples from the Metropolis-Hastings algorithm are correlated; thus, a sample of size $T$ is not the same (contains less information) than a set of independent samples of size $T$.  We will examine this idea more formally later. 
+
+###    Choosing an Appropriate Candidate Distribution $q$
+
+Once you identify the target function, the next most obvious question is
+how to choose a proposal distribution $q$? The proposal distributions
+must share support with the target density and should be "close" 
+to the target distribution. The candidate distribution
+should thoroughly explore the target densities space but not
+generate an excess of rejected values. The suggested rule of thumb is
+that the acceptance rate $\alpha$ should be between $0.2-0.4$.
+
+Note that in choosing the candidate (or proposal) distribution $g$ for the target distribution $f$, there is not the restriction that 
+$$
+g(y)\leq Mf(y)\,\forall y\in Y
+$$
+because we don't typically compute (or may not be able to compute) $M$, but we still want to have good "coverage" of the target distribution by the proposal. 
+
+### Independent Metropolis-Hastings
+
+:::{.sidenote}
+**Example**/
+
+Condsider data $\mathbf{y}=y_1,\ldots,y_n$ from the random variable $Y\sim Pois(\lambda)$ where $\log(\lambda)=\eta$ where $\eta$ follows the prior distribution $\eta\sim N(0,1)$.  
+
+Use both the random walk and independent Metropolis Hasting algorithms to draw samples from the posterior $\pi(\eta|\mathbf{y})$.
+
+
+:::
+
+There are some clear guidelines for selecting $q$ for example, if the
+support of the target density is $\mathbb{R}$ then $q$ could be some
+Gaussian distribution with an appropriate mean and variance. If the
+support of the target density is $\mathbb{R}^+$, then some form of Gamma
+or Inverse-Gamma would be viable. Choosing $q$ such that
+$$
+q(\theta^{'}|\theta^{t-1})=q(\theta^{'})
+$$ 
+results in an Independent Metropolis-Hastings algorithm. 
+
+:::{.boxed}
+
+**The Independent Metropolis-Hastings Algorithm**\
+When the proposal $q(\theta'|\theta_t)=q(\theta')$ then the resulting algorithm is
+For some some target density $f(x)$ let $g(x)\propto f(x)$.
+
+1.  Pick and initial value for $x_0$
+
+2.  for $t$ in $1:T$:
+
+3.  Choose a distribution $q$
+    that has the same support as $f$ and generate a proposed new value $x'$.
+
+4.  Calculate the acceptance probability:
+    $$\alpha=\min\left(1,\frac{g(x')q(x_t)}{g(x_t)q(x')}\right)$$
+
+5.  Accept $x_{t+1}=x'$ with probability $\alpha$, else $x_{t+1}=x_t$.
+
+
+$$
+\alpha=\min\left(1,\frac{g(x')q(x_t)}{g(x_t)q(x')}\right)
+$$
+
+:::
+
+The independent Metropolis-Hastings
+Algorithm can work well in lower dimensions, and when the mean of the
+target distribution can be estimated, in this sense, it is very similar (but less restricted than) to the rejection algorithm. The algorithm can perform
+poorly in higher dimensions and if the candidate distribution is quite
+dissimilar to the target density.
+
+### The Random Walk Metropolis-Hastings {#the-random-walk-metropolis-hastings .unnumbered}
+
+The random walk Metropolis-Hastings algorithm constructs the candidate
+distributions such that $\theta'=\theta_t+\epsilon_t$, this is the
+original version of the Metropolis-Hastings algorithm and is a popular
+choice. In this case, the candidate is such that
+$$
+E(\theta'|\theta_t) = \theta_t.
+$$ 
+In this case, adjust the variance to
+obtain the desired $\alpha$, the rate of acceptance of $\theta'$. In the
+case where the target distribution's support is $\mathbb{R}$, then $q$
+can be a Gaussian distribution with mean $\theta_t$ and some variance
+greater or equal to the target distribution. When the support of the
+target distribution is $\mathbb{R}^+$ you can use some form of a
+log-Gaussian distribution or a gamma distribution parametrised with
+terms for a mean and variance.
+
+:::{.boxed}
+
+**The Random Walk Metropolis-Hastings Algorithm**\
+
+1.  Pick and initial value for $x_1$
+
+2.  for $t$ in $1:T$:
+
+3.  Choose a distribution $q(x'|x_t)$ such that $E(x'|x_t)=x_t$
+    that has the same support as $f$ and generate a proposed new value $x'$.
+
+4.  Calculate the acceptance probability:
+    $$\alpha=\min\left(1,\frac{g(x')q(x_t|x')}{g(x_t)q(x'|x_t)}\right)$$
+
+5.  Accept $x_{t+1}=x'$ with probability $\alpha$, else $x_{t+1}=x_t$.
+
+
+$$
+\alpha=\min\left(1,\frac{g(x')q(x_t|x')}{g(x_t)q(x'|x_t)}\right)
+$$
+
+:::
+
+This version of the Metropolis-Hastings algorithm has the advantage that the proposal (or candidate) distribution will "adapt" or "seek" the mean of the target distribution.  However, conditioning on the current value in the chain will induce more correlation in the chain of samples.  
+
+:::{.boxed}
+### Example {.tabset .tabset-pills}
+
+Condsider data $\mathbf{y}=y_1,\ldots,y_n$ from the random variable $Y\sim Pois(\lambda)$ where $\log(\lambda)=\eta$ where $\eta$ follows the prior distribution $\eta\sim N(0,1)$.  
+
+Use both the random walk and independent Metropolis-Hasting algorithms to draw samples from the posterior $\pi(\eta|\mathbf{y})$.
+
+#### Solution
+Given the likelihood 
+$$
+\begin{align}
+f(\eta|\mathbf{y})&=\prod_{i=1}^n\frac{e^{\eta y_i}e^{e^{\eta}}}{y_i!}\\
+&=\frac{e^{\eta\sum_{i=1}^ny_i}e^{ne^\eta}}{\prod_{i=1}^ny_i!}
+\end{align}
+$$
+and prior
+$$
+\pi(\eta)\propto e^{-\frac{\eta^2}{2}}
+$$
+the resulting posterior is
+$$
+\pi(\eta|\mathbf{y})\propto \exp\left(\eta\sum_{i=1}^ny_i-ne^\eta-\frac{\eta^2}{2}\right)
+$$
+Thus we "guess" that a good candidate would be something like the prior
+$$
+q(\eta'|\eta_t)\propto e^{-\frac{(\eta'-\eta_t)^2}{2\sigma^2}}
+$$
+
+where $\sigma^2>1$.
+
+from there, we set up the Metropolis-Hastings Algorithm
+
+1.    Pick an initial value of $\eta_0$
+
+2.    Generate a candidate value of $\eta'$ from $q(\eta'|\eta_{t=0})$
+
+3.    Generate $u$ from $U(0,1)$
+
+4.    Compute $\alpha$
+
+$$
+\alpha=\min\left(1,\frac{g(\eta')q(\eta_t|\eta')}{g(\eta_t)q(\eta'|\eta_t)}\right)
+$$
+
+5.    Either accept the candidate value $\eta'$ with probability $\alpha$
+
+$$
+\eta_{t+1}=\left\{
+\begin{array}{cc}
+\eta'& \alpha\geq u\\
+\eta_t & \alpha<u
+\end{array}
+\right.
+$$
+
+6.    Update $q(\eta'|\eta_t)$ and repeat until desired sample size is reached.
+
+#### Code
+
+```{r}
+##  Generate some data from Poisson \lambda = 2
+
+set.seed(14061972)
+
+n<-10
+
+y<-rpois(n,2)
+
+sum_y<-sum(y)
+
+##  Define log-posterior function
+
+log_post<-post<-function(eta)
+{
+  eta*sum_y-n*exp(eta)-(eta^2/2)
+}
+
+##  Initialise values
+
+m<-10000 ## number of samples
+
+eta<-rep(0,m) ##  initialise the array to store values of eta from MH scheme
+
+##  Choose standard deviation for candidate density
+
+s<-1.2
+
+##  Run MH algorithm
+
+for(i in 2:m)
+{
+  ##  Generate Candidate value of eta
+  
+  eta_c<-rnorm(1,eta[i-1],sd=s)
+  
+  ##  Generate u
+  
+  u<-runif(1)
+  
+  ##  Compute numerator of ratio
+  
+  num<-log_post(eta_c)+dnorm(eta[i-1],eta_c,sd=s,log = TRUE)
+  
+  ##  Compute denominator of ratio
+  
+  den<-log_post(eta[i-1])+dnorm(eta_c,eta[i-1],sd=s,log = TRUE)
+  
+  ##  Compute alpha
+  
+  alpha<-min(1,exp(num-den))
+  
+  ##  Accept candidate if alpha>=u, otherwise reject candidate.
+  
+  if(alpha>=u)
+  {
+    eta[i]<-eta_c
+  }
+  else
+  {
+    eta[i]<-eta[i-1]
+  }
+}
+
+accept_rate<-unique(eta)%>%length()/m
+
+```
+
+The parameter $s$, the standard deviation of the candidate distribution is "tuned" to attain the desired acceptance rate.  The acceptance rate is the number of unique samples divided by the numebr of samples generated
+$$
+\text{acceptance rate}=\frac{\text{# of unique samples}}{\text{# samples generated}}.
+$$
+In this instance there are `r unique(eta)%>%length()` unique samples out of $10,\!000$ samples generated for an acceptance rate of `r round(accept_rate,4)`.
+
+#### Plot
+
+```{r,echo = FALSE}
+
+df<-tibble(parameters=c(eta,exp(eta)),names=c(rep("eta",m),rep("lambda",m)),x=rep(1:m,2))
+
+ggplot(df)+
+  geom_line(aes(x = x,y = parameters))+
+    facet_wrap(~names,labeller=label_parsed)
+
+ggplot(df,aes(x=parameters))+
+  geom_histogram(binwidth = 0.1,aes(y=..density..),alpha=0.4)+
+  geom_density()+
+  facet_wrap(~names,labeller=label_parsed)
+
+```
+
+The trace plots show the sequence of generated values from the Metropolis-Hastings algortithm.  We can see that the samples appear to be correlated, and that at one point the algorithm gets "stuck" around iteration $3700$ and goes several iterations without accepting any new values. 
+
+Note that the maximum likelihood estimator for $\eta$ is $\bar{y}=$ `r mean(y)` while the posterior mean of $\lambda=e^\eta$ is $E(\lambda|\mathbf{y})=$ `r mean(exp(eta))`.  The difference is the effect of the prior.   The expectation of $\eta$ is $0$, hence the prior expectation of $\lambda=e^0=1$. The prior has the effect of "shrinking" the posterior mean of $\lambda$ towards $1$, illustrating how for informative priors the posterior estimates are "biased". 
+
+:::
+
+
+
+### Caveat Emptor {#caveat-emptor .unnumbered}
+
+Metropolis-Hastings algorithms are relatively robust and will generate a sequence of samples, but
+there is no guarantee that the samples generated by a
+Metropolis-Hastings algorithm adequately explores the parameter
+space. We need to be careful to scrutinise our samples to ensure that they accurately represent our target density.  We will explore tools for analysing Metropolis-Hastings later in the semester. 
+
+
+
+
+

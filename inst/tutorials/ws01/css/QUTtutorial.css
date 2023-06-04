@@ -237,8 +237,8 @@
 }
 
 .topicsList .topic.current {
-    background-color: #00407a;
-    color: #ecf0f1;
+    background-color: #124C7B;
+    color: #EFF6FB;
     border: 0px;
 }
 
@@ -270,8 +270,8 @@
 }
 
 .tutorial-panel-heading {
-  background-color: #00407a;
-  color: #ecf0f1;
+  background-color: #124C7B;
+  color: #EFF6FB;
   padding-top: 6px;
   padding-bottom: 6px;
   padding-left: 8px;
@@ -297,9 +297,9 @@
 
 .tutorial-exercise-input .btn-xs {
   border-radius: 3px;
-  color: #ecf0f1;
-  border-color: #00407a;
-  background-color: #00407a;
+  color: #EFF6FB;
+  border-color: #124C7B;
+  background-color: #124C7B;
   margin-right: 0;
   margin-top: -1px;
   font-size: 11px;
@@ -310,36 +310,38 @@
 
 .btn-light {
   border-radius: 3px;
-  color: #ecf0f1;
-  background-color: #00407a;
-  border-color: #ecf0f1;
+  color: #EFF6FB;
+  background-color: #124C7B;
+  border-color: #EFF6FB;
 }
 
 .btn-light:hover
 {
-   color: #ecf0f1;
-  background-color: #00407a;
-  border-color: #ecf0f1; 
+   color: #EFF6FB;
+  background-color: #124C7B;
+  border-color: #EFF6FB; 
 }
 
 .btn-primary
 {
   border-radius: 3px;
-     color: #ecf0f1;
-  background-color: #00407a;
+  color: #EFF6FB;
+  background-color: #124C7B;
   border-color: #333; 
 }
 
 .btn-default
 {
   border-radius: 3px;
+  color: #124C7B;
+  background-color: #EFF6FB;
 }
 
 .btn-primary:hover
 {
-     color: #ecf0f1;
-  background-color: #00407a;
-  border-color: #00407a; 
+  color: #EFF6FB;
+  background-color: #124C7B;
+  border-color: #124C7B; 
 }
 
 .tutorial-exercise-input .btn-tutorial-solution {
@@ -352,8 +354,8 @@
 }
 
 .tutorial-exercise-input .btn-xs i {
-  color: #ecf0f1;
-  border-color: #00407a;
+  color: #EFF6FB;
+  border-color: #124C7B;
   width: 10px;
   margin-right: 1px;
 }
@@ -378,7 +380,8 @@
 }
 
 .tutorial-hint {
-  background-color: #00407a;
+  color: #ecf0f1;
+  background-color: #124C7B;
 
 }
 
@@ -414,11 +417,11 @@
     position: relative;
     display: block;
     padding: 10px 15px;
-    color: #00407a;
+    color: #124C7B;
 }
 .nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
     color: #ffffff;
-    background-color: #00407a;
+    background-color: #124C7B;
 }
 
 
@@ -464,6 +467,21 @@ p {
   padding: 5px 10px 5px;
 }
 
+.table-narrow {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+
+.solution-panel {
+  padding: 0 10px;
+  background-color: white;
+  display: none;
+  overflow: hidden; 
+}
+
 
 .boxed {
     float: left;
@@ -473,3 +491,5 @@ p {
     width: 100%;
     max-width: 45em;
     padding: 5px 10px 5px;
+}    
+

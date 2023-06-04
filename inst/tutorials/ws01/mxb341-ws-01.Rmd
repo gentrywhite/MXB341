@@ -1,24 +1,31 @@
 ---
-title:  "MXB341 Worksheet 1 - Estimators"
+title: "MXB341 Worksheet 1 - Estimators"
 output:
   learnr::tutorial:
     theme: yeti
     includes:
-    css: ["css/QUT.css","css/QUTtutorial.css"]
+    css: ["./css/QUT.css","./css/QUTtutorial.css"]
+    after_body: footer.html
   progressive: true
   allow_skip: true
 runtime: shiny_prerendered
-params:
-  show_solutions: TRUE
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-options(htmltools.dir.version = FALSE)
-opts <- options(knitr.kable.NA = "")
+# if problems with knitting directory:
+# set Knit Directory = Document Directory
 
-  # install libraries needed for worksheet
+# install libraries needed for worksheet
+knitr::opts_chunk$set(
+  fig.align = 'center',
+  collapse = TRUE,
+  comment = "#>"
+)
+
 library(learnr)
+library(kableExtra)
+library(pander)
+library(shiny)
 library(MXB341)
 
 
@@ -27,6 +34,8 @@ library(MXB341)
 ```{r, echo = FALSE}
 
 htmltools::includeHTML("header.html")
+htmltools::includeCSS("./css/QUTtutorial.css")
+htmltools::includeCSS("./css/QUT.css")
 
 ```
 
@@ -136,8 +145,6 @@ as it is more convenient to work with and results in the equivalent estimate. Th
   
 ```
 
-:::
-
 
 ```{r, echo = FALSE, message=FALSE,warning=FALSE}
 
@@ -162,7 +169,7 @@ function button_handler1() {
   }
 }
 ```
-
+:::
 
 :::{.boxed}
 
@@ -172,7 +179,7 @@ function button_handler1() {
   
 ```
 
-:::
+
 
 ```{r, echo = FALSE, message=FALSE,warning=FALSE}
 
@@ -195,6 +202,7 @@ function button_handler2() {
   }
 }
 ```
+:::
 
 :::{.boxed}
 
@@ -204,7 +212,7 @@ function button_handler2() {
   
 ```
 
-:::
+
 
 ```{r, echo = FALSE, message=FALSE,warning=FALSE}
 
@@ -227,6 +235,7 @@ function button_handler3() {
   }
 }
 ```
+:::
 
 :::{.boxed}
 
@@ -236,7 +245,7 @@ function button_handler3() {
   
 ```
 
-:::
+
 
 ```{r, echo = FALSE, message=FALSE,warning=FALSE}
 
@@ -259,6 +268,7 @@ function button_handler4() {
   }
 }
 ```
+:::
 
 ## Practical questions
 
@@ -267,6 +277,8 @@ For these questions, you will need to write functions, plot them, and optimise t
 :::{.boxed}
 
 ### Question 1: Defining functions in R
+
+Here is an example of defining a function in `R`.  The function `squared_plus_z` takes two arguments, it squares the first then adds the second.  Note that the function is defined so that if only one argument is entered , it assumes that the second is $0$. 
 
 ```{r r-function-example, exercise = TRUE}
 
@@ -295,6 +307,18 @@ l<-function(p,x)
 
 ```
 
+```{r ex1-solution}
+l<-function(p,x)
+  {
+  lp <- log(p)
+  lp1 <- log(1-p)
+  ans <- x*lp+(1-x)*lp1
+  ans <- sum(ans)
+  return(ans)
+}
+
+```
+
 ```{r, echo = FALSE, message=FALSE,warning=FALSE}
 
 shiny::actionButton("solution", 
@@ -320,6 +344,8 @@ function button_handler5() {
   
 :::
 
+:::{.boxed}
+
 ### Question 2: Plotting functions in ggplot
 
 **gpplot2** is a powerful graphic package in R that we can use to create various high-quality graphics.  Here is an example of plotting the function "squared_plus_z()" we created previously. 
@@ -340,7 +366,12 @@ x<-c(0,1,1,0,0,0,0,1,0,0)
 
 
 ```
-    
+
+
+:::
+
+:::{.boxed}    
+
 ### Optimising functions with `optim`
 The `optim` function is just one example of optimisation in `R`. Here we minimise $x^2 - 1$ over $x \in [-1,1]$.
 Several methods in `optim` require you to specify an interval (i.e.\ specify a bounded problem), but some don't.
@@ -376,7 +407,9 @@ Now, find the MLE of $p$ for using the log-likelihood function you created in th
 x<-rbinom(10,1,0.4)
 
 ```
+:::
 
+:::{.boxed}
 
 ### Question 3
 
@@ -384,13 +417,62 @@ x<-rbinom(10,1,0.4)
   
 ```
 
+```{r, echo = FALSE, message=FALSE,warning=FALSE}
+
+shiny::actionButton("solution", 
+                    label = "Solution", 
+                    onclick = "button_handler6()")
+
+div(id = "pq3-solution", 
+    style="display:none",
+    htmltools::includeMarkdown("../solution-bank/id0006-est-ls-stbernard.Rmd"))
+```
+
+```{js, echo = FALSE}
+function button_handler6() {
+  var x = document.getElementById('pq3-solution');
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+```
+
+:::
+
 ## Supplementary Questions
+
+:::{.boxed}
 
 ### Question 4
 
 ```{r prac-question-4, child='../question-bank/id0047-gamma-est-supp.Rmd', eval = TRUE}
   
 ```
+<!---
+# ```{r, echo = FALSE, message=FALSE,warning=FALSE}
+# 
+# shiny::actionButton("solution", 
+#                     label = "Solution", 
+#                     onclick = "button_handler7()")
+# 
+# div(id = "pq1-solution", 
+#     style="display:none",
+#     htmltools::includeMarkdown("../solution-bank/id0047-gamma-est-supp.Rmd"))
+# ```
+# 
+# ```{js, echo = FALSE}
+# function button_handler7() {
+#   var x = document.getElementById('pq1-solution');
+#   if (x.style.display === "none") {
+#     x.style.display = "block";
+#   } else {
+#     x.style.display = "none";
+#   }
+# }
+# ```
 
-
+--->
+:::
 

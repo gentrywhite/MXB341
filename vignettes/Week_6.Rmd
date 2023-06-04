@@ -1,0 +1,575 @@
+---
+title: "Week 6"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Week 6}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(tidyverse)
+```
+
+```{r, echo=FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("QUTReadings.css")
+
+```
+
+# Decision Theory
+
+:::{.sidenote}
+<center>
+![Statistician Abraham Wald.](wald.jpg){width=150px}\
+Statistician Abraham Wald
+</center>
+
+&nbsp;
+
+In his 1939 paper ["Contributions to the Theory of Statistical Estimation and Testing Hypotheses"](https://projecteuclid.org/euclid.aoms/1177732144) Abraham Wald showed that both parameter estimation and hypothesis testing could be framed as decision-theoretic tasks. 
+
+:::
+
+
+
+So far, we have covered two approaches to classical inference; Statistical Testing and Interval Estimation.  These two approaches are focused on parameter estimation as the goal of the inference process and on accounting for and quantifying the uncertainty associated with the parameter estimation. As stated earlier in this unit, we can think of statistical inference as the process of making decisions under uncertainty.  We often need to make decisions that we cannot easily express as parameter estimation or testing problems.  In these cases, we can look to decision theory to frame these problems for a solution.  
+
+Decision theory is a broad topic that can encompass ideas from philosophy, psychology, economics, operations research, applied mathematics, and statistics.  Broadly speaking, decision theory is the study of how individuals or agents make choices and can be divided into two areas: normative decision theory, which analyses the outcomes of decisions and seeks optimal decisions; and descriptive decision theory, which is concerned with how people make decisions.  
+
+##    Statistical Decision Theory
+
+Statistical decision theory is concerned with the process of making decisions under uncertainty, both making and evaluating decisions under uncertainty in terms of their "cost" or the "loss" incurred by making a given decision.  Statistical decision theory also attempts to create a unifying framework for theoretical statistics and statistical inference beyond classical statistical methods. 
+
+:::{.boxed}
+
+The basic elements of decision theory are:
+
+*  Observed **data** $\mathbf{x}$ with probability distribution $X\sim f(x;\theta)$.
+*  The **action** $a$, chosen from the set of all possible actions, i.e.\ $a\in A$.
+*  The **state of nature** represented by the unknown parameter(s) $\theta$. 
+*  The **decision** (or choice of $a$) defined by the function $a=d(\mathbf{x})$
+*  A **loss function** $l(\theta,d(\mathbf{x}))$ used to evaluate decisions and choose actions.
+
+:::
+
+&nbsp;
+
+:::{.sidenote}
+**Example:**\
+A manufacturer produces widgets in lots of size $N$ and randomly
+draws a sample of size $n$ for inspection. Let $\hat{p}$ be the proportion of the
+sample that is defective and let $p$ be the proportion of the lot that
+is defective.
+
+A lot of widgets costs $\$C$ to manufacture and sell for $\$M$, but
+if $p\geq p_0$, the manufacturer pays a penalty $\$P$ for the lot.  Describe the action space, decision function, and the loss function. 
+
+:::
+
+The concept of the data $\mathbf{x}$ and the unknown parameter(s) $\theta$ should be familiar from the concepts of likelihood and parameter estimation.  Actions and decision functions may be a little more difficult to conceptualise. Still, we can think of decisions and actions in a colloquial sense as the choices and rationale for our decision making in day to day life. We can consider loss in this colloquial sense as part of our decision-making process as the consequences of our actions.  Statistical decision theory seeks to formalise this inherently human process in the logical language of mathematics to apply the decision-making process to various situations. 
+
+:::{.boxed}
+**Solution:**\
+A manufacturer produces widgets in lots of size $N$ and randomly
+draws a sample of size $n$ for inspection. Let $\hat{p}$ be the proportion of the
+sample that is defective and let $p$ be the proportion of the lot that
+are defective.
+
+A lot of widgets costs $\$C$ to manufacture and sell for $\$M$, but
+if $p\geq p_0$, the manufacturer pays a penalty $\$P$ for the lot.  Describe the action space, decision function, and the loss function. 
+
+The manufacturer has two possible actions: sell the lot, or scrap the lot at a
+cost $\$C$, so the action space is defined as
+$$
+A=[\mbox{sell, scrap}].
+$$ 
+The state of nature is $\theta = p$ the proportion of the lot of $N$ widgets that are defective.  The data are $\mathbf{x} = x_1,x_2,\ldots,x_n$ where
+$$
+x_i=\left\{
+\begin{array}{ll}
+1,& \mbox{widget i is defective}\\
+0,&\mbox{widget i is not defective.}
+\end{array}
+\right.
+$$
+
+The sample proportion summarises the data
+$$
+\hat{p}=\frac1n\sum_{i=1}^nx_i
+$$ 
+The decision function is
+$$
+d(\mathbf{x})=\left\{
+\begin{array}{ll}
+\mbox{Reject Lot} & \hat{p}\geq p_0\\
+\mbox{Accept Lot} & \hat{p}< p_0
+\end{array}
+\right.
+$$
+
+The loss function $L(p,d(\mathbf{x}))$ can be written as the table
+
+:::{.table}
+   |State of nature |        Sell       |  Scrap |
+   |----------------| ------------------| -------|
+   |    $p<p_0$     |       $-\$M$      |  $\$C$ |
+   |   $p\geq p_0$  |   $\phantom{i}\$P$ |   $\$C$ |
+     
+:::     
+
+**Note:** the gross profit $M\$$ is expressed as a negative loss. 
+<!---
+The risk function is the
+expected loss, which we compute with respect to the probability
+distribution of $\hat{p}$, which depends on $p$.
+-->
+
+:::
+
+
+## Risk and the Minimax Rule
+
+Given a situation and a defined loss function, then we consider the final tool, risk. The risk function is defined as the expected value of the loss function with respect to the probability distribution of the data, i.e.\
+$$
+R(\theta,d)=E\left(l(\theta,d(\mathbf{x}))\right)=\int_{\mathbf{X}}l(\theta,d(\mathbf{x})f(\mathbf{x}|\theta)d\mathbf{x}.
+$$
+This definition is both intuitive and straightforward; however, the risk is still conditioned on the state of nature $\theta$ and the decision function $d(\cdot)$.  Our goal is not only to evaluate a single decision rule but to choose an optimal decision rule and account for the uncertainty associated with the unknown state of nature.  This goal is not like typical statistical inference problems. We use a sampling distribution to make our decisions based on probabilistic statements; instead, we are looking for an optimal decision given a range of possible actions and uncertainty about the state of nature.  This situation leads to a rule for choosing actions based on the risk function that considers both the decision space and the state of nature. 
+
+<!--
+Parameter Estimation as a decision theory problem
+
+Estimating some function $h(\theta)$ on the basis of some sample
+$\mathbf{x}=(x_1,\ldots,x_n)$ where the distribution of $x_i$ depends on
+$\theta$ and the decision $d(\mathbf{x})$ is an estimator of $h(\theta)$ The
+quadratic loss function is
+$$l(\theta,d(\mathbf{x}))=[h(\theta)-d(\mathbf{x})]^2$$ is a typical choice. The
+resulting risk function is
+$$R(\theta,d)=E\left\{[h(\theta)-d(\mathbf{x})]^2\right\}$$ which should be
+familiar as the Mean Squared Error, and the expectation is taken with
+respect to the distribution $\mathbf{x}$ which depends on $\theta$.
+-->
+
+###  Minimax Rules
+
+:::{.sidenote}
+**Example:**\
+A manufacturer produces widgets in lots of size $n=21$. The manufacturer chooses one widget of each lot for testing. If the selected widget is defective, then the remaining 20 widgets can be sold for $\$1$ each with a "double your money back" guarantee. Alternatively, the manufacturer can scrap an entire lot of widgets at a total cost of
+    $\$1$.
+
+The two possible decisions are: $$\begin{aligned}
+d_1:&\mbox{Scrap all widgets if the tested widget is defective }\\
+d_2:&\mbox{Sell all widgets regardless of test outcome}\end{aligned}$$ Let
+the data $x$ be $$x=\left\{
+\begin{array}{cl}
+0, & \mbox{If tested widget is not defective}\\
+1, & \mbox{If tested widget is defective}
+\end{array}\right.$$ and $k$ be the state of nature, or the number of
+defective widget in a lot.
+
+Find the probability distribution for $x$ as a function of $k$, identify
+the loss functions under each of the two decisions, and apply the
+minimax rule to select an action.
+
+:::
+
+In any given situation, the choice of action relies on the decision
+function $d$, which leads to the question of how to choose $d$. 
+Minimising risk is a good criterion, but we must also consider that the true state of nature $\theta$ is unknown.
+
+The minimax rule is designed to offer a very conservative means of choosing a decision by stating that the optimal decision under the minimax rule is the one that has the smallest (over the decision space) maximum risk (over the state of nature space).  Or in other words, it chooses the option with the best worst outcome. 
+
+**The Minimax Rule**\
+The minimax rule selects the decision $d^*$ in the decision space $D$ that minimises the maximum risk over the possible states of nature $\theta\in\Theta$
+$$
+d^*=d:\min_{d\in D}\left\{\max_{\theta\in\Theta}R(\theta,d)\right\}.
+$$
+
+<!--
+Consider two possible states of nature $\theta\in [\theta_1,\theta_2]$
+and two possible decisions $d\in [d_1,d_2]$
+$$
+R(\theta_1,d_1)<R(\theta_1,d_2)
+$$ 
+but
+$$
+R(\theta_2,d_1)>R(\theta_2,d_2).
+$$
+
+The Minimax Rule
+
+\medskip
+The minimax rule is focused on minimising overall risk by:
+
+1.  Consider $\max_{\theta\in\Theta}R(\theta,d)$
+
+2.  Choose $d^*$ according to
+    $\min_d\{\max_{\theta\in \Theta}R(\theta,d)$}
+--->
+The minimax rule focuses on minimising the worst possible outcome rather than optimising some other criteria.  This property makes the minimax rule very conservative in choosing actions.  It is worth noting as well that we can apply other rules for identifying the optimal decision rule, including minimising the average or expected risk
+$$
+\begin{align}
+d^*&=\underset{d\in D}{\operatorname{argmin}}\operatorname{E}_{\theta\in\Theta}\{R(\theta,d)\}\\
+&=\underset{d\in D}{\operatorname{argmin}}\int_{\Theta}R(\theta,d)f(\theta)d\theta
+\end{align}
+$$
+which assume some known probability distribution describing the state of nature, an assumption not necessary for using the minimax rule.
+
+:::{.boxed}
+
+
+### Example (cont'd) {.tabset .tabset-pills}
+
+#### Solution
+A manufacturer produces widgets in lots of size $N=21$. The manufacturer chooses one widget of each lot for testing. If the selected widget is defective, then the manufacturer can sell the remaining 20 widgets for their regular price of $\$1$ each, but with a "double your money back" guarantee (i.e.\ the customer gets refunded $\$2$ if they purchase a defective widget. Alternatively, the manufacturer can scrap an entire lot of widgets at a total cost of
+    $\$1$.
+
+The two possible decisions are: 
+$$
+\begin{aligned}
+d_1:&\mbox{Scrap all widgets if the tested widget is defective }\\
+d_2:&\mbox{Sell all widgets regardless of test outcome}
+\end{aligned}
+$$ 
+Let
+the data $x$ be 
+$$
+x=\left\{
+\begin{array}{cl}
+0, & \mbox{If tested widget is not defective}\\
+1, & \mbox{If tested widget is defective}
+\end{array}\right.
+$$ 
+and $k$ be the state of nature or the number of defective widget in a lot.
+
+If the true state of nature is $k$, the number of defective widgets in a lot of $N=21$, then we can define the probability distribution of the random variable $X$ or whether or not a single randomly selected widget is defective is
+as 
+$$
+Pr(X=1)=\frac{k}{N}.
+$$
+The risk function is then
+$$
+R(k,l(k,d_j(x)))=Pr(X=1)l\{k,d_j(1)\}+Pr(X=0)l\{k,d_j(0)\},\,\mbox{for } j=1,2.
+$$
+Under the two possible decision rules
+$$
+\begin{align}
+R(k,l(d_1(x)))&=\frac{k}{N}+\frac{N-k}{N}(2k-N)\\
+&=\frac{k}{N}+3k-N-\frac{2k^2}{N}\\
+R(k,l(k,d_2(x)))&=\frac{k}{N}(2(k-1)-N)+\frac{N-k}{N}(2k-N)\\
+&=-\frac{2k}{N}+2k-N.
+\end{align}
+$$
+The state of nature $k$ and the decision space are discrete spaces and cannot be analytically optimised; instead, we can visualise the risk functions in R and compare the numbers generated.  
+
+#### R Code
+```{r}
+
+##  Define the Two Risk Functions
+
+R1<-function(k)
+{
+  k/21+3*k-21-2*k^2/21
+}
+
+R2<-function(k)
+{
+  -2*k/21+2*k-21
+}
+
+##  Evaluate the two risk functions for k=0,1,...,21
+
+K<-0:21
+r1<-R1(K)
+r2<-R2(K)
+
+##  Find the maximum value for each one
+
+max(r1)
+max(r2)
+
+```
+Since 
+$$
+\max_{\theta\in\Theta}R(\theta,d_1(x))<\max_{\theta\in\Theta}R(\theta,d_2(x))
+$$
+so we choose $d_1$ as the preferred action under the minimax rule. 
+
+
+#### Plot
+```{r,echo=FALSE}
+
+R1<-function(k)
+{
+  k/21+3*k-21-2*k^2/21
+}
+
+R2<-function(k)
+{
+  -2*k/21+2*k-21
+}
+K<-0:21
+r1<-R1(K)
+r2<-R2(K)
+
+df<-tibble(k=rep(K,2),Risk = c(r1,r2),Decision=c(rep("d1",22),rep("d2",22)))
+ggplot(df)+
+  geom_point(aes(x=k,y=Risk,color = Decision))
+
+
+
+```
+Note that for small $k$ $d_2(x)$ has the lower risk, but it is a linear function and is maximised at $k=21$, where $R(k,d_2(x))=19$.  On the other hand the maximum risk for $d_1(x)$ is at $k=16$ where $R(k,d_1(x))=3.381$. Therefore, under the minimax rule we would choose $d_1(x)$ as our decision rule.  
+
+
+
+
+:::
+
+<!---
+### Comments on the Minimax Rule
+
+As noted, the minimax rule is very conservative and is based solely on the minima and maxima over the decision space and the state of nature.
+--->
+### The Choice of Loss Function
+
+The choice of loss function is important, not just because the loss function is the connection between decisions and their consequences, but that the form of the loss function can determine the computational difficulties that might arise in applying a rule for finding the optimal decision rule.  
+
+In cases where the loss incurred is expressed as some desirable outcome or utility (i.e.\ profit), we construct the loss function to reflect the level of risk aversion (or risk-seeking) propensity of the agent (i.e.\ the individual making the decision and benefiting from the utility).  
+
+A common example of decision-theoretic problems is optimisation or identifying the optimal parameter settings for a process; in these, it is desirable (but not always the case) to have a loss function that globally continuous and differentiable.  Common choices of loss function in these situations are squared-error loss or $L_2$ loss
+$$
+l(\theta,d(\mathbf{x}))=(\theta_0-\hat{\theta})^2
+$$
+where the true state of nature is $\theta_0$ and the decision rule is $d(\mathbf{x})=\hat{\theta}$.  Squared-error loss has the nice property of being continuous and smooth (differentiable), but outliers can overly influence results.  Alternatively the 
+absolute value loss function or $L_1$ loss
+$$
+l(\theta,d(\mathbf{x}))=|\theta_0-\hat{\theta}|
+$$
+avoids the undue influence of outliers, but is not differentiable at $\hat{\theta}=0$, it can still be analysed analytically (piecewise) but is more difficult to optimise than squared-error loss.  In some cases, it is desirable to use $0-1$ or $L_0$ loss
+$$
+l(\theta,d(\mathbf{x}))=\left\{
+\begin{array}{ll}
+1,&\hat{\theta}=\theta_0\\
+0,&\hat{\theta}\neq\theta_0
+\end{array}
+\right.
+$$
+which requires numerical evaluation.  
+
+It is worth a comment here that decision-theoretic approaches work well for problems where we can express the loss function as a "nice" (e.g.\ smooth, continuous, symmetric etc.) In reality, most situations don't lend themselves to "nice" loss functions; they tend to result in "messy" loss functions that are not easily dealt with in mathematical terms (e.g.\ discontinuous and asymmetric functions). Because of this, special care is needed in constructing the loss function when using decision-theoretic methods. Regardless of the context, it is useful to consider the sufficiency and completeness of data when considering decision rules and loss functions. 
+
+## Parameter Estimation 
+
+[Parameter estimation](./Parameter_Estimation.html#parameter-estimation) and [properties of good parameter estimates](./Parameter_Estimation.html#assessing-estimators) are topics that have previously been discussed at length from the perspective of the likelihood principle.  Now we can examine the idea of parameter estimation as a special case of decision theory. 
+
+### Loss Function Optimality 
+
+:::{.sidenote}
+**Example:**\
+Infectious diseases are said to spread "exponentially", meaning that the
+rate of infection is proportional to the total number of people
+infected, in other words: $$\frac{dy}{dt}\propto y(t)$$ the term
+exponential derives from the solution to the differential equation
+$$\frac{dy}{dt}\propto y(t)$$ is $$y(t)=Ae^{at}$$ For infectious
+disease, we can assume that $A=1$ as that is the number of people
+infected at $t=0$ the time of the first infection detected. The question
+now is how to estimate $a$, the rate of infections?
+
+:::
+
+Assessing estimators we have previously relied on the principles of [variance and mean squared error](./Parameter_Estimation.html#variance-and-mean-squared-error), [consistency](./Parameter_Estimation.html#consistency), and [sufficiency](./Properties_of_Estimators.html#sufficient-statistics), we now consider a decision-theoretic approach called *loss function optimality* in which we choose our estimator or decision function based on the minimisation of the loss function. 
+
+We have already seen this when we considered the [least squares estimator](./Parameter_Estimation.html#least-squares), which is exactly the case of considering the $L_2$ loss function.  Given a random sample of size $n$ $\mathbf{x}=x_1,x_2,\ldots,x_n$ from the probability distribution of the random variable $X$ we define our decision rule as the estimator of the expected value of $X$, under $L_2$ loss the optimal estimator $d^*(\mathbf{x})$ (i.e.\ the one that minimises loss) is
+$$
+\begin{align}
+d^*(\mathbf{x})&=\underset{\theta\in \Theta}{\operatorname{argmin}}\sum_{i}^n\left(x_i-g(\theta)\right)^2\\
+&=\underset{\theta\in \Theta}{\operatorname{argmin}}||\mathbf{x}-g(\theta)||_2
+\end{align}
+$$
+We can determine this result analytically by solving the equation for $\theta$, which will result in the function of the data $d(\mathbf{x}$
+$$
+\begin{align}
+\frac{d}{d\theta}\sum_{i}^n\left(x_i-g(\theta)\right)^2&=0\\
+-2\frac{dg}{d\theta}\sum_{i}^n\left(x_i-g(\theta)\right)&=0.\\
+\end{align}
+$$
+In the case of the $L_2$ loss, loss function optimality leads to the estimator based on the sample mean, i.e.\
+$$
+d^*(\mathbf{x})=g^{-1}(\bar{x}).
+$$
+In the case of $L_1$ or median loss 
+$$
+d^*(\mathbf{x})=\underset{\theta\in \Theta}{\operatorname{argmin}}||\mathbf{x}-\theta||_1.
+$$
+the optimal estimator of $\theta_0$ is the sample median. For $L_0$ loss or $0-1$ loss
+$$
+d^*(\mathbf{x})=\underset{\theta\in \Theta}{\operatorname{argmin}}||\mathbf{x}-\theta||_0.
+$$
+the optimal estimator of $\theta_0$ is the sample mode or the most frequently occurring value. 
+
+We can think of the maximum likelihood estimator as a loss function optimality problem where the loss function is the negative of the likelihood function
+$$
+l(\theta,d(\mathbf{x}))=-L(\theta|\mathbf{x{}})
+$$
+in this case, the minimiser of the loss function is the maximum likelihood estimator.  
+
+The loss functions $L_2$, $L_1$, and $L_0$ are some of the more commonly used objective functions in optimisation, but the set of possible loss function is very large. Using loss function optimality, we can derive estimators for specific situations where concepts like likelihood or least-squares may not apply directly to the problem.  
+
+:::{.boxed}
+## Example {.tabset .tabset-pills}
+Infectious diseases are said to spread "exponentially", meaning that the
+rate of infection is proportional to the total number of people
+infected, in other words 
+$$
+\frac{dY}{dt}\propto Y(t)
+$$ 
+the term exponential derives from the solution to the differential equation
+$$
+\frac{dY}{dt}\propto Y(t)
+$$ 
+is 
+$$
+Y(t)=Ae^{at}.
+$$ 
+For infectious disease, we can assume that $A=1$ as that is the number of people
+infected at $t=0$ the time of the first infection detected. The question
+now is how to estimate $a$, the rate of infections?
+
+### Least-Squares of $a$
+Let $y(t)$ be the number of people infected on day $t$ and let $Y(t)=\sum_{u=0}^ty(u)$ be the cumulative sum of infected people on day $t$. Then the solution to the ODE is
+$$
+Y(t)=Ae^{at}
+$$
+and because the data are collected daily 
+$$
+\frac{dY}{dt}\approx\frac{y(t)}{\Delta t}
+$$ 
+if $\Delta t=1$
+$$
+\frac{dY}{dt}\approx y(t)
+$$
+noting that 
+$$
+\begin{align}
+\frac{dY}{dt}&=aAe^{aT}\\
+&=aY(t)
+\end{align}
+$$
+then
+$$
+\begin{align}
+aY(t) &\approx y(t)\\
+a\approx\frac{y(t)}{Y(t)}
+\end{align}
+$$ 
+Since $Y(t)$ and $y(t)$ might vary some each day, then it might make sense to
+take an average
+$$
+a^* = \frac{1}{T}\sum_{t=0}^T\frac{y(t)}{Y(t)}.
+$$ 
+Note that this is the estimator that we would arrive at using squared error loss
+$$
+a^*=\underset{a\in A}{\operatorname{argmin}}\sum_{t=0}^T\left(a-\frac{y(t)}{Y(T)}\right)^2
+$$
+
+### The Least-Squares for $a$, Take Two
+On the other hand, consider the solution to the ODE, and recalling that $A=1$,
+note that 
+$$
+Y(t)=e^{at}\equiv \log(Y(t))=at
+$$ 
+and the find the least squares solution: 
+$$
+\begin{align}
+\frac{d}{dt}\sum_{t=0}^T(\log(Y(t))-at)^2&-0\\
+2\sum_{t=0}^Tt(\log(Y(t)-at))&=0\\
+\sum_{t=0}^Tt\log(Y(t))&=a\sum_{t}^Tt^2\\
+\tilde{a}&=\frac{\sum t\log(Y(t))}{\sum t^2}.
+\end{align}
+$$ 
+
+### Maximum Likelihood
+Finally, consider that the solution to the ODE 
+$$
+Ae^{at}=\operatorname{E}(Y(t))
+$$
+and that $Y(t)$ the total number of events on day $t$  follows a Poisson
+distribution with rate $\lambda=e^{at}$ then we can use maximum likelihood to find the MLE
+$$
+\hat{a}=\max_a a\sum_{t=0}^T tY(t)-\sum_{t=0}^T e^{at}-\sum_{t=0}^T\log(Y(t)!)
+$$ 
+note that this requires a numerical solution to solve for $\hat{a}$.
+
+###   Results
+
+We can compare these estimators by analysing the data for the number of cases of COVID-19 in Queensland between 29 January 2020 and 31 March 2020. 
+
+```{r}
+
+##  Load the COVID 19 dataset included in the MXB341 package
+
+data("covid_19",package = "MXB341")
+
+##  Extract the data for Queensland
+
+QLD<-covid_19%>%
+  filter(`Country/Region`=="Australia" & `Province/State`=="Queensland")%>%
+    mutate(date=as.Date(date,"%m/%d/%y"))
+
+##  Create tibble with Y(t) and y(t) and restrict our analyses for the dates from 
+##  29 January 2020 (the date of the first case in QLD) and 31 March 2020.
+
+QLD<-aggregate(cases~date,QLD,sum)%>%tibble()%>%
+  mutate(Y=cases)%>%
+   filter(date<="2020-03-31" & date>"2020-01-28")%>%
+    mutate(y = c(0,diff(Y)))%>%
+      mutate(tm = 0:62)
+
+##  Compute a_star
+
+ a_star <-mean(QLD$y/QLD$Y)
+ 
+ ## Compute a_tilde
+
+ a_tilde <- sum(QLD$tm*log(QLD$Y))/sum(QLD$tm^2)
+ 
+ ## Define the likelihood function l(a)
+
+ l<-function(a)
+ {
+   lambda = exp(a*QLD$tm)
+   sum(dpois(QLD$Y,lambda,log = TRUE))
+ }
+
+ ## Compute the MLE using the optimise() function, which minimises the objective function
+ 
+ a_hat<-optimise(function(x) -l(x),c(0,10))$minimum
+
+ f<-function(a)
+ {
+   exp(a*QLD$tm)
+ }
+
+ df<-tibble(Y = rep(QLD$Y,3),
+            date =rep(QLD$date,3),
+            model = c(rep("a_star",nrow(QLD)),rep("a_tilde",nrow(QLD)),rep("a_hat",nrow(QLD))),
+                      fit = c(f(a_star),f(a_tilde),f(a_hat)))
+
+ ggplot(df)+
+   geom_point(aes(x=date,y=Y))+
+     geom_line(aes(x=date,y=fit,color=model))
+
+```
+Note that each of these estimators fits different sections of the data better.  $a^*$ seems to fit the earliest data between 29 January and about 17 March; after 17 March, the model using $a^*$ is underestimating the number of cases.  The maximum likelihood estimator tends to overestimate the number of cases between 1 March and around 20 March but seems to be the best fit for the data after 20 March.  $\tilde{a}$ seems to offer a compromise between $a^*$ and $\hat{a}$. This result illustrates an interesting point about estimators; we tend to believe that the maximum likelihood estimator is always preferred. Still, we can see here that at least some parts of the data have estimators that better fit the data.  
+
+:::
+
+
+

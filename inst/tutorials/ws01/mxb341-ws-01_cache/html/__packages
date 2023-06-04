@@ -1,5 +1,6 @@
 base
 shiny
+learnr
 tidyverse
 ggplot2
 tibble
@@ -21,4 +22,3 @@ pracma
 ggforce
 MXB341
 png
-learnr

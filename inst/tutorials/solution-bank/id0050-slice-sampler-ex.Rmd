@@ -1,0 +1,86 @@
+Given data from a Poisson likelihood 
+$$
+f(\mathbf{y}|\lambda)=\frac{\lambda^{\sum_{i=1}^ny_i}e^{-n\lambda}}{\prod_{i=1}^ny_i!}
+$$
+consider the prior 
+$$
+\pi(\lambda)=\frac{1}{(\lambda+1)^2}
+$$
+Given some data 
+```{r echo=FALSE}
+set.seed(14061972)
+y<-rpois(10,3.2)
+```
+$y=$ `r y` implement a ratio of uniforms sampling scheme to draw 1000 samples from the posterior
+$$
+\pi(\lambda|\mathbf{y})\propto f(\mathbf{y}|\lambda)\pi(\lambda)
+$$
+Compare the posterior mean of $\lambda$ to the MLE $\hat{\lambda}$.
+
+**Solution**\
+
+```{r}
+
+##  Load the library rootSolve to find the end points for the new sample x
+
+library(rootSolve)
+
+##  This sets the seed for the random number generator, this makes sure that each time you run the ##  simulation you get the same results.  The seed can be any arbitrary number
+
+set.seed(14061972)
+
+##  Enter the data
+
+y<-c(5,1,5,1,0,7,5,3,2,1)
+n<-10
+
+##  The posterior computed up to the proportionality constant
+
+g<-function(x)
+{
+  a<-sum(y)*log(x)-n*x-2*log(x+1)
+  exp(a)
+}
+
+##  Set number of desired samples
+
+N<-1000
+
+##  Define lambda as an empty vector of size N
+
+lambda<-numeric(length = N)
+
+##  We generate the initial value for lambda, it can be drawn from the prior or any distribution
+##  with the same support. 
+
+lambda[1]<-rexp(1)
+
+##  Start the slice sampler
+ 
+for( i in 2:N)
+{
+##  sample y0 on the vertical slice between the minimum of g and g(x0)
+  
+ y0<-runif(1,0,g(lambda[i-1])) 
+ 
+ ## Use the uniroot.all function to find the points where g(x)==y0, we are setting some 
+ ## arbitrary limits of 0 and 10 for the solver. Note that there are alternatives that are probably more robust than this.  I used uniroot.all() for brevity
+ 
+ ab<-uniroot.all(function(x) g(x)-y0,c(0,10))
+ 
+ ## Sample new lambda uniformly on horizontal slice between the endpoints where
+ ## g(x)==y0
+ 
+ lambda[i]<-runif(1,ab[1],ab[2])
+}
+
+##  Plot the results
+
+ggplot(data = tibble(lambda))+
+  geom_histogram(aes(x=lambda, y = ..density..),binwidth = 0.1)
+
+mean(lambda)
+mean(y)
+
+
+```

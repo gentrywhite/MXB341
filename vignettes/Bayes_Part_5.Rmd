@@ -1,0 +1,1297 @@
+---
+title: "Week 11"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Week 11}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(tidyverse)
+```
+
+```{r, echo=FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("QUTReadings.css")
+
+```
+
+# Multivariate Posteriors
+
+Thus far we have seen examples of univariate sampling cases, and we have
+seen how we can use the hit and run sampler to draw samples from a
+multivariate posterior. In practice, most models used for data analysis
+have more than one parameter that requires inference, indeed more
+sophisticated models may include randowm effects with a hierarchical
+structure resulting in a high dimensioned parameter space. These models
+call for a more robust approach to drawing samples from the joint
+posterior.
+
+## Gibbs Sampling
+
+In general, when implementing Bayesian methods the preferred approach is
+to:
+
+1.  Find closed form solutions to the joint posterior.
+2.  Use Monte Carlo integration drawing independent samples directly
+    from the joint posterior
+3.  Implement a Monte Carlo Markov Chain (MCMC) scheme to draw sample
+    from the joint posterior
+
+The first case rarely ever occurs in practice and often only for trivial
+models. The second case is highly desireable, but often not oractical or
+possible. The third case is the most common situation an reuires
+implementing a Gibbs Sampling scheme. Gibbs sampling arises both as a
+special case of the Metropolis-Hastings algorithm and from the limiting
+properties of Markov chains. We can see the motivation for the Gibbs
+sampler by considering a model with a Gaussian likelihood. There are
+conjugate priors that result in easy solutions for the cases of
+
+::: {.sidenote}
+**Variance or Precision?**, we have seen the Gaussian distribution
+parameterised in terms of a mean $\mu$ and a variance $\sigma^2$. What
+we have less commonly seen is the Gaussian distribution parameterised in
+terms of a mean $\mu$ and precision $\tau$, where 
+$$
+\tau=\frac{1}{\sigma^2}
+$$ 
+i.e.\
+$$
+f(y|\mu,\tau)=\left(\frac{\tau}{2\pi}\right)^{\frac{1}{2}}\exp\left(-\frac{\tau(y-\mu)^2}{2}\right).
+$$ 
+In a Bayesian context there are two reasons for doing this:
+
+1.  The precision simplfies the computations for the posterior
+2.  The conjugate prior for the precision is a Gamma distribution, which
+    can be easier to work with than the conjugate prior of the variance,
+    an Inverse-Gamma distribution.
+
+It is useful to become comfortable with both of these
+parameterisations.
+:::
+
+-   A known mean and unknown variance
+
+$$
+\begin{align}
+f(\mathbf{y}|\mu)&=\left(\frac{1}{2\pi\sigma^2}\right)^{\frac{n}{2}}\exp\left(-\frac{\sum_{i=1}^n(y_i-\mu)^2}{2\sigma^2}\right)\\
+\pi(\mu)&=\left(\frac{2}{2\pi\delta^2}\right)\exp\left(-\frac{(\mu-\gamma)^2}{\delta^2}\right).
+\end{align}
+$$
+
+-   An unknown mean and known variance. 
+$$
+    \begin{align}
+    f(\mathbf{y}|\sigma^2)&=\left(\frac{1}{2\pi\sigma^2}\right)^{\frac{n}{2}}\exp\left(-\frac{\sum_{i=1}^n(y_i-\mu)^2}{2\sigma^2}\right)\\
+    \pi(\sigma^2)&=\frac{\beta^\alpha}{\Gamma(\alpha)}\left(\frac{1}{\sigma^2}\right)^{\alpha-1}\exp\left(-\frac{\beta}{\sigma^2}\right).
+    \end{align}
+$$
+
+When both the mean and the variance are unknown we would need to sample
+from the joint posterior 
+$$
+\pi(\mu,\sigma^2|\mathbf{y})=\frac{f(\mathbf{y}|\mu,\sigma^2)\pi(\mu)\pi(\sigma^2)}{\int\int (\mathbf{y}|\mu,\sigma^2)\pi(\mu)\pi(\sigma^2)d\mu d\sigma^2}
+$$ 
+which doesn't have a nice closed form. Which motivates the Gibbs
+Sampling scheme:
+
+Given that the conditional posteriors 
+$$
+\begin{align}
+\pi(\mu|\sigma^2,\mathbf{y})&\propto f(\mathbf{y}|\mu,\sigma^2)\pi(\mu)\\
+\pi(\sigma^2|\mu,\mathbf{y})&\propto f(\mathbf{y}|\mu,\sigma^2)\pi(\sigma^2)
+\end{align}
+$$
+
+1.  Set initial values of $\mu_{(0)}$ and $\sigma^2_{(0)}$ and for
+    $i=1,\ldots,N$:
+
+2.  Draw $\sigma^2_{(i)}$ from $\pi(\sigma^2|\mu_{(i-1)},\mathbf{y})$
+
+3.  Draw $\mu_{(i)}$ from $\pi(\mu|\sigma^2_{(i)},\mathbf{y})$.
+
+::: {.sidenote}
+**Example:**\
+Given data $\mathbf{y}=y_1,\ldots,y_n$ from the random variable
+$Y\sim N(\mu,\sigma^2)$
+
+```{r, echo = FALSE}
+set.seed(14061972)
+y<-rnorm(15,mean = 3.1,sd = 1.4)
+```
+
+for $\mathbf{y}=$ `r round(y,2)` and $n=15$ draw a set of $m=10,\!000$
+samples from the joint posterior of $\mu,\sigma^2\mathbf{y}$ using a
+Gibbs Sampling scheme.
+
+Assume that priors for $\mu$ and $\sigma^2$ are 
+$$
+\begin{align}
+\mu\sim N(1,1)\\
+\frac{1}{\sigma^2}\sim Ga(2,2).
+\end{align}
+$$
+:::
+
+::: {.boxed}
+**The Gibbs Sampler**
+
+Gibbs Sampling is a surprisingly simple and robust method for drawing
+posteriors from a target distribution. The basic steps are:
+
+Given a target distribution $g(\boldsymbol{\theta})$ where
+$\boldsymbol{\theta}=\theta_1,\ldots,\theta_p$. For $t = 1,\ldots,T$ we
+can draw $T$ samples from $g$ as follows
+
+1.  Derive the set of *full conditionals* 
+$$
+    \begin{align}
+    g(\theta_1|\boldsymbol{\theta}_{-1})\\
+    g(\theta_2|\boldsymbol{\theta}_{-2})\\
+    \vdots\\
+    g(\theta_p|\boldsymbol{\theta}_{-p})
+    \end{align}
+$$
+2.  Set the initial values for $\boldsymbol{\theta}^{(0)}$
+3.  For $t=1,\ldots,T$ draw samples as follows 
+$$
+    \begin{align}
+    \theta^{(t)}_1|&\theta_{2,\ldots,p}^{(t-1)}\\
+    \theta^{(t)}_2|&\theta_1^{(t)},\theta_{3,\ldots,p}^{(t-1)}\\
+    \theta^{(t)}_2|&\theta_{1,2}^{t},\theta_{4,\ldots,p}^{(t-1)}\\
+    \vdots&\\
+    \theta_p^{(t)}|&\theta_{1,\ldots,p-1}^{(t)}
+    \end{align}
+$$
+
+Under some specific regularity conditions the Gibbs Sampler will
+converge to the stationary target distribution. These conditions are
+*ergodicity*, or that sampler has the potential to full explore the
+domain of the posterior, and *irreducibility*, or that there is a
+non-zero probability that the chain can transition from one location to
+any other in the domain of the target density.
+:::
+
+::: {.sidenote}
+**Gibbs Sampling and the Metropolis-Hastings Algorithm**\
+Gibbs Sampling can be thought of as a special case of the
+Metropolis-Hastings algorithm where the proposal distribution is equal
+to the target distribution. Which reinforces the idea that the
+efficiency of the Metropolis-Hastings algorithm depends on choosing a
+proposal distribution that is as close as possible to the target
+distribution.
+:::
+
+The advent of Monte Carlo Markov Chain (MCMC) methods brought Bayesian
+Analysis into the mainstream, showing that Bayesian methods could be
+applied to a great many problems previously thought too difficult, and
+in some cases could more easily provide solutions than classical
+frequentist approaches. For example, the Gibbs sampler can be
+generalised to hierarchical models or other models without "nice" closed
+forms for their joint posteriors; noting that a general version Gibbs
+sampling scheme doesn't require conditional conjugacy only that the
+complete set of conditional posteriors, can be written down up to their
+constants of proportionality. In cases where there is no conjugate
+conditional posterior, then alternative samplers
+(e.g. Metropolis-Hastings) for each step of the Gibbs sampling scheme.
+
+::: {.boxed}
+### Example: {.tabset .tabset-pills}
+
+Given data $\mathbf{y}=y_1,\ldots,y_n$ from the random variable
+$Y\sim N(\mu,\sigma^2)$
+
+```{r, echo = FALSE}
+set.seed(14061972)
+y<-rnorm(15,mean = 3.1,sd = 1.4)
+```
+
+for $\mathbf{y}=$ `r round(y,2)` and $n=15$ draw a set of $m=10,\!000$
+samples from the joint posterior of $\mu,\sigma^2\mathbf{y}$ using a
+Gibbs Sampling scheme.
+
+Assume that priors for $\mu$ and $\sigma^2$ are 
+$$
+\begin{align}
+\mu\sim N(1,1)\\
+\frac{1}{\sigma^2}\sim Ga(2,2).
+\end{align}
+$$
+
+#### Solution
+
+The likelihood for the data is 
+$$
+\begin{align}
+f(\mathbf{y}|\mu,\sigma^2)&=\prod_{i=1}^n\left(\frac{1}{2\pi\sigma^2}\right)^{\frac12}\exp\left(-\frac{(y_i-\mu)^2}{2\sigma^2}\right)\\
+&=\left(\frac{1}{2\pi\sigma^2}\right)^{\frac{n}{2}}\exp\left(-\frac{\sum_{i=1}^n(y_i-\mu)^2}{2\sigma^2}\right).
+\end{align}
+$$ 
+The set of full conditionals for the Gibbs Sampler are 
+$$
+\begin{align}
+\pi(\mu|\mathbf{y},\sigma^2)&\propto f(\mathbf{y}|\mu,\sigma^2)\pi(\mu)\\
+&\propto \left(\frac{1}{2\pi\sigma^2}\right)^{\frac{n}{2}}\exp\left(-\frac{\sum_{i=1}^n(y_i-\mu)^2}{2\sigma^2}\right)\left(\frac{1}{2\pi}\right)^\frac12\exp\left(-\frac{(\mu-1)^2}{2}\right)\\
+\pi(\sigma^2)&\propto f(\mathbf{y}|\mu,\sigma^2)\pi(\sigma^2)\\
+& \propto \left(\frac{1}{2\pi\sigma^2}\right)^{\frac{n}{2}}\exp\left(-\frac{\sum_{i=1}^n(y_i-\mu)^2}{2\sigma^2}\right)\frac{4}{\sigma^2}\exp\left(-\frac{2}{\sigma^2}\right).
+\end{align}
+$$ 
+resulting in 
+$$
+\begin{align}
+\mu|\mathbf{y},\sigma^2&\sim N\left(\frac{\sum_{i=1}^ny_i+\sigma^2}{n+\sigma^2},\frac{1}{\frac{n}{\sigma^2}+1}\right)\\
+\sigma^2|\mathbf{y},\mu&\sim \operatorname{InvGa}\left(\frac{n}{2}+2,\frac{\sum_{i=1}^n(y_i-\mu)^2}{2}+2\right).
+\end{align}
+$$
+We can draw our samples as follows:
+
+1.    Set the initial values for $\mu^{(0)}$ and $\sigma^{2(0)}$
+2.    for $i = 1,\ldots,m$ draw random samples as follows
+$$
+\begin{align}
+\mu^{(i)}&\sim N(\mu|\sigma^{2(i-1)})\\
+\sigma^{2(i)}&\sim \operatorname{InvGa}(\sigma^2|\mu^{(i)}).
+\end{align}
+$$
+
+####    Code
+
+```{r}
+
+y<-c(4.24, 4.55, -0.82, 4.2, 2, 6.5, 1.35, 3.27, 3.6, 3.78, 6.15, 3.5, 4.17, 4.73, 1.81)
+n<-15
+
+m<-10000
+
+mu<-numeric(length = m)
+sigma2<-numeric(length = m)
+
+mu[1]<-0
+sigma2[1]<-1
+
+for(i in 2:m)
+{
+  mean<-(sum(y)+sigma2[i-1])/(n+sigma2[i-1])
+  var<-sigma2[i-1]/(n+sigma2[i-1])
+  mu[i]<-rnorm(1,mean,sd=sqrt(var))
+  a<-n/2
+  b<-(y-mu[i])^2%>%sum()%>%`/`(2)+2
+  sigma2[i]<-1/rgamma(1,shape = a, rate = b)
+}
+
+```
+
+Note that we draw samples for $\sigma^2|\mathbf{y},\mu$ by inverting samples from a gamma distribution instead of drawing samples from the inverse-gamma distribution. 
+
+####    Plots
+
+```{r,echo=FALSE}
+index<-1:m
+names<-c(rep("mu",m),rep("sigma^2",m))
+df<-tibble(x=rep(index,2),samples=c(mu,sigma2),names)
+
+ggplot(df)+
+  geom_line(aes(x = x, y = samples))+
+  facet_wrap(~names,labeller = label_parsed,scales="free")
+
+ggplot(df)+
+  geom_histogram(aes(x=samples, y = ..density..),binwidth = 0.1)+
+  facet_wrap(~names,labeller = label_parsed,scales="free")
+
+ybar<-mean(y)
+s2<-var(y)
+
+mubar<-mean(mu)
+s2bar<-mean(sigma2)
+  
+
+```
+These figures look reasonable, the trace plots don't show any obvious patterns and the histograms look reasonable as well.  The data were generated from a Gaussian distribution $N(3.1,1.96)$ and the sample statistics are $\bar{y}=$ `r round(ybar,2)` and $s^2=$ `r round(s2,2)`.  The posterior means are $E(\mu|\mathbf{y})=$ `r round(mubar,2)` and $E(\sigma^2|\mathbf{y})=$ `r round(s2bar,2)`. These show that the Bayesian posterior expectations exhibit some "shrinkage" based on their priors.  
+
+:::
+
+### Bayesian Linear Regression Using Gibbs Sampling
+
+:::{.sidenote}
+**Example:**\
+```{r echo = FALSE}
+set.seed(14061972)
+
+x<-rnorm(15,10,1)
+y<-1.7*x-4.7+rnorm(15,sd=3)
+
+```
+Given a set of observations $\mathbf{x}=$ (`r round(x,2)`) and $\mathbf{y}=$ (`r round(y,2)`) fit an Bayesian OLS model 
+$$
+y_i=\beta_0+\beta_1x_i+\epsilon_i
+$$
+using the priors
+$$
+\begin{align}
+\pi(\boldsymbol{\beta})&\propto 1\\
+\pi(\sigma^2)&\propto\frac{1}{\sigma^2}
+\end{align}
+$$
+and
+$$
+\begin{align}
+\boldsymbol{\beta}&=\sim N(\mathbf{0},2\mathbf{I})\\
+\sigma^2&\sim InvGa(1,1).
+\end{align}
+$$
+
+:::
+
+Linear regression is one of the first and most commonly used models in
+statistical inference and data analysis. Illustrating it in a Bayesian
+context is useful both because of the ubiquity of the model but also
+because it serves as a building block for learning how to implement more
+sophisticated hierarchical and generalised linear mixed-effects models
+that are common in many applications.
+
+:::{.boxed}
+**Bayesian Linear Regression**
+
+Consider the basic linear regression model: 
+$$
+y_i = \beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip}+\epsilon_i
+$$ 
+we can write that the individual $y_i$ follow a Gaussian distribution
+$$
+y_i\sim N(\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip},\sigma^2)
+$$ 
+or we can write the joint probability distribution for the sample
+$\mathbf{y}=y_1,\ldots,y_n$ as the multivariate normal distribution 
+$$
+\mathbf{y}\sim MVN(\mathbf{X\beta},\mathbf{\Sigma})
+$$ 
+this is the likelihood for the joint sample. If we assume that the samples are independent $\mathbf{\Sigma}=\sigma^2\mathbf{I}$ . 
+
+The density function for the multivartiate normal (or the likelihood) is
+$$
+f(\mathbf{y}|\mathbf{\beta},\mathbf{\Sigma}) = (2\pi)^{-n/2}\det\left(\mathbf{\Sigma}\right)^{-1/2}\exp\left(\frac{1}{2}(\mathbf{y}-\mathbf{X\beta})^T\Sigma^{-1}(\mathbf{y}-\mathbf{X\beta})\right).
+$$ 
+Given some prior for $\mathbf{\beta},\sigma^2$ the posterior can be
+written as
+$$
+\pi(\mathbf{\beta},\sigma^2|\mathbf{y})\propto f(\mathbf{y}|\mathbf{\beta},\sigma^2)\pi(\mathbf{\beta},\sigma^2).
+$$ 
+We have previously seen that we can derive a Gibbs sampling scheme
+based on the full conditionals 
+$$
+\begin{aligned}
+\pi(\beta|\sigma^2,\mathbf{y})&\propto f(\mathbf{y}|\mathbf{\beta},\sigma^2)\pi(\mathbf{\beta})\\
+\pi(\sigma^2|\mathbf{\beta},\mathbf{y})&\propto f(\mathbf{y}|\mathbf{\beta},\sigma^2)\pi(\sigma^2).
+\end{aligned}
+$$
+
+For the conjugate priors 
+$$
+\begin{aligned}
+\pi(\mathbf{\beta})&\propto\exp\left(-\frac{1}{2}\mathbf{\beta}^T\mathbf{D}\mathbf{\beta}\right)\\
+\pi(\sigma^2)&=\left(\frac{1}{\sigma^2}\right)^{a-1}\exp\left(-\frac{b}{\sigma^2}\right)
+\end{aligned}
+$$ 
+the full conditionals are
+
+$$
+\begin{align}
+\pi(\boldsymbol{\beta}|\mathbf{y},\sigma^2)&\propto f(\mathbf{y}|\boldsymbol{\beta},\sigma^2)\pi(\boldsymbol{\beta})\\
+&\propto (2\pi\sigma^2)^{-n/2}\exp\left(\frac{1}{2\sigma^2}(\mathbf{y}-\mathbf{X\beta})^T(\mathbf{y}-\mathbf{X\beta})\right)\exp\left(-\frac{1}{2}\mathbf{\beta}^T\mathbf{D}\mathbf{\beta}\right)\\
+&\propto \exp\left(-\frac12\left\{(\frac{\mathbf{y}-\mathbf{X}\boldsymbol{\beta})^{T}(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})}{\sigma^2}+\boldsymbol{\beta}^T\mathbf{D}\boldsymbol{\beta}\right\}\right)\\
+&\propto\exp\left(-\frac12\left\{\boldsymbol{\beta}^T\left(\frac{\mathbf{X}^T\mathbf{X}}{\sigma^2}+D\right)\boldsymbol{\beta}-2\mathbf{y}^T\mathbf{X}\boldsymbol{\beta}+\mathbf{y}^T\mathbf{y}\right\}\right)\\
+\pi(\sigma^2|\mathbf{y},\boldsymbol{\beta})&\propto f(\mathbf{y}|\boldsymbol{\beta}\sigma^2)\pi(\sigma^2)\\
+&\propto(2\pi\sigma^2)^{-n/2}\exp\left(\frac{1}{2\sigma^2}(\mathbf{y}-\mathbf{X\beta})^T(\mathbf{y}-\mathbf{X\beta})\right)\left(\frac{1}{\sigma^2}\right)^{\alpha-1}\exp\left(-\frac{b}{\sigma^2}\right)\\&\propto \left(\frac{1}{\sigma^2}\right)^{\frac{n}{2}+a-1}\exp\left(-\frac{1}{\sigma^2}\left\{\frac{(\mathbf{y}-\mathbf{X\beta})^T(\mathbf{y}-\mathbf{X\beta})}{2}+b\right\}\right)
+\end{align}
+$$
+resulting in the set of full conditionals
+$$
+\begin{align}
+\boldsymbol{\beta}|\mathbf{y},\sigma^2&\sim MNV\left\{\left(\frac{\mathbf{X}^T\mathbf{X}}{\sigma^2}+\mathbf{D}\right)^{-1}\frac{\mathbf{X}^T\mathbf{y}}{\sigma^2},\left(\frac{\mathbf{X}^T\mathbf{X}}{\sigma^2}+\mathbf{D}\right)^{-1}\right\}\\
+\sigma^2|\mathbf{y}\boldsymbol{\beta}&\sim InvGa\left(\frac{n}{2}+a,\frac{(\mathbf{y}-\mathbf{X\beta})^T(\mathbf{y}-\mathbf{X\beta})}{2}+b\right)
+\end{align}
+$$
+
+
+:::
+
+:::{.boxed}
+### Example {.tabset .tabset-pills}
+
+```{r echo = FALSE}
+set.seed(14061972)
+
+x<-rnorm(15,10,1)
+y<-1.7*x-4.7+rnorm(15,sd=3)
+
+```
+
+Given a set of observations $\mathbf{x}=$ (`r round(x,2)`) and $\mathbf{y}=$ (`r round(y,2)`) fit an Bayesian OLS model 
+$$
+y_i=\beta_0+\beta_1x_i+\epsilon_i
+$$
+using the priors
+$$
+\begin{align}
+\pi(\boldsymbol{\beta})&\propto 1\\
+\pi(\sigma^2)&\propto\frac{1}{\sigma^2}
+\end{align}
+$$
+and
+$$
+\begin{align}
+\boldsymbol{\beta}&=\sim N(\mathbf{0},2\mathbf{I})\\
+\sigma^2&\sim InvGa(1,1).
+\end{align}
+$$
+
+#### Solution
+
+In the first case using the Jefferys priors (i.e.\ $\pi(\boldsymbol{\beta})\propto 1$ and $\pi(\sigma^2)\propto 1/\sigma^2$), the set of full conditionals is
+$$
+\begin{align}
+\boldsymbol{\beta}|\mathbf{y},\sigma^2&\sim MNV\left((\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{y},\sigma^2(\mathbf{X}^T\mathbf{X})^{-1}\right)\\
+\sigma^2|\mathbf{y},\boldsymbol{\beta}&\sim InvGa\left(\frac{n}{2},\frac{(\mathbf{y}-\mathbf{X\beta})^T(\mathbf{y}-\mathbf{X\beta})}{2}\right)
+\end{align}
+$$
+In the second case using the more informative priors, the set of full conditionals is 
+$$
+\begin{align}
+\boldsymbol{\beta}|\mathbf{y},\sigma^2&\sim MNV\left(\left(\frac{\mathbf{X}^T\mathbf{X}}{\sigma^2}+2\boldsymbol{I}\right)^{-1}\frac{\mathbf{X}^T\mathbf{y}}{\sigma^2},\left(\frac{\mathbf{X}^T\mathbf{X}}{\sigma^2}+2\mathbf{I}\right)^{-1}\right)\\
+\sigma^2|\mathbf{y},\boldsymbol{\beta}&\sim InvGa\left(\frac{n}{2}+1,\frac{(\mathbf{y}-\mathbf{X\beta})^T(\mathbf{y}-\mathbf{X\beta})}{2}+1\right)
+\end{align}
+$$
+
+#### Code
+
+```{r}
+  
+library(mvtnorm)
+
+x<-c(10.82, 11.03, 7.2, 10.78, 9.22, 12.43, 8.75, 10.12, 10.36, 10.48, 12.18, 10.28, 10.77, 11.16, 9.08)
+y<-c(14.48, 18.96, 5.74, 12.47, 9.19, 17.11, 10.54, 13.47, 11.29, 7.84, 16.7, 9.04, 4.73, 16.25, 7.93)
+
+n<-length(y)
+
+##  Define the degrees of freedom for the likelihood
+
+nu<-n/2
+
+##  Create X matrix and some functions of it
+
+X<-cbind(1,x)
+
+XX<-t(X)%*%X
+XXinv<-solve(XX)
+XY<-t(X)%*%y
+mu<-XXinv%*%t(X)%*%y
+
+##  Initiate and run the Gibbs sampler for the example using jeffery's priors
+
+m<-10000
+
+sigma2_jeff<-numeric(length = m)
+beta_jeff<-matrix(NA,ncol=2,nrow=m)
+
+sigma2_jeff[1]<-1
+beta_jeff[1,]<-0
+
+for(i in 2:m)
+{
+  
+  beta_jeff[i,]<-rmvnorm(1,mu,sigma2_jeff[i-1]*XXinv)
+  
+  yhat<-X%*%beta_jeff[i,]
+  B<-t(y-yhat)%*%(y-yhat)/2
+  sigma2_jeff[i]<-1/rgamma(1,nu,B)
+  
+}
+
+##  For the informative priors
+
+beta_inf<-matrix(0,m,2)
+sigma2_inf<-numeric(length = m)
+sigma2_inf[1]<-1
+
+D<-diag(0.5,2) ## Prior cov for beta
+
+for(i in 2:m)
+{
+  B<-solve(D+XX/sigma2_inf[i-1])
+  A<-B%*%XY/sigma2_inf[i-1]
+  beta_inf[i,]<-rmvnorm(1,A,B)
+  
+    yhat<-X%*%beta_inf[i,]
+  M<-t(y-yhat)%*%(y-yhat)/2
+  sigma2_inf[i]<-1/rgamma(1,nu-1,M+1)
+  
+}
+
+mle<-lm(y~x)
+
+
+```
+
+####    Plot
+```{r echo=FALSE}
+
+beta_0<-c(beta_jeff[,1],beta_inf[,1])
+beta_1<-c(beta_jeff[,2],beta_inf[,2])
+s2<-c(sigma2_jeff,sigma2_inf)
+prior<-c(rep("Jeffery's Prior",m),rep("Informative Prior",m))
+
+df<-tibble(beta_0,beta_1,s2,prior)
+
+ggplot(df)+
+  geom_histogram(aes(x=beta_0,y=..density..),binwidth = 0.2)+
+                   facet_wrap(~prior)+
+ xlab(expression(beta[0]))
+
+ggplot(df)+
+  geom_histogram(aes(x=beta_1,y=..density..),binwidth = 0.2)+
+                   facet_wrap(~prior)+
+ xlab(expression(beta[1]))
+
+ggplot(df)+
+  geom_histogram(aes(x=s2,y=..density..),binwidth = 0.2)+
+                   facet_wrap(~prior)+
+ xlab(expression(sigma^2))
+
+
+```   
+
+
+Note that the posterior densities for $\beta_0$ and $\beta_1$ are quite different for the Jeffery's priors and the informative priors, but that there appears to be little difference in the posterior densities of $\sigma^2$.  The values used to generate the data were $\beta_0=-4.7$, $\beta_1=1.7$ and $\sigma^2=9$.  The MLE estimates for these are $\hat{\beta}_0=-11.26$, $\hat{\beta}_1=2.23$ and $\sigma^2=11.08$.  
+
+:::
+
+
+
+
+<!-- Assume there is a likelihood and priors:  -->
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- f(\mathbf{y}|\alpha,\beta)\\ -->
+<!-- \pi(\alpha)\\ -->
+<!-- \pi(\beta|\gamma)\\ -->
+<!-- \pi(\gamma)\end{aligned} -->
+<!-- $$  -->
+<!-- Note that there is a "hierarchy" as the prior for $\beta$ is -->
+<!-- conditional on $\gamma$. The resulting joint posterior is the -->
+<!-- proportional to the product of the likelihood and the priors, and note -->
+<!-- that the normalising constant would be the same product integrated over -->
+<!-- the parameters $\alpha$, $\beta$ and $\gamma$  -->
+<!-- $$ -->
+<!-- \pi(\alpha,\beta,\gamma|\mathbf{y})\propto f(\mathbf{y}|\alpha,\beta)\pi(\alpha)\pi(\beta|\gamma)\pi(\gamma). -->
+<!-- $$  -->
+<!-- The set of conditional posterior densities are written as  -->
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- \pi(\alpha|\mathbf{y},\beta,\gamma)&\propto&f(\mathbf{y}|\alpha,\beta)\pi(\alpha)\\ -->
+<!-- \pi(\beta|\mathbf{y},\alpha,\gamma)&\propto&f(\mathbf{y}|\alpha,\beta)\pi(\beta|\gamma)\\ -->
+<!-- \pi(\gamma|\mathbf{y})&\propto&\pi(\beta|\gamma)\pi(\gamma)\\\end{aligned} -->
+<!-- $$  -->
+<!-- noting that the the conditional posterior for each parameter only -->
+<!-- depends on its prior and its "nearest neighbour" in the hierarchy, -->
+<!-- i.e. the conditional posterior for $\gamma$ only depends on the data -->
+<!-- through the conditional prior of $\beta$. This algorithmic approach to -->
+<!-- sampling from the posterior of complicated models can be extended to -->
+<!-- effectively model complex hierarchical structures, like multi-level -->
+<!-- mixed effects models or generalised linear models. -->
+
+<!-- Consider the following model:  -->
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- y_i&\sim Pois(\lambda_i)\\ -->
+<!-- \nu_i&=\log(\lambda_i)\\ -->
+<!-- \nu_i|\beta_0,\beta_1,\sigma^2&\sim N\left(\beta_0+\beta_1x_i,\sigma^2\right) -->
+<!-- \end{aligned} -->
+<!-- $$  -->
+<!-- The likelihood can be parametrised with respect to $\nu_i$ instead of -->
+<!-- $\lambda_i$, resulting in  -->
+<!-- $$ -->
+<!-- \begin{aligned} -->
+<!-- f(\mathbf{y}|\mathbf{\nu})&=\frac{e^{\sum_i\nu_iy_i}}{\prod_iy_i!}e^{\sum_i e^{\nu_i}}\\ -->
+<!-- \pi\left(\nu_i|\beta_0,\beta_1,\sigma^2\right)&=\frac{1}{\sqrt{2\pi\sigma^2}}\exp\left(-\frac{(\nu_i-\beta_0-\beta_1x_i)^2}{2\sigma^2}\right)\\ -->
+<!-- \pi(\beta_0,\beta_1)&\propto 1\\ -->
+<!-- \pi(\sigma^2)&\propto\frac{1}{\sigma^2}.\end{aligned} -->
+<!-- $$  -->
+<!-- Construct a Gibbs sampling scheme to draw samples from the joint -->
+<!-- posterior  -->
+<!-- $$ -->
+<!-- \pi\left(\mathbf{\nu},\beta_0,\beta_1,\sigma^2|\mathbf{y}\right) -->
+<!-- $$ -->
+
+## Metropolis within Gibbs 
+
+In the previous example we showed ho to construct the Gibbs sampler for a simple case of linear regression using conjugate priors.  While the use of conjugate priors is possible in many cases, in others it may not be desirable.  For generalised linear models cojugate priors are not available.  In these cases the the updating step of the Gibbs sampler will need to use some method like the Metropolis_Hastings algorithm, this is referred to as Metropolis within Gibbs.  Alternatively, some other method like slice sampling could also be used.  
+
+###   Generalised Linear Models
+
+:::{.sidenote}
+**Example:**\
+The negative binomial distribution can be parameterised as
+\begin{equation}
+p(y|\mu,\eta)=\frac{\Gamma(y+\eta)}{\Gamma(\eta)y!}\left(\frac{\eta}{\eta+\mu}\right)^\eta\left(\frac{\mu}{\eta+\mu}\right)^y
+\end{equation}
+Where $\operatorname{E}(Y)=\mu$.  
+
+```{r echo=FALSE}
+
+set.seed(14061972)
+x<-rnorm(15,10,1)
+mu<-4.7*x-1.3##+rnorm(15,sd=3)
+y<-rnbinom(15,mu=mu,size=1.6)
+
+```
+
+Consider a sample 
+$\mathbf{y}=y_1,\ldots,y_n$ from $Y\sim Neg-Binom(\boldsymbol{\mu},\eta)$ where 
+$\log(\mu_i)=\beta_0+\beta_1x_i$ for some covariate $x_i$. 
+
+For $y=$ `r y` and $x=$ `r round(x,2)` fit the generalised linear model assuming the data are from a negative-binomial distribution using the priors
+\begin{eqnarray}
+\pi(\boldsymbol{\beta})&\propto& 1\\
+\pi(\eta)&=&e^{-\eta}
+\end{eqnarray}
+
+:::
+
+Generalised linear models are an extension to linear regression where for some random variable $Y\sim f(y)$ we describe some function of the expected value as a linear combination of covariates, i.e.\
+$$
+h\left\{\operatorname{E}(y_i)\right\}=\beta_0+\beta_1x_i.  
+$$
+The function $h$ is called a link function and is derived from the exponential family representation of the probability mass or density function. Fitting generalised linear models, either using classical or Bayesian methods is difficult. For classical methods there is no closed form for the maximum likelihood estimators, so these have to be found numberically.  In Bayesian methods it means that there is no conjugate prior for the regression parameters, and thus slice or Metropolis steps are needed in a Gibbs scheme to sample from the joint posterior.
+
+:::{.boxed}
+**Example: Logistic Regression:**\
+If we consider a sample $\mathbf{y}=y_1,\ldots,y_n$from the random variable $Y\sim Bern(\theta)$
+$$
+p(y)=\theta^y(1-\theta)^{1-y},\:\theta\in(0,1),\: y=[1,0].
+$$
+The likelihood function is 
+$$
+f(\mathbf{y}|\theta)=\theta^{\sum_{i=1}^ny_i}(1-\theta)^{n-\sum_{i=1}^ny_i}
+$$
+we can find the link function by finding $\eta(\theta)$ the natural paramter of the exponential family representation of the likelihood.  Referring to [The Exponential Family and Bayesian Inference](./Bayes_Part_1.html#the-exponential-family-and-bayesian-inference) in Week 7, we can see that the canconical form of the Bernoulli likelihood is 
+$$
+f(\mathbf{y}|\eta)=\exp\left\{\eta T(\mathbf{y})-nA(\eta)\right\}
+$$
+where
+$$
+\eta(\theta)=\log\left(\frac{\theta}{1-\theta}\right)
+$$
+hence our link function is the logit function and for the GLM for Bernoulli (or binomial) data is
+$$
+\eta_i=\log\left(\frac{\theta_i}{1-\theta_i}\right)=\beta_0+\beta_1x_i.
+$$
+:::
+
+:::{.boxed}
+###   Example {.tabset .tabset-pills}
+Consider a sample 
+$\mathbf{y}=y_1,\ldots,y_n$ from $Y\sim Neg-Binom(\boldsymbol{\mu},\eta)$ where 
+$\log(\mu_i)=\beta_0+\beta_1x_i$ for some covariate $x_i$. 
+
+For $y=$ `r y` and $x=$ `r round(x,2)` fit the generlised linear model assuming the data are from a negative-binomial distribution using the priors
+\begin{eqnarray}
+\pi(\boldsymbol{\beta})&\propto& 1\\
+\pi(\eta)&=&e^{-\eta}
+\end{eqnarray}
+
+####    Solution
+
+The scatter plot of the data 
+```{r echo=FALSE,message=FALSE}
+
+df<-tibble(x,y)
+ggplot(df,aes(x=x,y=y))+
+  geom_point()+
+  geom_smooth(method=lm,se = TRUE)
+```
+reveals that there does appear to be *some* linear relationshiop between $x$ and $y$.  But the $y$ values are from a neagtive binomial distribution so we will need to fit a GLM to make inferences about the relationship between $x$ and $y$. 
+
+The likelihood is 
+$$
+f(\mathbf{y}|\boldsymbol{\beta},\eta)=\prod_{i=1}^n\frac{\Gamma(y_i+\eta)}{\Gamma(\eta)y_i!}\left(\frac{\eta}{\eta+\exp(\beta_0+\beta_1x_i)}\right)^\eta\left(\frac{\exp(\beta_0+\beta_1x_i)}{\eta+\exp(\beta_0+\beta_1x_i)}\right)^{y_i}
+$$
+Which is quite messy, analytical solutions to find the maximum likelihood estimators for $\beta_0$, $\beta_1$, and $\sigma$ are not easily (if at all) available.  There are also no conjugate priors available either. The resulting full conditionals though are
+\begin{eqnarray}
+\pi(\boldsymbol{\beta}|\mathbf{y},\sigma)&\propto&\prod_{i=1}^n\frac{\Gamma(y_i+\eta)}{\Gamma(\eta)y_i!}\left(\frac{\eta}{\eta+\exp(\beta_0+\beta_1x_i)}\right)^\eta\left(\frac{\exp(\beta_0+\beta_1x_i)}{\eta+\exp(\beta_0+\beta_1x_i)}\right)^{y_i}\\
+\pi(\sigma|\mathbf{y},\boldsymbol{\beta})&\propto&\prod_{i=1}^n\frac{\Gamma(y_i+\eta)}{\Gamma(\eta)y_i!}\left(\frac{\eta}{\eta+\exp(\beta_0+\beta_1x_i)}\right)^\eta\left(\frac{\exp(\beta_0+\beta_1x_i)}{\eta+\exp(\beta_0+\beta_1x_i)}\right)^{y_i}e^{-\sigma}
+\end{eqnarray}
+Sampling from either of these will require using a Metropolis-Hastings step or a slice sampling step.  For a Metropolis-Hastings step we will need a good candidate distribution.  Because $(\beta_0,\beta_1)\in\mathbb{R}^2$ a natural choice of candidate is a bivariate Gaussian distribution (which has the added benefit of being symmetric, which simplifies computing the acceptance probability).  A naive choice for a random walk candidate distribution would be
+$$
+\boldsymbol{\beta}^c|\boldsymbol{\beta}_{t-1}\sim N(\boldsymbol{\beta}_{t-1},\delta\mathbf{I})
+$$
+where $\delta$ is some value chosen to obtain a desirable acceptance rate. 
+Alternatively, we could use a bivariate Gaussian candidate with a covariance $a\mathbf{H}$ where $\mathbf{H}$ is the Hessian of the likelihood function and $a$ is some constant chose to obtain a desirable acceptance rate. Indeed, we could use an independent Metropolis-Hastings step by then centring the candidate distribution at the mode of the likelihood.  For high dimensional problems obtaining the Hessian, it can be approximated as $\hat{\mathbf{H}}=\left(\mathbf{X}^T\mathbf{X}\right)$ where $\mathbf{X}$ is the designe matrix of the linear regression.  
+
+The candidate for the parameter $\sigma$ may be trickier.  In this case it is useful to note that the Gamma distribution can be parameterised in terms of its mean and variance
+$$
+\pi(\eta)=\frac{\left(\frac{\mu}{\sigma^2}\right)^{\frac{\mu^2}{\sigma^2}}}{\Gamma\left(\frac{\mu^2}{\sigma^2}\right)}\eta^{\frac{\mu^2}{\sigma^2}-1}\exp\left(-\eta\frac{\mu}{\sigma^2}\right)
+$$
+The the candidate distribution can be constructed with the mean of $\eta_{t-1}$ and the variance chosen to obtain the desired acceptance rate.  
+
+####    Code
+
+We will look at three sets of code and the results to see the effects of the various candidate distributions.
+
+Example 1: Using the naive candidate
+
+```{r}
+
+library(mvtnorm)
+
+set.seed(14061972)
+x<-rnorm(15,10,1)
+mu<-4.7*x-1.3
+y<-rnbinom(15,mu=mu,size=1.6)
+
+X<-cbind(1,x)
+
+log_like<-function(BETA,ETA)
+{
+  mu<-X%*%BETA%>%exp()
+  dnbinom(y,size = ETA,mu = mu, log = TRUE)%>%sum()
+}
+
+m<-10000
+
+beta<-matrix(NA,ncol=2,nrow=m)
+eta<-numeric(length = m)
+
+beta[1,]<-0
+eta[1]<-1
+
+q_sd<-0.01
+beta_cov<-diag(q_sd,2)
+
+eta_var<-2
+
+for(i in 2:m)
+{
+  ##  update betas
+  bc<-rmvnorm(1,mean = beta[i-1,],sigma = beta_cov)%>%t()
+  alpha<-(log_like(bc,eta[i-1])-log_like(beta[i-1,],eta[i-1]))%>%exp()
+  u<-runif(1)
+  if(alpha>u)
+  {
+    beta[i,]<-bc
+  }else
+  {
+    beta[i,]<-beta[i-1,]
+  }
+  
+  ##  update eta
+  ac<-eta[i-1]^2/eta_var
+  bc<-eta[i-1]/eta_var
+  
+  ec<-rgamma(1,ac,bc)
+  
+  a<-ec^2/eta_var
+  b<-ec/eta_var
+  
+  alpha<-(log_like(beta[i,],ec)-log_like(beta[i,],eta[i-1])+dgamma(eta[i-1],a,b,log=TRUE)-dgamma(ec,ac,bc,log = TRUE)-ec+eta[i-1])%>%exp()
+
+u<-runif(1)
+if(alpha>u)
+{
+  eta[i]<-ec
+}else
+{
+  eta[i]<-eta[i-1]
+}
+
+}
+
+df_beta_naive<-tibble(beta = c(beta[,1],beta[,2]),names=c(rep("beta[0]",m),rep("beta[1]",m)),iteration = rep(1:m,2))
+
+beta_plot_naive<-ggplot(df_beta_naive)+
+  geom_point(aes(x = iteration,y = beta))+
+  facet_wrap(~names, labeller = label_parsed,scales="free")+
+  ylab("Sample")
+
+beta_hist_naive<-ggplot(df_beta_naive)+
+  geom_histogram(aes(x = beta, y=..density..),binwidth = 0.05)+
+  facet_wrap(~names, labeller = label_parsed,scales="free")
+
+df_eta_naive<-tibble(eta,iteration = 1:m)
+
+eta_plot_naive<-ggplot(df_eta_naive)+
+  geom_point(aes(x= iteration, y = eta))+
+  ylab("Sample")
+
+eta_hist_naive<-ggplot(df_eta_naive)+
+  geom_histogram(aes(x = eta, y = ..density..),binwidth= 0.05)
+
+beta_naive<-beta
+b0_hat_naive<-colMeans(beta_naive)[1]%>%round(2)
+b1_hat_naive<-colMeans(beta_naive)[2]%>%round(2)
+eta_naive<-eta
+eta_hat_naive<-mean(eta_naive)%>%round(2)
+
+```
+
+$$
+\phantom{linebreak}
+$$  
+Example 2: Using the improved candidate
+
+```{r}
+
+library(mvtnorm)
+
+set.seed(14061972)
+
+X<-cbind(1,x)
+
+log_like<-function(BETA,ETA)
+{
+  mu<-X%*%BETA%>%exp()
+  dnbinom(y,size = ETA,mu = mu, log = TRUE)%>%sum()
+}
+
+m<-10000
+
+beta<-matrix(NA,ncol=2,nrow=m)
+eta<-numeric(length = m)
+
+beta[1,]<-0
+eta[1]<-1
+
+q_sd<-2
+beta_cov<-q_sd*solve(t(X)%*%X)
+
+eta_var<-2
+
+for(i in 2:m)
+{
+  ##  update betas
+  bc<-rmvnorm(1,mean = beta[i-1,],sigma = beta_cov)%>%t()
+  alpha<-(log_like(bc,eta[i-1])-log_like(beta[i-1,],eta[i-1]))%>%exp()
+  u<-runif(1)
+  if(alpha>u)
+  {
+    beta[i,]<-bc
+  }else
+  {
+    beta[i,]<-beta[i-1,]
+  }
+  
+  ##  update eta
+  ac<-eta[i-1]^2/eta_var
+  bc<-eta[i-1]/eta_var
+  
+  ec<-rgamma(1,ac,bc)
+  
+  a<-ec^2/eta_var
+  b<-ec/eta_var
+  
+  alpha<-(log_like(beta[i,],ec)-log_like(beta[i,],eta[i-1])+dgamma(eta[i-1],a,b,log=TRUE)-dgamma(ec,ac,bc,log = TRUE)-ec+eta[i-1])%>%exp()
+
+u<-runif(1)
+if(alpha>u)
+{
+  eta[i]<-ec
+}else
+{
+  eta[i]<-eta[i-1]
+}
+
+}
+
+beta_improved<-beta
+eta_improved<-eta
+
+df_beta_improved<-tibble(beta = c(beta[,1],beta[,2]),names=c(rep("beta[0]",m),rep("beta[1]",m)),iteration = rep(1:m,2))
+
+beta_plot_improved<-ggplot(df_beta_improved)+
+  geom_point(aes(x = iteration,y = beta))+
+  facet_wrap(~names, labeller = label_parsed,scales="free")+
+  ylab("Sample")
+
+beta_hist_improved<-ggplot(df_beta_improved)+
+  geom_histogram(aes(x = beta, y=..density..),binwidth = 0.05)+
+  facet_wrap(~names, labeller = label_parsed,scales="free")
+
+df_eta_improved<-tibble(eta,iteration = 1:m)
+
+eta_plot_improved<-ggplot(df_eta_improved)+
+  geom_point(aes(x= iteration, y = eta))+
+  ylab("Sample")
+
+eta_hist_improved<-ggplot(df_eta_improved)+
+  geom_histogram(aes(x = eta, y = ..density..),binwidth= 0.05)
+
+```
+
+$$
+\phantom{linebreak}
+$$  
+Example 3: Using the Hessian candidate
+
+```{r}
+
+library(mvtnorm)
+
+set.seed(14061972)
+
+X<-cbind(1,x)
+
+log_like<-function(BETA,ETA)
+{
+  mu<-X%*%BETA%>%exp()
+  dnbinom(y,size = ETA,mu = mu, log = TRUE)%>%sum()
+}
+
+ANS<-optim(c(0,0,1),function(x) -log_like(x[1:2],x[3]), lower = c(-100,-100,0), method = "L-BFGS-B", hessian = TRUE)
+
+H<-solve(ANS$hessian[1:2,1:2])
+
+m<-10000
+
+beta<-matrix(NA,ncol=2,nrow=m)
+eta<-numeric(length = m)
+
+beta[1,]<-0
+eta[1]<-1
+
+q_sd<-3
+beta_cov<-q_sd*H
+
+eta_var<-2
+
+for(i in 2:m)
+{
+  ##  update betas
+  bc<-rmvnorm(1,mean = beta[i-1,],sigma = beta_cov)%>%t()
+  alpha<-(log_like(bc,eta[i-1])-log_like(beta[i-1,],eta[i-1]))%>%exp()
+  u<-runif(1)
+  if(alpha>u)
+  {
+    beta[i,]<-bc
+  }else
+  {
+    beta[i,]<-beta[i-1,]
+  }
+  
+  ##  update eta
+  ac<-eta[i-1]^2/eta_var
+  bc<-eta[i-1]/eta_var
+  
+  ec<-rgamma(1,ac,bc)
+  
+  a<-ec^2/eta_var
+  b<-ec/eta_var
+  
+  alpha<-(log_like(beta[i,],ec)-log_like(beta[i,],eta[i-1])+dgamma(eta[i-1],a,b,log=TRUE)-dgamma(ec,ac,bc,log = TRUE)-ec+eta[i-1])%>%exp()
+
+u<-runif(1)
+if(alpha>u)
+{
+  eta[i]<-ec
+}else
+{
+  eta[i]<-eta[i-1]
+}
+
+}
+
+beta_hessian<-beta
+eta_hessian<-eta
+
+df_beta_hessian<-tibble(beta = c(beta[,1],beta[,2]),names=c(rep("beta[0]",m),rep("beta[1]",m)),iteration = rep(1:m,2))
+
+beta_plot_hessian<-ggplot(df_beta_hessian)+
+  geom_point(aes(x = iteration,y = beta))+
+  facet_wrap(~names, labeller = label_parsed,scales="free")+
+  ylab("Sample")
+
+beta_hist_hessian<-ggplot(df_beta_hessian)+
+  geom_histogram(aes(x = beta, y=..density..),binwidth = 0.05)+
+  facet_wrap(~names, labeller = label_parsed,scales="free")
+
+df_eta_hessian<-tibble(eta,iteration = 1:m)
+
+eta_plot_hessian<-ggplot(df_eta_hessian)+
+  geom_point(aes(x= iteration, y = eta))+
+  ylab("Sample")
+
+eta_hist_hessian<-ggplot(df_eta_hessian)+
+  geom_histogram(aes(x = eta, y = ..density..),binwidth= 0.05)
+
+```
+
+####    Plot
+
+```{r, echo=FALSE}
+
+beta_plot_naive+ggtitle("Samples using the naive candidate")
+beta_hist_naive+ggtitle("Samples using the naive candidate")
+beta_plot_improved+ggtitle("Samples using the improved candidate")
+beta_hist_improved+ggtitle("Samples using the improved candidate")
+beta_plot_hessian+ggtitle("Samples using the Hessian candidate")
+beta_hist_hessian+ggtitle("Samples using the Hessian candidate")
+eta_plot_naive+ggtitle("Samples using the naive candidate")
+eta_hist_naive+ggtitle("Samples using the naive candidate")
+eta_plot_improved+ggtitle("Samples using the improved candidate")
+eta_hist_improved+ggtitle("Samples using the improved candidate")
+eta_plot_hessian+ggtitle("Samples using the Hessian candidate")
+eta_hist_hessian+ggtitle("Samples using the Hessian candidate")
+
+```
+
+The samples produced by these three candidates are all reasonable, but the trace of the random walk for the $\beta$s produced using the naive candidate definitely do not look as good as the ones using the improved and the Hessian candidates.  The MLE estimates are $\beta_0=$ `r ANS$par[1]%>%round(3)` $\beta_1=$ `r ANS$par[2]%>%round(3)` and $\eta=$ `r ANS$par[3]%>%round(3)`.  The posterior means for the various candidates are
+
+```{r echo=FALSE}
+b0_hat_naive<-colMeans(beta_naive)[1]%>%round(3)
+b1_hat_naive<-colMeans(beta_naive)[2]%>%round(3)
+eta_hat_naive<-mean(eta_naive)%>%round(3)
+
+b0_hat_improve<-colMeans(beta_improved)[1]%>%round(3)
+b1_hat_improve<-colMeans(beta_improved)[2]%>%round(3)
+eta_hat_improve<-mean(eta_improved)%>%round(3)
+
+b0_hat_hess<-colMeans(beta_hessian)[1]%>%round(3)
+b1_hat_hess<-colMeans(beta_hessian)[2]%>%round(3)
+eta_hat_hess<-mean(eta_hessian)%>%round(3)
+```
+
+:::{.table-narrow}
+| candidate | $\beta_0$         | $\beta_1$         | $\eta$            | 
+------------|-------------------|-------------------|-------------------|
+|naive      | `r b0_hat_naive`  |  `r b1_hat_naive` |`r eta_hat_naive`  |
+|improved   | `r b0_hat_improve`| `r b1_hat_improve`|`r eta_hat_improve`|
+|Hessian    | `r b0_hat_hess`   | `r b1_hat_hess`   |`r eta_hat_hess`   |
+:::
+
+Note that the posterior means for the improved and Hessian candidates are pretty reasonable, but for the naive candidate the posterior mean for $\beta_0$ is very wrong.  The meandering trace of iterations for $\beta_0$ using the naive candidate are indicative that clearly the sampler is not drawing from a stationary posterior distribution and the samples for $\beta_0$ are not an accurate representation.  In all three cases the posterior means for $\eta$ 
+were considerable less than the MLE, this is likely a result of the $\exp(1)$ prior used shrinking the posterior mean of $\eta$ towards $1$. 
+
+:::
+
+###   Generalised Linear Mixed Models
+
+:::{.sidenote}
+**Example (cont'd):**\
+Consider a sample 
+$\mathbf{y}=y_1,\ldots,y_n$ from $Y\sim Bern(\mathbf{p})$ where 
+$\log\left(\frac{p}{1-p}\right)=\lambda_i\sim N(\beta_0+\beta_1x_i,\delta)$ for some covariate $x_i$. 
+
+```{r,echo=FALSE}
+set.seed(14061972)
+n<-10
+x<-c(rep(0,n),rep(1,n))
+x<-rnorm(2*n,0,3)
+nu<-3.7*x-1.3+rnorm(2*n,sd=2.9)
+p<-exp(nu)/(1+exp(nu))
+y<-rbinom(2*n,prob = p ,size=1)
+
+```
+
+For $y=$ `r y` and $x=$ `r round(x,2)` fit the generalised linear mixed model assuming the data are from a Bernoulli distribution using the priors
+\begin{eqnarray}
+\lambda_i|\beta_0,\beta_1,\delta&\sim&N(\beta_0+\beta_1x_i,\delta)\\
+\pi(\boldsymbol{\beta})&\propto& 1\\
+\pi(\delta)&\propto&\frac{1}{\delta}
+\end{eqnarray}
+
+:::
+
+Generalised linear mixed models (GLMMs) introduce an added level of hierarchy to a model by adding error to the mean of the likelihood, i.e.\ given a set of data from some non-Gaussian likelihood we now assume that 
+$$
+E(Y|\theta)=h(\theta)=\eta
+$$
+where 
+$$
+\eta_i\sim N(\beta_0+\beta_1x_i,\delta)
+$$
+the resulting *hierarchical* model is 
+\begin{eqnarray}
+f(\mathbf{y}|\boldsymbol{\eta})\\
+\pi(\boldsymbol{\eta}|\beta_0,\beta_1,\delta)\\
+\pi(\beta_0,\beta_1,\delta) 
+\end{eqnarray}
+
+:::{.boxed}
+**Example Logistic Regression (cont'd):**\
+Recall the logistic regression example, now consider the following hierarchical logisitic regression model. For
+$$
+f(\mathbf{y}|\theta)=\theta^{\sum_{i=1}^ny_i}(1-\theta)^{n-\sum_{i=1}^ny_i}
+$$
+let 
+$$
+\nu=\log\left(\frac{\theta}{1-\theta}\right)
+$$
+then the GLMM would be
+\begin{eqnarray}
+f(\mathbf{y}|\boldsymbol{\nu})&=&\left(\frac{e^\nu}{1+e^\nu}\right)^{\sum_{i=1}^ny_i}\left(\frac{1}{1+e^\nu}\right)^{n-\sum_{i=1}^ny_i}\\
+\pi(\boldsymbol{\nu}|\beta_0,\beta_1,\delta)&=&\left(\frac{1}{2\pi\delta}\right)^{n/2}\exp\left(-\frac{\sum_{i=1}^n(\nu-\beta_0-\beta_1x_i)^2}{2\delta}\right)\\
+\pi(\beta_0,\beta_1)&\propto&1\\
+\pi(\delta)&\propto&\frac{1}{\delta}.
+\end{eqnarray}
+
+The joint posterior is
+$$
+\pi(\boldsymbol{\nu},\beta_0,\beta_1,\delta|\mathbf{y})\propto f(\mathbf{y}|\boldsymbol{\nu})\pi(\boldsymbol{\nu}|\beta_0,\beta_1,\delta)\pi(\beta_0,\beta_1)\pi(\delta)
+$$
+which we would sample from using a Gibbs sampling scheme with the full conditionals 
+\begin{eqnarray}
+\pi(\nu|\beta_0,\beta_1,\delta,\mathbf{y})&\propto& f(\mathbf{y}|\boldsymbol{\nu})\pi(\boldsymbol{\nu}|\beta_0,\beta_1,\delta)\\
+\pi(\beta_0,\beta_1|\boldsymbol{\nu},\delta,\mathbf{y})&\propto&\pi(\boldsymbol{\nu}|\beta_0,\beta_1,\delta)\pi(\beta_0,\beta_1)\\
+\pi(\delta|\boldsymbol{\nu},\beta_0,\beta_1,\mathbf{y})&\propto&\pi(\boldsymbol{\nu}|\beta_0,\beta_1,\delta)\pi(\delta)\\
+\end{eqnarray}
+
+:::
+
+:::{.boxed}
+
+###   Example (cont'd) {.tabset .tabset-pills}
+
+Consider a sample 
+$\mathbf{y}=y_1,\ldots,y_n$ from $Y\sim Bern(\mathbf{p})$ where 
+$\log\left(\frac{p}{1-p}\right)=\lambda_i\sim N(\beta_0+\beta_1x_i,\delta)$ for some covariate $x_i$. 
+
+```{r,echo=FALSE}
+set.seed(14061972)
+n<-10
+x<-c(rep(0,n),rep(1,n))
+x<-rnorm(2*n,0,3)
+nu<-3.7*x-1.3+rnorm(2*n,sd=2.9)
+p<-exp(nu)/(1+exp(nu))
+y<-rbinom(2*n,prob = p ,size=1)
+```
+
+For $y=$ `r y` and $x=$ `r round(x,2)` fit the generalised linear mixed model assuming the data are from a Bernoulli distribution using the priors
+\begin{eqnarray}
+\lambda_i|\beta_0,\beta_1,\delta&\sim&N(\beta_0+\beta_1x_i,\delta)\\
+\pi(\boldsymbol{\beta})&\propto& 1\\
+\pi(\delta)&\propto&\frac{1}{\delta}
+\end{eqnarray}
+
+####    Solution
+
+The scatter plot of the data
+```{r echo=FALSE,message=FALSE}
+
+ggplot(data=tibble(x,y),aes(x=x,y=y))+
+  geom_point()+
+  geom_smooth(method=lm,se = TRUE)
+
+```
+reveals a linear relationship between $x$ and $y$. We now assume that this is a generalised linear mixed model with the likelihood 
+$$
+f(\mathbf{y}|\boldsymbol{\lambda})=\prod_{i=1}^n\left(\frac{e^{\lambda_i}}{1+e^{\lambda_i}}\right)^{y_i}\left(\frac{1}{1+e^{\lambda_i}}\right)^{1-y_i}
+$$
+and the priors
+\begin{eqnarray}
+\lambda_i|\beta_0,\beta_1,\delta&\sim&N(\beta_0+\beta_1x_i,\delta)\\
+\pi(\boldsymbol{\beta})&\propto& 1\\
+\pi(\delta)&\propto&\frac{1}{\delta}\\
+\end{eqnarray}
+We derive the set of full conditionals for our Gibbs sampling scheme
+\begin{eqnarray}
+\pi(\boldsymbol{\lambda}|\boldsymbol{\beta},\delta,\eta,\mathbf{y)}&\propto&f(\mathbf{y}|\boldsymbol{\lambda},eta)
+\pi(\boldsymbol{\lambda}|\boldsymbol{\beta},\delta)\\
+\pi(\boldsymbol{\beta}|\boldsymbol{\lambda},\delta,\mathbf{y})&\propto&\pi(\boldsymbol{\lambda}|\boldsymbol{\beta},\delta) \\
+\pi(\delta|\boldsymbol{\beta},\boldsymbol{\lambda},\mathbf{y})&\propto&\pi(\boldsymbol{\lambda}|\boldsymbol{\beta},\delta)\pi(\delta)
+\end{eqnarray}
+
+We will need to use Metropolis-Hastings steps for $\boldsymbol{\lambda}$ with appropriate candidates chosen to attain the desired acceptance rate. 
+
+####    Code
+
+```{r}
+
+library(mvtnorm)
+
+N<-10000
+n<-length(y)
+
+lambda<-matrix(0,nrow = N,ncol = n)
+beta<-matrix(0,ncol = 2, nrow = N)
+delta<-numeric(length = N)
+
+delta[1]<-1
+beta[1,]<-c(-1.3,3.7)
+
+X<-cbind(1,x)
+XX<-solve(t(X)%*%X)
+XXX<-XX%*%t(X)
+
+i<-2
+
+f_lambda<-function(pars)
+{
+  dbinom(y,size = 1,prob=exp(pars)/(1+exp(pars)), log = TRUE)%>%sum()+
+    (dnorm(pars,mean = X%*%beta[i-1,],sd=sqrt(delta[i-1]),log=TRUE)%>%sum())
+}
+
+lambda_ans<-optim(rep(0,n),function(x) -f_lambda(x), lower = -10, upper = 10, method = "L-BFGS-B", hessian = TRUE)
+
+lambda_cov<-1.2*solve(lambda_ans$hessian)
+lambda[1,]<-lambda_ans$par
+
+
+for(i in 2:N)
+{
+lambda_c<-rmvnorm(1,mean = lambda[i-1,], sigma = lambda_cov)
+fc<-f_lambda(lambda_c)
+f<-f_lambda(lambda[i-1,])
+alpha<-exp(fc-f)
+u<-runif(1)
+if(u<alpha)
+  {
+    lambda[i,]<-lambda_c
+  }else
+  {
+    lambda[i,]<-lambda[i-1,] 
+  }
+
+beta[i,]<-rmvnorm(1,mean = XXX%*%lambda[i,],sigma = delta[i-1]*XX)
+
+a<-n/2
+b<-sum((lambda[i,]-X%*%beta[i,])^2)/2
+delta[i]<-1/rgamma(1,a,b)
+
+
+}
+
+```
+
+The results from this model for $10,\!000$ iterations are not quite satisfactory.  While the posterior means for $\beta_0,\beta_1$ and $\boldsymbol{\lambda}$ are reasonable and reflect the generating values, the posterior densities look rough and there is some evidence that the MCMC scheme may not be fully exploting the posterior.  
+
+####    Plot
+
+```{r echo=FALSE, message=FALSE}
+
+df<-tibble(pars = c(beta[,1],beta[,2], sqrt(delta)),names = c(rep("beta[0]",N), rep("beta[1]",N),rep("sqrt(delta)",N)))
+
+ggplot(df)+
+  geom_histogram(aes(x = pars, y = ..density..), binwidth = 1)+
+  facet_wrap(~names, labeller = label_parsed,scales="free")+
+  xlab("parameters")
+
+```
+
+The historgrams for $\beta_0$ and $\sqrt{\delta}$ look resonable, but the plot for $\beta_1$ shows multiple modes, which is not good, meaning that the scheme is likely not drawing samples from the true posterior. 
+
+In general these models can be difficult to fit, especially with limited data and other sophisticated sampling techniques. Caution should be used when attempting to fit hierarchical models and make inferences based on their results. 
+
+:::
+
+
+
+
+
+<!-- ## Multivariate candidates --- Block Sampling -->
+
+<!-- ## Collapsing The Gibbs Sampler -->

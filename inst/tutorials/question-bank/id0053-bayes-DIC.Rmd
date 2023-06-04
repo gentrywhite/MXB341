@@ -1,0 +1,25 @@
+Given 
+```{r echo=FALSE}
+set.seed(14061972)
+
+x<-runif(20,-1,1)
+
+lambda<-exp(3.1*x-1.7)
+
+y<-rnbinom(20,mu=lambda,size = 1.7)
+
+```
+$y=$ `r round(y,2)`  and \
+$x =$ `r round(x,2)`
+
+(a) Fit a model assuming that $y_i\sim Pois(\lambda_i)$, $\log(\lambda_i)=\beta_0+\beta_1x_i$
+(b) Fit a model assuming that $y_i\sim NegBinom(\mu_i,\eta)$, $\log(\mu_i)=\beta_0+\beta_1x_i$
+For each model: 
+(c)   Plot the trace of the parameters; 
+(d)   plot the cummulative mean of the parameters and calculate the BGR for three chains; 
+(e)   plot the ACF and compute the effective sample size for each parameter; and 
+(f)   compute the $p_D$, $p_V$, $\bar{D}$ and $DIC$ for each of these models and compare the results.
+
+
+
+

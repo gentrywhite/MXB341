@@ -1,0 +1,99 @@
+
+Consider a data from a Poisson process (i.e.\ realisations of a Poisson random variable $X$) where
+$$
+Pr(X=x|\lambda)=\frac{\lambda^xe^{-\lambda}
+}{x!}
+$$
+Assume a prior for $\lambda$
+$$
+\pi(\lambda)=4\lambda e^{-2\lambda}.
+$$
+For the data $\mathbf{x}=(x_1,x_2,\ldots,x_n)$ i.e.\
+```{r solu0}
+x<-c(2, 1, 4, 3, 4, 2, 1, 2, 0, 0)
+
+
+```
+
+a. Find the posterior distribution of $\lambda|\mathbf{x}$
+
+For $\sum x_i=19$ and $n=10$The posterior distribution is 
+$$
+\pi(\lambda|\mathbf{y})=\frac{12^{21}\lambda^{20}e^{-12\lambda}}{\Gamma(21)}
+$$
+
+
+b. Find the $95\%$ credible interval $C$ for $\lambda$ and $\lambda|\mathbf{x}$
+```{r tq1}
+x<-c(2, 1, 4, 3, 4, 2, 1, 2, 0, 0)
+
+sumx<-sum(x)
+n<-length(x)
+
+alpha<-2+sumx
+beta<-2+n
+
+##  Just compute the equal tail credible interval
+
+ll<-qgamma(0.025,shape = alpha,rate = beta)%>%round(.,2)
+ul<-qgamma(0.975,shape = alpha, rate = beta)%>%round(.,2)
+
+```
+
+The credible interval $C$ is (`r ll`,`r ul`)
+
+c. Find
+$$
+Pr(\lambda)>1\text{ and } Pr(\lambda>1|\mathbf{x})
+$$
+
+```{r tq2}
+x<-c(2, 1, 4, 3, 4, 2, 1, 2, 0, 0)
+
+sumx<-sum(x)
+n<-length(x)
+
+alpha<-2+sumx
+beta<-2+n
+
+##  Just compute the equal tail credible interval
+
+prior_prob<-pgamma(1,shape = 2,rate = 2)%>%round(.,2)
+post_prob<-pgamma(1,shape = alpha, rate = beta)%>%round(.2)
+
+```
+
+$$
+\begin{align}
+Pr(\lambda<1)&=`r prior_prob`\\
+Pr(\lambda<1|\mathbf{x})&=`r post_prob`
+\end{align}
+$$
+
+d. Plot the prior and posterior of $\lambda$ together, comment?  How did the data effect the posterior compared to the prior.  
+Repeat this for 
+$$
+\pi(\lambda)=e^{-\lambda}
+$$
+
+```{r tq3}
+x<-c(2, 1, 4, 3, 4, 2, 1, 2, 0, 0)
+
+sumx<-sum(x)
+n<-length(x)
+
+alpha<-2+sumx
+beta<-2+n
+
+x<-seq(0,5,len=1000)
+prior_2<-dgamma(x,shape = 2, rate = 2)
+prior_1<-dgamma(x, shape = 1 , rate = 1)
+posterior_2<-dgamma(x,shape = alpha, rate = beta)
+posterior_1<-dgamma(x,shape = alpha -1, rate = beta-1)
+
+df<-tibble(X=rep(x,4),pi = c(prior_2,posterior_2,prior_1,posterior_1),names=c(rep("prior 2",1000),rep("posterior 2",1000),rep("prior 1",1000),rep("posterior 1",1000)))
+
+ggplot(df,aes(x=X,y = pi,color=names))+
+  geom_line()
+
+```

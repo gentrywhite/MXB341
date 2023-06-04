@@ -1,6 +1,6 @@
 Package: MXB341
 Title: Unit Package for MXB341
-Version: 1.0.0.2021
+Version: 1.0.0.2022
 Authors@R: 
     person(given = "Gentry",
            family = "White",
@@ -17,6 +17,7 @@ Depends:
     kableExtra,
     pander,
     rmarkdown,
+    grid,
     gridExtra,
     ggtext,
     broom,
@@ -26,11 +27,15 @@ Depends:
     extraDistr,
     purrr,
     png,
-    learnr
+    mcmcse,
+    rootSolve,
+    mvtnorm,
+    gganimate,
+    animation
 Suggests: 
-    testthat 
+    testthat,knitr,rmarkdown,learnr
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 VignetteBuilder: knitr

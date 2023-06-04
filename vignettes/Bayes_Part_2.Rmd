@@ -1,0 +1,1276 @@
+---
+title: "Week 8"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Week 8}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(tidyverse)
+library(pracma)
+```
+
+```{r, echo=FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("QUTReadings.css")
+
+```
+
+# Bayesian Inference
+<!--
+```{css,echo=FALSE}
+.watermark {
+  opacity: 0.2;
+  position: fixed;
+  transform:rotate(300deg);
+  -webkit-transform:rotate(300deg);
+  top: 50%;
+  left: 30%;
+  font-size: 900%;
+  color: #00407d;
+}
+```
+
+::: {.watermark}
+© QUT
+:::
+-->
+
+:::{.sidenote}
+**Through the Looking Glass**\
+\`Curiouser and curiouser!" Cried Alice (she was so much surprised, that
+for the moment she quite forgot how to speak good English)'
+
+--- Lewis Carrol, \* Alice's Adventure in Wonderland\*
+
+It is interesting to note that classical inference (i.e. confidence
+intervals and hypothesis tests) is based on the sampling distribution, i.e.
+$$
+f(\mathbf{y};\theta)~\text{ or }~f\left(T(\mathbf{y});\theta\right)
+$$ 
+
+
+In Bayesian inference is based on the *probability distribution* of the parameters (as random variables) conditioned on the data (also random variables)
+$$
+f(\theta|\mathbf{y}).
+$$
+:::
+
+The distinguishing aspect of Bayesian statistics is the
+conceptualisation of the parameter as a probability distribution rather
+than a fixed quantity. We can use this to make inference directly rather
+than interpret the uncertainty in terms of the random sample via the
+sampling distribution because we express the uncertainty about the
+parameter as a probability distribution. We can use the posterior
+distribution to make direct probabilistic statements about the parameter
+in some ways (confidence or credible intervals). While this makes
+interpreting interval estimates more straightforward, it is more
+computationally demanding as it requires choosing an appropriate prior
+and evaluating the posterior distribution. In some cases, there are no
+analogous procedures to classical or frequentist approaches
+(i.e. hypothesis testing). Lastly, it is important to recognise and
+understand the influence of the parameter's prior distribution on the
+results of analyses.
+
+Thus we will examine three approaches to inference in the Bayesian
+paradigm: interval estimation, hypothesis testing, and decision theory.
+Each of these approaches has its analogue with classical techniques, and
+we will explore these contrasts and comparisons as part of exploring
+these concepts.
+
+<!-- ```{=html} -->
+<!-- <!-- -->
+<!-- #  Bayesian Hypothesis Testing and Interval Estimation -->
+
+<!-- Hypothesis testing and interval estimation are some of the most ubiquitous tasks of statistical analysis.  -->
+<!-- --->
+<!-- ``` -->
+
+## Credible Intervals
+
+::: {.sidenote}
+**Example:**\
+Consider a set of data $\mathbf{y}=y_1,y_2,\ldots,y_n$ from a Poisson
+distribution $Y\sim Pois(\lambda)$. 
+$$
+f(y|\lambda)=\frac{\lambda^ye^{-\lambda}}{y!}.
+$$
+
+Assuming that the parameter $\lambda$ has a prior distribution
+$\lambda\sim Ga(\alpha,\beta)$, i.e. 
+$$
+\pi(\lambda)=\frac{\beta^{\alpha}\lambda^{\alpha-1}e^{-\beta\lambda}}{\Gamma(\alpha)}.
+$$ 
+Find the $90\%$ credible interval for $\lambda|\mathbf{y}$.
+:::
+
+In classical or frequentist statistical analysis, interval estimation
+allows for the expression or quantification of the uncertainty
+associated with point estimates for parameter values. The underlying
+assumption being that the parameter is a fixed unknown quantity. In this
+instance, we refer to the probability that the confidence interval
+captures or covers the true value of the parameter, not that it contains
+the true value of the parameter. This often results in
+misinterpretations of confidence intervals that imply the parameter is a
+random variable; instead of the interval itself, which is based on a
+random sample.
+
+In Bayesian statistics, we have the situation where the parameter *is* a
+random variable. As a result, we can only discuss its values in terms of
+intervals rather than point estimates. In this situation, we can compute
+an interval based on the posterior distribution that contains the
+parameter with some probability and interpret this interval as a direct
+probabilistic statement about the parameter's value. While this is
+easier because the interpretation is more straightforward, it is more
+difficult because there is no obvious point estimator (which may
+introduce its cognitive difficulties). Constructing these intervals
+requires first choosing an appropriate prior and then deriving the
+posterior distribution. And as in the case of confidence intervals,
+there is still the problem of defining and identifying the "best"
+interval for a given probability.
+
+Interval estimation in the Bayesian context uses the posterior
+distribution to directly compute an interval-based on a specified
+probability
+
+::: {.boxed}
+**Credible Intervals**\
+
+Given the posterior distribution $\pi(\theta|\mathbf{x})$ the $1-\alpha$
+***credible set*** is
+$$
+C(\theta)=\left\{\theta:Pr\left(\theta\in C(\theta)\right)=1-\alpha\right\}
+$$
+For univariate cases this can be defined by the interval $[a,b]$ 
+$$
+\int_a^b\pi(\theta|\mathbf{y})d\theta=1-\alpha
+$$
+thus 
+$$
+C(\theta)=\{\theta:\theta\in[a,b]\}.
+$$ 
+As in the case of confidence intervals, there are limited analytical
+tools available to minimise $b-a$ for a given $1-\alpha$. In many
+instances, numerical techniques are necessary.
+
+A set $C^*(\theta)=[a,b]$ that minimises $b-a$ for a given $1-\alpha$ 
+$$
+C(\theta)=\min_{b-a}\int_{a}^b\pi(\theta|\mathbf{y})d\theta=1-\alpha
+$$
+is the ***highest posterior density*** credible interval.
+:::
+
+::: {.boxed}
+### Finding the Posterior Credible Interval for $\lambda$ {.tabset .tabset-pills}
+
+Consider a set of data $\mathbf{y}=y_1,y_2,\ldots,y_n$ from a Poisson
+distribution $Y\sim Pois(\lambda)$. 
+$$
+f(y|\lambda)=\frac{\lambda^ye^{-\lambda}}{y!}.
+$$
+
+Assuming that the parameter $\lambda$ has a prior distribution
+$\lambda\sim Ga(\alpha,\beta)$, i.e. 
+$$
+\pi(\lambda)=\frac{b^a\lambda^{a-1}e^{-b\lambda}}{\Gamma(a)}.
+$$
+Find the $90\%$ credible interval for $\lambda|\mathbf{y}$.
+
+#### Solution
+
+The posterior distrubution for $\lambda|\mathbf{y}$ is 
+$$
+\begin{aligned}
+\pi(\lambda|\mathbf{y})&\propto f(\mathbf{y}|\lambda)\pi(\lambda)\\
+&\propto\prod_{i=1}^n\frac{\lambda^{y_i}e^{-\lambda}}{y_i!}\frac{b^{a}\lambda^{a-1}e^{-b\lambda}}{\Gamma(a)}\\
+&\propto\frac{\lambda^{\sum_{i=1}^ny_i}e^{-n\lambda}}{\prod_{i=1}^ny_i!}\frac{b^{a}\lambda^{a-1}e^{-b\lambda}}{\Gamma(a)}\\
+&\propto\frac{\lambda^{\sum_{i=1}^ny_i+a-1}e^{-\lambda(n+b)}}{\prod_{i=1}^ny_i!~\Gamma(a)}\\
+&\propto \lambda^{\sum_{i=1}^ny_i+a-1}e^{-\lambda(n+b)}
+\end{aligned}
+$$ 
+implying the solution
+$\lambda|\mathbf{y}\sim Ga\left(a+\sum_{i=1}^ny_i~,b+n\right)$ 
+$$
+\pi(\lambda|\mathbf{y})=\frac{(n+b)^{\sum_{i=1}^ny_i+a}}{\Gamma\left(\sum_{i=1}^ny_i+a\right)}\lambda^{\sum_{i=1}^ny_i+a-1}e^{-\lambda(n+b)}
+$$ 
+The simplest approach is to construct a $1-\alpha\%$ confidence
+interval using the $\alpha/2$ and $1-\alpha/2$ quantiles of the
+posterior distribution. We can find these quantiles using statistical
+software, such as the `qgamma()` function in R.
+
+**OPTIONAL:**\
+
+Or we can note that if $Y\sim\chi^2_{\nu}$, then 
+$$
+\frac{1}{2b}Y\sim Ga\left(\frac{\nu}{2},b\right)
+$$ 
+and construct our posterior $1-\alpha\%$ confidence interval as 
+$$
+\frac{1}{2(b+n)}\chi^2_{2\left(a+\sum_{i=1}^ny_i\right),\alpha/2}<\lambda<\frac{1}{2(b+n)}\chi^2_{2\left(a+\sum_{i=1}^ny_i\right),1-\alpha/2}.
+$$ 
+Given the availability of statistical software, the use of the
+$\chi^2$ identity is not always needed but can be useful to know.
+
+Let's assume that that we have the following data: $\sum_{i=1}^ny_i=37$
+and $n=10$, if we additionally assume the prior $\lambda\sim Ga(1,1)$.
+Then the resulting credible interval is based on 
+$$
+\lambda|\mathbf{y}\sim Ga(38,11)
+$$
+
+```{r,echo=FALSE}
+
+ny<-10
+sy<-37
+
+lower_ci <- qgamma(0.05,sy+1,rate = ny+1)%>%round(2)
+upper_ci <- qgamma(0.95,sy+1,rate = ny+1)%>%round(2)
+```
+
+resulting in the credible interval of $(`r lower_ci`,`r upper_ci`)$.
+
+#### Code
+
+The code in `R` uses the function `qgamma()` to compute quantiles for the
+gamma distribution
+
+```{r}
+
+ny<-10
+sy<-37
+
+lower_ci <- qgamma(0.05,sy+1,rate = ny+1)%>%round(2)
+upper_ci <- qgamma(0.95,sy+1,rate = ny+1)%>%round(2)
+```
+
+Which will give the credible interval 
+$$
+(`r lower_ci`,`r upper_ci`).
+$$ 
+If we are interested in the minimum width or ***highest posterior
+density*** interval, then we will have to apply numerical optimisation
+
+```{r}
+##  Code to numerically find the limits a and b for a 
+##  highest posterior density credible interval. 
+##  Note that this requires a constrained optimisation routine.
+
+##  We want the minimum width confidence interval our objective function to 
+##  minimise is the difference a-b where x=[a,b].
+
+f<-function(x) x[1]-x[2]
+
+##  We define the linear constraints that a-b<=0 as Ax<=b
+
+A<-matrix(c(-1,1),1,2)
+b<-0
+
+##  And the non-linear constraints that the integral from b to a integrate to 1-\alpha
+
+h<-function(x,n,alpha) pgamma(x[1],n,rate = ny+1)-pgamma(x[2],n,rate = ny+1)-(1-alpha)
+
+##  The function fmincon() minimises multivariate functions with linear and 
+##  non-linear constraints
+
+res<-fmincon(c(4,1),f,heq = function(x) h(x,sy+1,0.1),A=A,b=b)
+
+diff(res$par)%>%abs()
+
+upper_ci_hpd <- res$par[1]
+lower_ci_hpd <- res$par[2]
+
+##  Original Intervals
+
+lower_ci <- qgamma(0.05,sy+1,rate = ny+1)
+upper_ci <- qgamma(0.95,sy+1,rate = ny+1)
+
+```
+
+Which will give the credible interval 
+$$
+(`r lower_ci_hpd%>%round(2)`,`r upper_ci_hpd%>%round(2)`).
+$$ 
+Note that the differences between the original interval and the
+highest posterior density intervals are 
+$$
+\begin{align}
+\mbox{Original Credible Interval Difference}&=`r (upper_ci-lower_ci)%>%round(2)`\\
+\mbox{Highest Posterior Density Interval Difference}&=`r (upper_ci_hpd-lower_ci_hpd)%>%round(2)`
+\end{align}
+$$
+
+We can see that the highest posterior interval width is narrower than
+the original width interval, though the difference may not be
+substantial.
+
+#### Plot
+
+```{r,echo = FALSE}
+
+a <- upper_ci
+b <- lower_ci
+a_hpd <- upper_ci_hpd
+b_hpd <- lower_ci_hpd
+
+sy<-37
+n<-10
+
+colors <- c("Original"="red3","HPD"="blue3")
+
+##  Now plot the results
+
+x <- seq(0,8,len = 100)
+
+df <- tibble(x = x,y = dgamma(x,sy+1,rate = ny+1))
+
+ggplot(df)+
+  geom_line(aes(x = x, y = y))+
+  geom_ribbon(data = subset(df,x>b&x<a),aes(x = x, ymin = 0, ymax = y,fill="Original"),color = "NA",alpha = 0.3)+
+  geom_ribbon(data=subset(df,x>b_hpd&x<a_hpd),aes(x=x,ymin=0,ymax=y,fill = "HPD"),
+              color = "NA",alpha = 0.3)+
+  labs(y = "Density", x = expression(lambda*"|"*bold(y)),
+       title = expression("Plot of Density Function for "*lambda*"|"*bold(y)),fill = "90% Credible Interval")+
+  scale_color_manual(values = colors)+
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom")
+  
+```
+
+The credible intervals overlap a common region, the excess for each
+interval is shown in its respective colour. Note that the excess for the
+HPD interval is visibly smaller than for the "original" interval.
+
+
+
+:::
+
+## Bayesian Hypothesis Testing and Bayes Factors
+
+[Hypothesis testing](./Week_4.html) is a classical or frequentist
+approach that considers probabilistic statements about the sample or
+sample statistic, i.e. what is the probability we observe this data
+given that the null hypothesis is true. These statements are constructed
+assuming that the parameter (i.e. the subject of the null hypothesis)
+has a fixed point value.
+
+In Bayesian statistics, this underlying assumption is not valid, because
+Bayesian statistics assumes that the parameter is described as a
+probability distribution, not a fixed point value. Because of this, the
+classical hypothesis testing procedure is not valid. Instead, there are
+alternative approaches that we can be applied to obtain similar outcomes
+in testing situations.
+
+### Hypothesis Testing
+
+::: {.sidenote}
+**Example:**\
+For $\mathbf{y}=y_1,y_2,\ldots,y_n$ from $Y\sim Pois(\lambda)$ with a
+prior $\lambda\sim Ga(a,b)$.
+
+Given $n=10$ and the statistic $\sum_{i=1}^ny_i=14$ test the hypotheses
+$$
+H_0:\lambda>1\quad\mbox{vs}\quad H_A:\lambda\leq 1
+$$ 
+assume that $a=b = 1$.
+:::
+
+In classical statistics, we saw how the confidence intervals can be
+constructed by [inverting test
+statistics](./Week_5/#inverting-test-statistics). It is reasonable to
+assume that we can perform a similar operation using credible intervals
+for inference or to "test" hypotheses about the parameters. This makes a
+certain amount of sense because the credible interval is based on the
+posterior distribution of the parameter given the data. In practice,
+this is difficult and doesn't work in most cases.
+
+For hypotheses of the form 
+$$
+H_0:\theta\in \theta_0\quad\mbox{vs}\quad H_A:\theta\in \theta_0^c
+$$ 
+the posterior probabilities are equivalent to testing the hypotheses
+$$
+\begin{align}
+Pr(\theta\in\theta_0|\mathbf{y})&\equiv Pr(\mbox{H_0 is True}|\mathbf{y})\\
+Pr(\theta\in\theta_0^c|\mathbf{y})&\equiv Pr(\mbox{H_0 is False}|\mathbf{y}).
+\end{align}
+$$
+
+But in the case of the point-null hypothesis 
+$$
+H_0:\theta=\theta_0\quad\mbox{vs}\quad H_A:\theta\neq \theta_0
+$$ 
+$Pr(\theta=\theta_0)=0$ which prevents meaningful hypothesis testing.
+(The exception being when the parameter space is discrete, but this is a
+rare occurrence.)
+
+::: {.boxed}
+### Testing Hypotheses {.tabset .tabset-pills}
+
+For $\mathbf{y}=y_1,y_2,\ldots,y_n$ from $Y\sim Pois(\lambda)$ with a
+prior $\lambda\sim Ga(a,b)$.
+
+Given $n=10$ and the statistic $\sum_{i=1}^ny_i=14$ test the hypotheses
+$$
+H_0:\lambda>1\quad\mbox{vs}\quad H_A:\lambda\leq 1
+$$ 
+assume that $a=b = 1$.
+
+#### Solution
+
+Given the likelihood for the Poisson data as 
+$$
+f(\lambda|\mathbf{y})=\frac{\lambda^{\sum_{i=1}^ny_i}e^{-n\lambda}}{\prod_{i=1}^ny_i!}
+$$ 
+and the prior for $\lambda$ is 
+$$
+\pi(\lambda)=\frac{b^a}{\Gamma(a)}\lambda^{a-1}e^{-b\lambda}
+$$
+
+Resulting in the posterior 
+$$
+\pi(\lambda|\mathbf{y})=\frac{(b+n)^{a+\sum_{i=1}^ny_i}}{\Gamma\left(a+\sum_{i=1}^ny_i\right)}\lambda^{a+\sum_{i=1}^ny_i-1}e^{-(b+n)\lambda}
+$$ 
+or 
+$$
+\lambda|\mathbf{y}\sim Ga\left(a+\sum_{i=1}^ny_i~,~b+n\right).
+$$ 
+or with $\sum_{i=1}^ny_i=14$ and $n=10$ 
+$$
+\lambda|\mathbf{y}\sim Ga\left(15,11\right).
+$$ 
+We can compute the
+$$
+Pr(\lambda>1|\mathbf{y})
+$$
+using the `pgamma` function in `R`
+
+```{r}
+##  Pr(lambda>1|y)=
+
+1-pgamma(1,shape = 15,rate = 11)
+
+##  or
+
+pgamma(1,shape = 15, rate = 11, lower.tail = FALSE)
+
+```
+
+**OPTIONAL:**\
+
+If $X\sim\chi^2_\nu$ and
+$Y=\frac{1}{2b}X\sim Ga\left(\frac{\nu}{2},b\right)$ 
+$$
+\begin{align}
+Pr(\lambda>1|\mathbf{y})=Pr\left(X>2(b+n)\right)
+\end{align}
+$$ 
+where $X\sim\chi^2_{2(a+\sum_{i=1}^ny_i)}$.
+
+as a result 
+$$
+\begin{align}
+Pr(\lambda>1|\mathbf{y})&=Pr(X>22)\\
+&=Pr(\chi^2_{30}>22)\\
+Pr(H_0\mbox{ is True}|\mathbf{y})&=0.854.
+\end{align}
+$$
+
+
+
+:::
+
+### Bayes Factors
+
+::: {.sidenote}
+**Example:**\
+For $\mathbf{y}=y_1,y_2,\ldots,y_n$ from $Y\sim Pois(\lambda)$ with a
+prior $\lambda\sim Ga(a,b)$.
+
+Given $n=10$ and the statistic $\sum_{i=1}^ny_i=13$ compute the Bayes
+Factor for the two potential models $$
+M_0:\lambda\sim Ga\left(4,2\right)\quad\mbox{vs}\quad M_1:\lambda\sim Ga\left(9,3\right).
+$$
+:::
+
+We can see that direct probabilistic statements regarding the parameter
+based on the posterior distribution can address many inference questions
+for composite hypotheses. But for a more generalised approach, such as
+comparing two candidate models, the posterior distribution can't answer
+these questions. In this instance, we can turn to ***Bayes Factors***,
+which are analogous to the generalised likelihood ratio test (and indeed
+superficially appear very similar).
+
+::: {.boxed}
+**Bayes Factors** are defined as the ratio of likelihoods for the two
+competing hypotheses 
+$$
+\begin{align}
+BF_{01}&=\frac{\int_{\Theta}f(\mathbf{y}|\theta,M_0)\pi(\theta|M_0)d\theta}
+{\int_{\Theta}f(\mathbf{y}|\theta,M_1)\pi(\theta|M_1)d\theta}\\
+&=\frac{\int_{\Theta}f(\mathbf{y},\theta|M_0)d\theta}
+{\int_{\Theta}f(\mathbf{y},\theta|M_1)d\theta}\\
+&=\frac{f(\mathbf{y}|M_0)}{f(\mathbf{y}|M_1)}.
+\end{align}
+$$ 
+Recall Bayes' Theorem 
+$$
+\pi(\theta|\mathbf{y})=\frac{f(\mathbf{y}|\theta)\pi(\theta)}{\int_{\Theta}f(\mathbf{y}|\theta)\pi(\theta)d\theta}
+$$ 
+noting that the denominator is 
+$$
+\begin{align}
+\int_{\Theta}f(\mathbf{y}|\theta)\pi(\theta)d\theta&=\int_{\Theta}f(\mathbf{y},\theta)d\theta\\
+&=f(\mathbf{y})
+\end{align}
+$$ 
+the marginal density of $\mathbf{y}$, or the normalising constant of
+the posterior distribution. Thus Bayes Factors can be described as the
+ratio of the posterior normalising constants under two competing model.
+:::
+
+Interpreting Bayes Factors is a challenge as there is no probability
+distribution available for making inferential statements regarding the
+value of the Bayes Factor.
+
+Instead, Bayes Factors are interpreted heuristically as a measure of the
+strength of the evidence supporting $M_0$.
+
+\centering
+
+| $BF_{01}$ |        Strength of Evidence        |
+|:----------|:----------------------------------:|
+| 1 to 3    | Not worth more than a bare mention |
+| 3 to 20   |              Positive              |
+| 20 to 150 |               Strong               |
+| $>$ 150   |            Very Strong             |
+
+Note that $BF_{01}<1$ is an indication of negative evidence or evidence
+against $M_0$.
+
+::: {.boxed}
+### Computing Bayes Factors {.tabset .tabset-pills}
+
+For $\mathbf{y}=y_1,y_2,\ldots,y_n$ from $Y\sim Pois(\lambda)$ with a
+prior $\lambda\sim Ga(a,b)$.
+
+Given $n=10$ and the statistic $\sum_{i=1}^ny_i=13$ compute the Bayes
+Factor for the two potential models $$
+M_0:\lambda\sim Ga\left(4,2\right)\quad\mbox{vs}\quad M_1:\lambda\sim Ga\left(9,3\right).
+$$
+
+#### Solution
+
+Given the likelihood $$
+f(\mathbf{y}|\lambda)=\frac{\lambda^{\sum_{i=1}^ny_i}e^{-n\lambda}}{\prod_{i=1}^ny_i!}
+$$ and the priors $$
+\begin{align}
+\pi(\lambda|M_0)&=\frac{2^4}{\Gamma(4)}\lambda^3e^{-2\lambda}\\
+\pi(\lambda|M_1)&=\frac{3^9}{\Gamma(9)}\lambda^8e^{-3\lambda}.
+\end{align}
+$$ The Bayes Factor is $$
+\begin{align}
+BF_{01}&=\frac{\int_{\Lambda}\frac{\lambda^{\sum_{i=1}^ny_i}e^{-n\lambda}}
+{\prod_{i=1}^ny_i!}
+\frac{2^4}{\Gamma(4)}\lambda^3e^{-2\lambda}d\lambda}
+{\int_{\Lambda}\frac{\lambda^{\sum_{i=1}^ny_i}e^{-n\lambda}}{\prod_{i=1}^ny_i!}
+\frac{3^9}{\Gamma{9}}e^{-3\lambda}d\lambda}\\
+&=\frac{\frac{2^4}{\Gamma(4)}\int_{\Lambda}\lambda^{\sum_{i=1}^ny_i+3}e^{-\lambda(n+2)}d\lambda}{\frac{3^9}{\Gamma(9)}\int_{\Lambda}\lambda^{\sum_{i=1}^ny_i+8}e^{-\lambda(n+3)}d\lambda}\\
+&=\frac{\frac{2^4~\Gamma\left(\sum_{i=1}^ny_i+4\right)}{\Gamma(4)~(n+2)^{\sum_{i=1}^ny_i+4}}}
+{\frac{3^9~\Gamma\left(\sum_{i=1}^ny_i+9\right)}{\Gamma(9)~(n+3)^{\sum_{i=1}^ny_i+9}}}\\
+&=\frac{2^4~\Gamma\left(\sum_{i=1}^ny_i+4\right)\Gamma(9)~(n+3)^{\sum_{i=1}^ny_i+9}}
+{3^9~\Gamma\left(\sum_{i=1}^ny_i+9\right)\Gamma(4)(n+2)^{\sum_{i=1}^ny_i+4}}\\&=3.92.
+\end{align}
+$$
+
+Which is "positive" evidence in favour of $M_0$ being the preferred
+model.
+
+#### Code
+
+In this case, the calculation involved in finding the Bayes Factor is a
+bit tedious. Note that to ensure numerical stability, we compute the log
+of the Bayes Factor.
+
+```{r, echo=TRUE}
+sy <- 12
+n <- 10
+
+log_num <- 4*log(2)+lgamma(sy+4)+lgamma(9)+(sy+9)*log(n+3)
+log_den <- 9*log(3)+lgamma(sy+9)+lgamma(4)+(sy+4)*log(n+2)
+
+log_ans <- log_num-log_den
+
+ans <- exp(log_ans)
+
+ans
+```
+
+
+:::
+
+```{=html}
+<!--
+
+Consider data from Poisson process:
+
+$$M_0:\lambda=1\qquad M_1:\pi(\lambda)=2e^{-2\lambda}$$
+
+Assume we have two samples from different sources of size $n=10$
+observations of data resulting in the sufficient statistics:
+$$\sum_{i=1}^ny_i=20,\qquad\sum_{i=1}^ny_i=8$$
+
+Now consider the same data from Poisson process, but:
+
+$$M_0:\lambda\sim Ga(1,1)\qquad M_1:\lambda\sim Ga(2,2)$$
+
+Assume we have two samples from different sources of size $n=10$
+observations of data resulting in the sufficient statistics:
+$$\sum_{i=1}^ny_i=20,\qquad\sum_{i=1}^ny_i=8$$
+-->
+```
+## The effects of priors
+
+The choice of prior can influence the results of our inference. At first
+glance, we may be inclined to choose a non-informative or minimally
+informative prior to "let the data speak". But in some cases, the choice
+on an informative prior can represent prior knowledge in the form of the
+results of previous analyses, or it can represent expert opinion or
+other knowledge that we should incorporate in the analysis.
+
+In any case, it is useful to look at some examples comparing
+frequentists techniques and their Bayesian counterparts to see the
+effects that priors can have on the results of inferential analyses.
+
+### Comparing Confidence and Credible Intervals
+
+::: {.sidenote}
+**Example:**\
+Consider a set of data $\mathbf{y}=y_1,y_2,\ldots,y_n$ from a Poisson
+distribution $Y\sim Pois(\lambda)$. $$
+f(y|\lambda)=\frac{\lambda^ye^{-\lambda}}{y!}.
+$$ Find the 90% confidence interval for $\lambda$.
+
+Assuming that the parameter $\lambda$ has a prior distribution
+$\lambda\sim Ga(\alpha,\beta)$, i.e. $$
+\pi(\lambda)=\frac{b^a\lambda^{a-1}e^{-b\lambda}}{\Gamma(a)}.
+$$ Find the $90\%$ credible interval for $\lambda|\mathbf{y}$.
+
+Assume that $n=10$, $\sum_{i=1}^ny_i=37$ and for the prior of $\lambda$
+$a=b=1$.
+:::
+
+As discussed, confidence intervals and credible intervals have
+foundational differences in their meaning and interpretation. Confidence
+intervals are constructed based on the sampling distribution of the
+parameter estimator; thus, we express the uncertainty about the
+estimated parameter value through the probability distribution of the
+estimator. Credible intervals are constructed based on the posterior
+distribution of the parameter conditioned on the data. In the Bayesian
+context, the data and the parameter are considered random variables, and
+we express the uncertainty in the parameter as the posterior density.
+
+Philosophically, these offer contrasting viewpoints on the process of
+statistical and probabilistic modelling and challenges for interpreting
+their results. Confidence intervals are often conflated with credible
+intervals and interpreted as probabilistic statements about the
+parameter's value, even though the parameter is not a random variable.
+Credible intervals (and Bayesian statistics in general) eschews the
+notion of a point estimator, which can be uncomfortable and difficult to
+conceptualise.
+
+Neither approach can necessarily be considered more "correct" than the
+other; they are alternative approaches to answering the same question.
+What should be clear in using these, or any, methods is that we should
+clearly communicate the underlying data and assumptions used in the
+analyses to the target audience.
+
+::: {.boxed}
+### Example {.tabset .tabset-pills}
+
+Consider a set of data $\mathbf{y}=y_1,y_2,\ldots,y_n$ from a Poisson
+distribution $Y\sim Pois(\lambda)$. $$
+f(y|\lambda)=\frac{\lambda^ye^{-\lambda}}{y!}.
+$$ Find the 90% confidence interval for $\lambda$.
+
+Assuming that the parameter $\lambda$ has a prior distribution
+$\lambda\sim Ga(\alpha,\beta)$, i.e. $$
+\pi(\lambda)=\frac{b^a\lambda^{a-1}e^{-b\lambda}}{\Gamma(a)}.
+$$ Find the $90\%$ credible interval for $\lambda|\mathbf{y}$.
+
+Assume that $n=10$, $\sum_{i=1}^ny_i=37$ and for the prior of $\lambda$
+$a=b=1$.
+
+#### Solutions
+
+**90% Confidence Interval:**\
+Let $T(\mathbf{y})=\sum_{i=1}^ny_i$, then to $T(\mathbf{y})= t$ the 90%
+confidence interval is found assuming that $1-\alpha=0.9$ and assuming a
+symmetrical interval by solving $$
+\sum_{k=0}^t\frac{(n\lambda)^ke^{-n\lambda}}{k!}=\frac{\alpha}{2}\quad\mbox{ and }\quad\sum_{k=t}^\infty\frac{(n\lambda)^ke^{-n\lambda}}{k!}=\frac{\alpha}{2}.
+$$ Note that there is a relationship between the Poisson and Gamma
+distributions where if $X$ is a random variable with pdf $$
+f_X(x;a,b)=\frac{b^a}{\Gamma(a)}x^{a-1}e^{-bx}
+$$ and $Y$ is a random variable $Y\sim Pois(b\lambda)$, for integer values
+of $a$ $$
+Pr(X\leq x)=Pr(Y\geq a).
+$$ or in our case $T\sim Pois(n\lambda)$ so $$
+Pr(T=t) = \frac{(n\lambda)^te^{-nt}}{t!}
+$$ note that from this, we can infer that $$
+\Lambda\sim Ga(t+1,n)
+$$ so $$
+Pr(T\leq t+1)= Pr(\Lambda>\lambda)=\frac{\alpha}{2}
+$$ which we can find as the upper limit of our confidence interval from
+$1-\alpha/2$ quantile of the $Ga(t+1,n)$ distribution or the
+$\chi^2_{2(t+1)}$ distribution. If we apply the identity $$
+\begin{align}
+Pr(\Lambda<\lambda)&=1-Pr(\Lambda>\lambda)\\
+&=1-Pr(T\leq t+1)\\
+&=Pr(T>t)
+\end{align}
+$$ This implies that we can find the lower limit of our confidence
+interval from the $\alpha/2$ quantile of the $Ga(t,n)$ distribution, or
+the $\chi^2_{2t}$ distribution.
+
+The resulting interval is: 
+$$
+(2.76,4.87).
+$$
+
+**90% Bayesian Credible Interval**
+
+Given the prior 
+$$
+\frac{b^a}{\Gamma(a)}\lambda^{a-1}e^{-b\lambda}
+$$ 
+and the likelihood 
+$$
+\begin{align}
+f(\mathbf{y}|\lambda)&=\prod_{i=1}^n\frac{\lambda^{y_i}e^{-\lambda}}{y_i!}\\
+&=\frac{\lambda^{\sum_{i=1}^ny_i}e^{-n\lambda}}{\prod_{i=1}^ny_i!}
+\end{align}
+$$ 
+The posterior distribution is 
+$$
+\pi(\lambda|\mathbf{y})\propto \lambda^{\sum_{i=1}^ny_i+a-1}e^{-\lambda(b+n)}
+$$ 
+hence 
+$$
+\lambda|\mathbf{y}\sim Ga\left(\sum_{i=1}^ny_i+a,b+n\right)
+$$ 
+for $n=10$, $\sum_{i=1}^ny_i=37$, and $a=b=1$ 
+$$
+\lambda|\mathbf{y}\sim Ga\left(38,11\right).
+$$ 
+For a $1-\alpha\%$ credible interval, we can select the $\alpha/2$
+and $1-\alpha/2$ quantiles to arrive at the $90\%$ credible interval 
+$$
+(2.59,4.43).
+$$
+
+Note that the interval length for the credible interval (1.84) is
+smaller than the length of the confidence interval (2.11). The *highest
+posterior density* interval found in the previous examples is
+$(2.53,4.36)$ and has a length of 1.83. The credible intervals are
+narrower because the confidence interval only considers the sample data
+while the credible interval uses the data and the information in the
+prior.
+
+#### Plot
+
+```{r,echo = FALSE}
+
+a <- qgamma(0.05,37,10)
+b <- qgamma(0.95,38,10)
+a_bayes<-qgamma(0.05,38,11)
+b_bayes<-qgamma(.95,38,11)
+
+sy<-37
+n<-10
+
+colors <- c("Frequentist"="red3","Bayes"="blue3")
+
+##  Now plot the results
+
+x <- seq(0,8,len = 100)
+
+df <- tibble(x = x,y = dgamma(x,sy+1,rate = ny+1))
+
+ggplot(df)+
+  geom_line(aes(x = x, y = y))+
+  geom_ribbon(data = subset(df,x>a&x<b),aes(x = x, ymin = 0, ymax = y,fill="Frequentist"),color = "NA",alpha = 0.3)+
+  geom_ribbon(data=subset(df,x>a_bayes&x<b_bayes),aes(x=x,ymin=0,ymax=y,fill = "Bayes"),
+              color = "NA",alpha = 0.3)+
+  labs(y = "Density", x = expression(lambda*"|"*bold(y)),
+       title = expression("Plot of Density Function for "*lambda*"|"*bold(y)),fill = "90% Credible Interval")+
+  scale_color_manual(values = colors)+
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom")
+  
+```
+
+
+:::
+
+::: {.sidenote}
+**Example:**\
+Given a set of $n=30$ observations $\mathbf{y}=y_1,y_2,\ldots,y_n$ these
+data were generated from one of two distributions $$
+Pr(Y=y)=p^y(1-p)^{1-y}
+$$ or $$
+Pr(Y=y)=\frac{\lambda^ye^{-\lambda}}{y!}.
+$$ In either case the sufficient statistic is
+$T(\mathbf{y})=\sum_{i=1}^ny_i=4$.
+
+Perform the Likelihood Ratio test using Wilks Theorem to test the
+hypotheses
+
+$$
+H_0:y\sim Bern(p)\quad\mbox{vs}\quad H_A:y\sim Pois(\lambda).
+$$
+
+Now compute the Bayes Factor for the two potential models using the
+priors $$
+\begin{align}
+\pi(p)&=1\\
+\pi(\lambda)&=\frac{1}{\sqrt{\lambda}}
+\end{align}
+$$ and compare the results.
+
+***Hint:*** In all cases $\prod_{i=1}^ny_i!=1$.
+:::
+
+### Comparing Likelihood Ratio Tests and Bayes Factors
+
+Prima facia Bayes Factors and the likelihood ratio test appear very
+similar, but the important difference is that Bayes Factors are computed
+using the marginal likelihood of $\mathbf{y}$ integrated over the
+parameter space; likelihood ratios are computed using the likelihood
+evaluated at specific values of the parameter. As is typical with
+Bayesian methods in general, considering the parameter as a probability
+distribution and integrating over the parameter space accounts for the
+uncertainty (or confidence) in the parameter, where likelihood ratio
+tests don't consider uncertainty in the hypotheses.
+
+::: {.boxed}
+### Example {.tabset .tabset-pills}
+
+Given a set of $n=30$ observations $\mathbf{y}=y_1,y_2,\ldots,y_n$ these
+data were generated from one of two distributions $$
+Pr(Y=y)=p^y(1-p)^{1-y}
+$$ or $$
+Pr(Y=y)=\frac{\lambda^ye^{-\lambda}}{y!}.
+$$ In either case the sufficient statistic is
+$T(\mathbf{y})=\sum_{i=1}^ny_i=4$.
+
+Perform the Likelihood Ratio test using Wilks Theorem to test the
+hypotheses
+
+$$
+H_0:y\sim Bern(p)\quad\mbox{vs}\quad H_A:y\sim Pois(\lambda).
+$$
+
+Now compute the Bayes Factor for the two potential models using the
+priors $$
+\begin{align}
+\pi(p)&=1\\
+\pi(\lambda)&=\frac{1}{\sqrt{\lambda}}
+\end{align}
+$$ and compare the results.
+
+#### Solutions
+
+**The Likelihood Ratio Test**
+
+The likelihood ratio is $$
+\begin{align}
+\Lambda&=\frac{L(p)}{L(\lambda)}\\
+&=\frac{\prod_{i=1}^np^{y_1}(1-p)^{1-y_i}}{\prod_{i=1}^n\frac{\lambda^{y_i}e_{-\lambda}}{y_i!}}\\
+&=\frac{p^{\sum_{i=1}^ny_i}(1-p)^{n-\sum_{i=1}^ny_i}}{\frac{\lambda^{\sum_{i=1}^ny_i}e^{-n\lambda}}{\prod_{i=1}^ny_i!}}
+\end{align}
+$$ Noting that $\prod_{i=1}^ny_i!=1$ and substituting
+$t=\sum_{i=1}^ny_i$ $$
+\begin{align}
+\lambda&=\frac{p^t(1-p)^{n-t}}{\lambda^te^{-n\lambda}}
+\end{align}
+$$ for $\hat{p}=\hat{\lambda}=t/n$ $$
+\begin{align}
+\Lambda&=\frac{\frac{t}{n}^t\left(1-\frac{t}{n}\right)^{n-t}}{\frac{t}{n}^te^{-n\frac{t}{n}}}\\
+&=\frac{\left(1-\frac{t}{n}\right)^{n-t}}{e^{-t}}.
+\end{align}
+$$ Finally for $t=4$ and $n=30$ the numerical value is $$
+\Lambda=1.322.
+$$ This is a relatively small value for $\Lambda$, and it is unlikely
+this is a statistically significant result, though it seems to indicate
+some preference for the Binomial model.
+
+**Computing Bayes Factors**
+
+The Bayes factor is $$
+\begin{align}
+BF_{01}&=\frac{\int_{\Theta}f(\mathbf{y}|\theta)\pi(\theta|M_0)d\theta}{\int_{\Theta}f(\mathbf{y}|\theta)\pi(\theta|M_1)d\theta}\\
+&=\frac{\int_0^1p^t(1-p)^{n-t}dp}{\int_0^\infty\lambda^te^{-nt}\lambda^{-1/2}d\lambda}\\
+&=\frac{\frac{\Gamma(t)\Gamma(n-t)}{\Gamma(n)}}{\frac{\Gamma\left(t+\frac12\right)}{n^{t+\frac12}}}\\
+&=\frac{\Gamma(t)\Gamma(n-t)n^{t+\frac12}}{\Gamma(n)\Gamma\left(t+\frac12\right)}
+\end{align}
+$$ For $n=30$ and $t=4$ $$
+BF_{01}=4.015
+$$ which is "positive" evidence in favour of $M_0$, that the data come
+from a binomial distribution. Neither the likelihood ratio test nor the
+Bayes Factor provides definitive answers. But it is interesting to note
+that the Bayes Factor is larger than the likelihood ratio. This is
+because the likelihood ratio is evaluated at the maxima of the
+likelihoods, where the Bayes Factor is the ratio of the expected
+likelihoods (with respect to the priors).
+
+:::
+
+The effects of priors on both credible intervals and Bayes Factors can
+be substantial. For credible intervals, a more informative prior can
+narrow an interval and shift its centre. The effect for Bayes Facts is
+not so directly evident. It is a good idea to consider objective or
+minimally informative priors when evaluating Bayes Factors.
+
+# Bayesian Decision Theory
+
+::: {.sidenote}
+**Example:**\
+
+As a part of the Queen's Wharf Expansion, new structures are being built
+out over the river. Large steel pilings (either 20 or 30 metres long)
+are driven down into the riverbed until they contact a solid surface.
+
+If you choose a 20-metre piling and it is too short, an extra section
+has to welded on at the cost of \$4000, if you choose a 30-metre piling
+and it is too long; the excess has to be removed at the cost of \$1000.
+
+The actions are: 
+$$
+a_1: \mbox{use a 20 metre piling}\\
+a_2: \mbox{use a 30 metre piling}
+$$
+
+The possible states of reality are 
+$$
+\theta_1:  \mbox{20 metres to solid surface}\\
+\theta_2:  \mbox{30 metres to solid surface}
+$$
+
+The associated costs (loss) for each action and possible reality are:
+
+::: {.table-narrow}
+|       | $\theta_1$ | $\theta_2$ |
+|-------|:----------:|:----------:|
+| $a_1$ |     0      |   \$4000   |
+| $a_2$ |   \$1000   |     0      |
+:::
+
+We have some data, three possible readings from a sonar depth sensor
+$x_1$ = 20 metres, $x_2$ = 25 metres, and $x_3$ = 30 metres.
+
+As there is uncertainty in these measurements values for
+$Pr(x_i|\theta_j)$ are given in this table
+
+::: {.table-narrow}
+|       | $\theta_1$ | $\theta_2$ |
+|-------|:----------:|:----------:|
+| $x_1$ |    0.6     |    0.1     |
+| $x_2$ |    0.3     |    0.2     |
+| $x_3$ |    0.1     |    0.7     |
+:::
+
+Find the risk e.g.  
+$$
+R(\theta_1,d_i)=\sum_{j=1}^3L(\theta_1,d_i)Pr(x=x_j|\theta_1)
+$$
+
+for each decision and value of $\theta$ and apply the minimax rule.
+:::
+
+We previously studied classical [decision theory](./Week_6.html) as an
+approach to statistical inference. In studying Bayesian statistics, we
+have seen the analogue of the classical approaches to interval (and
+point) estimation and hypothesis testing, credible intervals and Bayes
+Factors. Naturally, we can assume that there is also a Bayesian approach
+to decision theory, which we will address here.
+
+Recall that the basic components of the decision-theoretic paradigm are
+summarised as
+
+-   Let $a$ be some action from a set of possible actions $\mathcal{A}$
+    i.e. $a\in\mathcal{A}$.
+
+-   Let $\mathbf{y}\sim f(\mathbf{y}|\theta)$ be some observed data
+    based on the state of nature (or reality) $\theta\in\Theta$.
+
+-   Let $d(\mathbf{y})$ be a decision function that maps the data to an
+    action.
+
+In statistical terms, we would say that $\mathbf{y}$ is a set of
+observations of values for a random variable with density or probability
+$f$. A decision could be a mathematical function that maps to an action
+(or choice of values)
+
+Every decision involves potential loss, depending on the decision
+$d(\mathbf{y})$ and the true state of reality $\theta$. 
+$$
+\mbox{Loss} = L(\theta,d(\mathbf{y}))
+$$ 
+Based on this loss, we can define the risk associated with each
+decision as 
+$$
+R(\theta,d(\mathbf{y}))=E_\theta\left[L(\theta,d(\mathbf{y}))\right]
+$$ 
+or 
+$$
+R(\theta,d(\mathbf{y}))=\int_Y L(\theta,d(\mathbf{y}))f(\mathbf{y}|\theta)dy.
+$$ 
+In other words, risk is the expected loss with respect to the
+likelihood.
+
+There are two approaches to using risk as a basis for making decisions.
+The first is called the minimax rule, or to choose the decision $d$ that
+minimises the largest risk with respect to theta. 
+$$
+\min_d\left[\max_\theta R(\theta,d(\mathbf{y})\right]
+$$
+
+1.  For each decision $d_i$ find its largest risk $r_{max}(d_i)$ for all
+    values of $\theta$.
+
+2.  Choose the decision that has the smallest value of $r_{max}(d_i)$.
+
+::: {.boxed}
+### Example {.tabset .tabset-pills}
+
+As a part of the Queen's Wharf Expansion, new structures are being built
+out over the river. Large steel pilings (either 20 or 30 metres long)
+are driven down into the riverbed until they contact a solid surface.
+
+If you choose a 20-metre piling and it is too short, an extra section
+has to welded on at the cost of \$4000, if you choose a 30-metre piling
+and it is too long; the excess has to be removed at the cost of \$1000.
+
+The actions are: $$
+a_1: \mbox{use a 20 metre piling}\quad
+a_2: \mbox{use a 30 metre piling}
+$$
+
+The possible states of reality are $$
+\theta_1:  \mbox{20 metres to solid surface}\quad
+\theta_2:  \mbox{30 metres to solid surface}
+$$
+
+The associated costs (loss) for each action and possible reality are:
+
+::: {.table-narrow}
+|       | $\theta_1$ | $\theta_2$ |
+|-------|:----------:|:----------:|
+| $a_1$ |     0      |   \$4000   |
+| $a_2$ |   \$1000   |     0      |
+:::
+
+We have some data, three possible readings from a sonar depth sensor
+$x_1$ = 20 metres, $x_2$ = 25 metres, and $x_3$ = 30 metres.
+
+As there is uncertainty in these measurements values for
+$Pr(x_i|\theta_j)$ are given in this table
+
+::: {.table-narrow}
+|       | $\theta_1$ | $\theta_2$ |
+|-------|:----------:|:----------:|
+| $x_1$ |    0.6     |    0.1     |
+| $x_2$ |    0.3     |    0.2     |
+| $x_3$ |    0.1     |    0.7     |
+:::
+
+Find the risk e.g.  $$
+R(\theta_1,d_i)=\sum_{j=1}^3L(\theta_1,d_i)Pr(x=x_j|\theta_1)
+$$\
+for each decision and value of $\theta$ and apply the minimax rule.
+
+#### Solution
+
+Let us consider four possible decision rules
+
+::: {.table-narrow}
+|       | $x_1$ | $x_2$ | $x_3$ |
+|-------|:-----:|:-----:|:-----:|
+| $d_1$ | $a_1$ | $a_1$ | $a_1$ |
+| $d_2$ | $a_1$ | $a_2$ | $a_2$ |
+| $d_3$ | $a_1$ | $a_1$ | $a_2$ |
+| $d_4$ | $a_2$ | $a_2$ | $a_2$ |
+:::
+
+The risks under each rule for $\theta_1$ are $$
+\begin{align}
+R(\theta_1,d_1)&=\sum_{j=1}^3L(\theta_1,d_1(x_j))Pr(x_j|\theta_1)\\
+&=(0)(0.6)+(0)(0.3)+(0)(0.1)=0\\
+R(\theta_1,d_2)&=\sum_{j=1}^3L(\theta_1,d_2(x_j))Pr(x_j|\theta_1)\\
+&=(0)(0.6)+(1000)(0.3)+(1000)(0.1)=400\\
+R(\theta_1,d_3)&=\sum_{j=1}^3L(\theta_1,d_2(x_j))Pr(x_j|\theta_1)\\
+&=(0)(0.6)+(0)(0.3)+(1000)(0.1)=100\\
+R(\theta_1,d_4)&=\sum_{j=1}^3L(\theta_1,d_4)Pr(x_j|\theta_1)\\
+&=(1000)(0.6)+(1000)(0.3)+(1000)(0.1)=1000.
+\end{align}
+$$ The risks under each rule for $\theta_2$ are $$
+\begin{align}
+R(\theta_2,d_1)&=\sum_{j=1}^3L(\theta_2,d_1(x_j))Pr(x_j|\theta_2)\\
+&=(4000)(0.1)+(4000)(0.2)+(4000)(0.7)=4000\\
+R(\theta_2,d_2)&=\sum_{j=1}^3L(\theta_2,d_2(x_j))Pr(x_j|\theta_2)\\
+&=(4000)(0.1)+(0)(0.2)+(0)(0.7)=400\\
+R(\theta_2,d_3)&=\sum_{j=1}^3L(\theta_2,d_2(x_j))Pr(x_j|\theta_2)\\
+&=(4000)(0.1)+(4000)(0.2)+(0)(0.7)=1200\\
+R(\theta_2,d_4)&=\sum_{j=1}^3L(\theta_2,d_4)Pr(x_j|\theta_2)\\
+&=(0)(0.1)+(0)(0.2)+(0)(0.7)=0.
+\end{align}
+$$ Note that the maximum risks for each decision are
+
+::: {.table-narrow}
+|                        | $d_1$ | $d_2$ | $d_3$ | $d_4$ |
+|------------------------|:-----:|:-----:|:-----:|:-----:|
+| $\max R(\theta_i,d_j)$ | 4000  |  400  | 1200  | 1000  |
+:::
+
+Making $d_2$ the minimax rule.
+
+:::
+
+## Bayesian Decision Rules
+
+::: {.sidenote}
+**Example:**\
+Show that $$
+\min_{d(\mathbf{X})}\int_{\Theta}R(\theta,d(\mathbf{X}))\pi(\theta)d\theta.
+$$ is equivalent to minimising the posterior expectation of the loss
+function.
+:::
+
+Given that we can compute $R(\theta,d(\mathbf{X}))$, the risk associated
+with decisions. In classical decision theory, $\theta$ is assumed to be
+known (or a least a point estimator). The Bayesian paradigm gives us the
+added ability (or burden) to consider $\theta$ as a random variable. The
+Bayesian approach is to decision making is to make choices based on
+considering risk as a function of $\theta$ and evaluating the Bayes Risk
+$$
+\int_{\Theta}R(\theta,d(\mathbf{X}))\pi(\theta)d\theta.
+$$ The Bayes rule for choosing a decision is to choose $d$ that
+minimises risk with respect to $\theta$ given a prior $\pi(\theta)$, $$
+\min_{d(\mathbf{X})}\int_{\Theta}R(\theta,d(\mathbf{X}))\pi(\theta)d\theta.
+$$ This is referred to as the Bayes Risk if the posterior distribution
+is used in lieu of the prior the Bayes Risk becomes $$
+\int_{\Theta}R(\theta,d(\mathbf{X}))\pi(\theta|\mathbf{X})d\theta
+$$ and the Bayes Rule is to choose the action or decision that minimises
+the posterior expected loss.
+
+::: {.boxed}
+### Example {.tabset .tabset-pills}
+
+Show that $$
+\min_{d(\mathbf{X})}\int_{\Theta}R(\theta,d(\mathbf{X}))\pi(\theta)d\theta.
+$$ is equivalent to minimising the posterior expectation of the loss
+function.
+
+#### Solution
+
+Substituting the definition of risk into the equation, we get $$
+\min_{d(\mathbf{X})}\int_{\Theta}\left[\int_{\mathbf{X}}L(\theta,d(\mathbf{X}))f(\mathbf{x}|\theta)dx\right]\pi(\theta)d\theta.
+$$ noting that we can rearrange this as $$
+\begin{align}
+\min_{d(\mathbf{X})}&\int_{\Theta}\left[\int_{\mathbf{X}}L(\theta,d(\mathbf{X}))f(\mathbf{x}|\theta)\pi(\theta)dx\right]d\theta\\
+\min_{d(\mathbf{x})}&\int_{\Theta}\int_{\mathbf{X}}L(\theta,d(\mathbf{X}))\pi(\mathbf{x},\theta)dxd\theta\\
+\min_{d(\mathbf{x})}&\int_{\mathbf{X}}\left[\int_{\Theta}L(\theta,d(\mathbf{X}))\pi(\mathbf{x}|\theta)d\theta\right]f(\mathbf{x})dx
+\end{align}
+$$ the term inside the square brackets is
+$E\left(L(\theta,d(\mathbf{X}))|\theta\right)$, the posterior expected
+loss hence minimising the posterior expected loss is equivalent to
+minimising the risk with respect to the prior $\Box$.
+
+:::
+
+::: {.sidenote}
+**Example (cont'd):**\
+For the example above, now consider the Bayes Rule for decision making,
+assuming the additional information that $$
+Pr(\theta=20)=0.8\\
+Pr(\theta=30)=0.2.
+$$
+:::
+
+::: {.boxed}
+### Example (cont'd) {.tabset .tabset-pills}
+
+For the example above, now consider the Bayes Rule for decision making,
+assuming the additional information that $$
+Pr(\theta=20)=0.8\\
+Pr(\theta=30)=0.2.
+$$
+
+#### Solution
+
+Using the definition of expected risk, we can calculate the Bayes rule
+$B(d)=E(R(\Theta,d))$
+
+$$
+\begin{align}
+B(d_1)&=R(\theta_1,d_1)\pi(\theta_1)+R(\theta_2,d_1)\pi(\theta_2)\\
+&=(0)(0.8)+(4000)(0.2)=800\\
+B(d_2)&=R(\theta_1,d_2)\pi(\theta_1)+R(\theta_2,d_2)\pi(\theta_2)\\
+&=(400)(0.8)+(400)(0.2)=400\\
+B(d_3)&=R(\theta_1,d_3)\pi(\theta_1)+R(\theta_2,d_3)\pi(\theta_2)\\
+&=(100)(0.8)+(1200)(0.2)=320\\
+B(d_4)&=R(\theta_1,d_4)\pi(\theta_1)+R(\theta_2,d_2)\pi(\theta_2)\\
+&=(1000)(0.8)+(0)(0.2)=800
+\end{align}
+$$ In this case, the minimum posterior expected loss results from $d_3$.
+
+:::
+
+## Loss function Optimality and Bayesian Point Estimators
+
+As we have previously discussed, point estimators in the Bayesian
+paradigm don't follow naturally. Still, we can view the problem of point
+estimation through the lens of decision theory, including Bayesian
+rules.
+
+In the context of decision theory, our action space is $\Theta$ or all
+possible values of our parameter. The decision rule is the estimator
+$d(\mathbf{x})=\hat{\theta}$, and our loss function can take on a wide
+variety of forms. One of the most common of these forms is $L_2$ or
+squared error loss $$
+L(\theta,d)=(\theta-\hat{\theta})^2
+$$ where $d(\mathbf{x})=\hat{\theta}$. The risk function is defined as
+$$
+R(\theta,d)=E\left[(\theta-\hat{\theta})^2\right].
+$$ From a Bayesian perspective, our choice of rules is the one that
+minimises posterior risk $$
+\begin{align}
+\operatorname{E}\left[(\theta-\hat{\theta})^2|\mathbf{x}\right]&=\operatorname{Var}\left[(\theta-\hat{\theta})|\mathbf{x}\right]+\left[\operatorname{E}(\theta-\hat{\theta}|\mathbf{x})\right]^2\\
+&=\operatorname{Var}(\theta|\mathbf{x})+\left[\operatorname{E(\theta|\mathbf{x})-\hat{\theta}}\right]^2
+\end{align}
+$$ The first term of the second line doesn't depend on $\hat{\theta}$.
+The second term is minimised where
+$\hat{\theta}=\operatorname{E}(\theta|\mathbf{x})$, or in other words,
+under squared error loss, the Bayes optimal estimator is the posterior
+mean.
+
+We can consider other loss functions as well, which naturally will give
+rise to alternative estimators. For instance, if we consider absolute
+value loss $$
+L(\theta,d)=|\theta-\hat{\theta}|
+$$ we can intuit that the posterior median will be the value that
+minimises the expected posterior loss. If we consider $0-1$ loss $$
+L(\theta,d)=\left\{
+\begin{array}{cc}
+1, & \hat{\theta}=\theta\\
+0, & \hat{\theta}\neq\theta
+\end{array}
+\right.
+$$ again, without formal proof, we can intuit that the value that
+minimises the posterior expected loss is the posterior mode; this is
+known as the **maximum a posteriori (MAP)** estimator.

@@ -1,5 +1,4 @@
 
-
 ```{r id0009-sim-solns, exercise = TRUE}
   
   library(purrr)
@@ -45,6 +44,7 @@ unif_estimators_sim <- function(n_obs, true_theta){
 }
 
 ```
+
 
 ```{r id0009-solutions-1, exercise = TRUE}
 

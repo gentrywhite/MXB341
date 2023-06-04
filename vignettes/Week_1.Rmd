@@ -1,0 +1,796 @@
+---
+title: "Week 1"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Week 1}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, echo=FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("QUTReadings.css")
+
+```
+
+# Statistical inference
+
+
+
+```{r, echo=FALSE}
+DiagrammeR::grViz("digraph {
+  graph [layout = dot, rankdir = LR]
+  
+  node [shape = rectangle]        
+  rec1 [label = 'Knowledge\n Data\n Assumptions']
+  rec2 [label = 'Models\n Tests\n Parameter Estimation\n Uncertainty Quantification']
+  rec3 [label =  'Decisions\n Conclusions']
+  
+  # edge definitions with the node IDs
+  rec1 -> rec2 -> rec3
+  }", 
+                  height = 75, width = 345)
+```
+
+:::{.sidenote}
+**What is "inference"**\
+
+To infer is to reach a conclusion using evidence and reasoning, but not any explicit knowledge.  In statistics, this means using data and probabilistic models to make formal probabilistic statements.  We can think of statistical inference as the process (and tools for) moving from knowledge to decisions or conclusions.
+
+:::
+
+Statistics uses abstract probabilistic models to describe the real world and the data we observe. Statistical inference is the process of connecting the real-world (or data) to the abstract (or model) and gaining information about the model that we can apply to our understanding of reality.   
+
+More formally, statistical inference includes the processes of:
+
+*   Parameter Estimation
+*   Quantification of Uncertainty
+*   Testing of Statistical Hypotheses 
+*   Decision Theory
+
+and is concerned with finding or identifying the optimal solutions or methods for these processes under certain paradigms and based on fundamental mathematical principles.  
+
+
+:::{.sidenote}
+**Philosophical paradigms for inference**\
+
+There are two paradigms for statistical inference:
+
+- Classical (or Frequentist)
+- Bayesian.
+
+While they both have the same goals, they take very different approaches, both mathematically and philosophically. The first half of this unit will focus on classical inference, and the second half will introduce Bayesian inference. 
+
+:::
+
+## Parameter Estimation
+Given a probabilistic model representing reality, we assume that the model's parameters represent real-world quantities or properties of interest, but these values are unknown.  The question of parameter estimation is, how do we use observed data to determine the parameters' value? Specifically:
+
+*   what is the best way to estimate our parameter values?  
+*   how do we define best?  
+*   how sure are we of the estimates we just made?
+
+There are multiple ways to approach the problem of estimating a parameter's value.  While we will see that some are "better" than others, they each have their uses. 
+
+##    Least Squares
+
+:::{.sidenote}
+**Example:**\
+Assume a set of observed data $\mathbf{y}=y_1,\dots,y_n$ from an exponential distribution
+$$
+f(y;\lambda)= \lambda e^{-\lambda y},y\in\mathbb{R}^+,\lambda>0.
+$$
+Find the Least Squares Estimator of $\lambda$.
+::: 
+
+The least-squares method may seem familiar, but we will expound the rationale for this approach by illustration.  
+
+Given a set of observed data $\mathbf{y}= y_1,\ldots,y_n$ assumed to follow some probability density function $f(y;\theta)$ with expected value $E(Y)=g(\theta)$ then we define the sum of squares as 
+$$
+\sum_{i=1}^n\left(y_i-\operatorname{E}(Y)\right)^2=\sum_{i=1}^n\left(y_i-g(\theta)\right)^2
+$$
+the least square solution is
+$$
+\min_\theta \sum_{i=1}^n\left(y_i-g(\theta)\right)^2=\hat{\theta}.
+$$
+We can show quite simply that the least-squares solution is, in this case, $g^{-1}(\bar{y})$
+
+:::{.boxed}
+### Least Squares Estimators {.tabset .tabset-pills}
+
+####    Example
+Assume a set of observed data $\mathbf{y}=y_1,\dots,y_n$ from an exponential distribution
+$$
+f(y;\lambda)= \lambda e^{-\lambda y},y\in\mathbb{R}^+,\lambda>0.
+$$
+Find the Least Squares Estimator of $\lambda$.
+
+#### Solution 
+
+If $Y$ is an exponential random variable with density function 
+$$
+f(y;\lambda)= \lambda e^{-\lambda y},y\in\mathbb{R}^+,\lambda>0.
+$$
+then $E(Y)=1/\lambda$ then we let $g(y) = E(Y)$ and define the least squares estimator of $g(y)$ as
+$$
+\min_\theta \sum_{i=1}^n\left(y_i-\frac{1}{\lambda}\right)^2=\hat{\lambda}.
+$$
+is a quadratic function in $\theta$, and we can easily find the minimum by differentiating and setting the result to $0$ and solving for $\theta$
+$$
+\begin{aligned}
+\frac{d}{d\lambda}\sum_{i=1}^n\left(y_i-\frac{1}{\lambda}\right)^2=&\frac{2}{\lambda^2}\sum_{i=1}^n\left(y_i-\frac{1}{\lambda}\right)
+\end{aligned}
+$$
+and
+$$
+\begin{aligned}
+\frac{2}{\lambda^2}\sum_{i=1}^n\left(y_i-\frac{1}{\lambda}\right)=&0\\
+\frac{1}{\lambda^2}\sum_{i=1}^n\left(y_i-\frac{1}{\lambda}\right)=&0\\
+\frac{\sum_{i}^ny_i}{\lambda^2}-\frac{n}{\lambda^3}=&0\\
+\sum_{i=1}^ny_i=&\frac{n\lambda^2}{\lambda^3}\\
+\sum_{i=1}^ny_i=&\frac{n}{\lambda}\\
+\hat{\lambda}=&\frac{n}{\sum_{i=1}^ny_i}\\
+\hat{\lambda}& = \frac{1}{\bar{y}}
+\end{aligned}
+$$
+
+We know that the sample mean $\bar{y}$ is the minimiser of the least squares equation.  So the least squares solution for the estimator of $g(\theta)$ is $\bar{y}$, so it follows that $g^{-1}(\bar{y})$ is the least squares solution for $\theta$.  
+
+
+
+:::
+
+&nbsp;
+
+:::{.sidenote}
+**Example:**\
+The random variable $Y$ follows a gamma distribution with parameters $\alpha$ and $\beta$.
+$$
+f(y;\alpha,\beta) = \frac{\beta^\alpha y^{\alpha-1}}{\Gamma(\alpha)}e^{-\beta y}
+$$
+where $E(Y)=\alpha/\beta$.  Try to find least squares estimators for $\alpha$ and $\beta$.
+:::
+ 
+Based on minimising a quadratic equation, Least squares is a relatively robust technique that (in most cases) provides estimates for a single parameter.  The least-squares method is probably most familiar to students as a means of fitting a regression line. In this instance, the least-squares solution is the optimal solution, providing the line of best fit to the data and an example of the least-squares method for estimators of more than one parameter.  
+
+However, in most cases where there is more than one parameter, finding $g^{-1}$ can prove difficult. It will typically involve a system of equations of dimension equal to the number of parameters to be estimated, which may prove computationally intractable. We will see later there is no guarantee that the resulting estimator will be optimal.
+
+:::{.boxed}
+### Least Squares Estimators (cont'd) {.tabset .tabset-pills}
+
+####    Example
+
+The random variable $Y$ follows a gamma distribution with parameters $\alpha$ and $\beta$.
+$$
+f(y;\alpha,\beta) = \frac{\beta^\alpha y^{\alpha-1}}{\Gamma(\alpha)}e^{-\beta y}
+$$
+where $E(Y)=\alpha/\beta$.  Try to find least squares estimators for $\alpha$ and $\beta$.
+
+#### Solution 
+
+For the Gamma distribution the expected value of $Y$ is $E(Y)=\alpha/\beta$, so the least squares equation would be:
+$$
+\begin{aligned}
+\frac{\partial}{\partial\alpha}\sum_{i=1}^n\left(y_i-\frac{\alpha}{\beta}\right)^2&=
+-2\frac{1}{\beta}\sum_{i=1}^n\left(y_i-\frac{\alpha}{\beta}\right)\\
+\frac{\partial}{\partial\beta}\sum_{i=1}^n\left(y_i-\frac{\alpha}{\beta}\right)^2&=
+2\frac{\alpha}{\beta^2}\sum_{i=1}^n\left(y_i-\frac{\alpha}{\beta}\right).
+\end{aligned}
+$$
+If we solve the first equation, we end up with 
+
+$$
+\begin{aligned}
+-2\frac{1}{\beta}\sum_{i=1}^n\left(y_i-\frac{\alpha}{\beta}\right)=&0\\
+\frac{\sum_{i=1}^ny_i}{\beta}-n\frac{\alpha}{\beta^2}=&0\\
+\frac{\sum_{i=1}^ny_i}{n}=&\frac{\alpha}{\beta}
+\end{aligned}
+$$
+which should be obvious from the previous examples, $\bar{y}$ is the minimiser for the sum of squares.  Without going into detail, it turns out that we get the same answer for the second partial derivative equation.  So, it is impossible to use the least-squares method to solve for both $\alpha$ and $\beta$. Feel free to work through this example yourself.  Why does this method not work?
+
+
+:::
+
+## The Method of Moments
+
+Statistician Karl Pearson developed the method of moments in
+the early twentieth century as the coherent methodology for
+estimating population parameters, or the parameters from the probability
+distribution of the population. Pearson's method is fairly
+straightforward, first he defined moments of a probability distribution
+(borrowing heavily from physics) as 
+$$
+\begin{aligned}
+\mu_1(\theta) & =   \int_{-\infty}^{\infty}yf(y;\theta)dy\\
+\mu_2(\theta) & =  \int_{-\infty}^{\infty}y^2f(y;\theta)dy\\
+\vdots &  \\
+\mu_k(\theta) & =  \int_{-\infty}^{\infty}y^kf(y;\theta)dy.
+\end{aligned}
+$$ 
+
+:::{.sidenote}
+**Example**\
+The random variable $Y$ follows a gamma distribution with parameters $\alpha$ and $\beta$.
+$$
+f(y;\alpha,\beta) = \frac{\beta^\alpha y^{\alpha-1}}{\Gamma(\alpha)}e^{-\beta y}
+$$
+where $E(Y)=\alpha/\beta$ and $\operatorname{Var}(Y)=\alpha/\beta^2$. Use the sample moment $\bar{y}$ and $s^2$ to find the method of moments estimators for $\alpha$ and $\beta$.
+
+:::
+
+We can see
+that we are already familiar with moments to a certain extent, as
+$\mu_1=E(Y)$ and $\mbox{Var}(Y)=\mu_2-\mu_1^2$. Pearson further defined
+the sample moments as 
+$$
+\begin{aligned}
+m_1 & = & \frac{1}{n}\sum_{i = 1}^ny_i\\
+m_2 & = & \frac{1}{n}\sum_{i = 1}^ny_i^2\\
+\vdots & & \\
+m_k & = & \frac{1}{n}\sum_{i = 1}^ny_i^k\end{aligned}
+$$ 
+
+When the population probability distribution parameters can be found analytically and expressed as functions of the probability distribution moments, the method of moments estimates the probability distribution parameters by substituting the sample moments into these expressions.
+For a given probability distribution with parameters $\mathbf{\theta} = (\theta_1,\ldots,\theta_p)$ the following set of equations describe the moments of the probability distribution
+$$
+\begin{align}
+\mu_1& = g_1(\mathbf{\theta})\\
+\vdots & \\
+\mu_p & = g_p(\mathbf{\theta})
+\end{align}
+$$
+and yields a system of equations to solve to find the method of moments estimators.
+
+
+:::{.boxed}
+###   Method of Moments Estimators {.tabset .tabset-pills}
+
+####    Example
+
+The random variable $Y$ follows a gamma distribution with parameters $\alpha$ and $\beta$.
+$$
+f(y;\alpha,\beta) = \frac{\beta^\alpha y^{\alpha-1}}{\Gamma(\alpha)}e^{-\beta y}
+$$
+where $E(Y)=\alpha/\beta$ and $\operatorname{Var}(Y)=\alpha/\beta^2$. Use the sample moment $\bar{y}$ and $s^2$ to find the method of moments estimators for $\alpha$ and $\beta$.
+
+####    Solution
+
+The method of moments gives us these equations for the Gamma distribution:
+$$
+\begin{align}
+\mu&=\frac{\alpha}{\beta}\\
+\sigma^2&=\frac{\alpha}{\beta^2}
+\end{align}
+$$
+If we solve this system of equations for $\alpha$ and $\beta$ we get:
+$$
+\begin{align}
+\beta&=\frac{\mu}{\sigma^2}\\
+\alpha&=\frac{\mu^2}{\sigma^2}
+\end{align}
+$$
+The substituting the sample moment $\bar{y}$ and $s^2$:
+$$
+\begin{align}
+\hat{\beta}&=\frac{\bar{y}}{s^2}\\
+\hat{\alpha}&=\frac{\bar{y}^2}{s^2}
+\end{align}
+$$
+
+
+
+:::
+
+## The Method of Maximum Likelihood
+
+Karl Pearson dominated the field of
+statistics in the early twentieth century in a way rarely witnessed or understood in the modern
+era. His method of moments was de rigueur for practising
+statisticians. But beginning in the early 1920s and continuing over the
+next decade, Pearson became embroiled in one of the great and most bitter
+battles in scientific history. In 1919, Ronald Ayers Fisher was a young mathematician working in relative
+isolation at a remote agricultural station analysing 80 years of
+accumulated data. Over the next 14 years, Fisher would become one of the
+most well-known and respected mathematicians and scientists in recent
+history and become embroiled in a fiercely personal feud with
+Karl Pearson, eventually unseating him as the leading force in
+developing statistical methods. The core of Fisher and Pearson's feud
+lay in Fisher's method of point estimation and his subsequent criticism
+of Pearson's method of moments.
+
+### Likelihood 
+
+Instead of focusing on moments, Fisher developed what he called the
+likelihood function and showed that his approach of estimating
+parameters by choosing values that maximised the likelihood function was
+in some cases superior to Pearson's method of moments. For a pmf
+$p(x;\theta)$ or pdf $f(x;\theta)$ the likelihood function is defined
+as: 
+$$
+L(\theta|\mathbf{y}) = \prod_{i=1}^np(y_i)
+$$ 
+in the discrete case and
+$$
+L(\theta|\mathbf{y}) = \prod_{i=1}^nf(y_i)
+$$ 
+in the continuous case. Note
+that in the notation for the pmf and pdf, the likelihoods are written as conditional in the data. This convention emphasises that they are functions of both the data $y$ and the parameter $\theta$ and that the objective of maximum likelihood estimation is to maximise the likelihood with respect to the parameters. But be careful to remember that while $\theta$ may be unknown, it is not a random variable.
+
+### Maximum Likelihood Estimation
+
+:::{.sidenote}
+**Example:**\
+The random variable $Y$ follows a gamma distribution with parameters $\alpha$ and $\beta$.
+$$
+f(y;\alpha,\beta) = \frac{\beta^\alpha y^{\alpha-1}}{\Gamma(\alpha)}e^{-\beta y}
+$$
+find the maximum likelihood estimators (MLEs) for $\alpha$ and $\beta$.
+
+:::
+
+The maximum likelihood estimator (MLE) is the value
+$$
+\hat{\theta}=\max_{\Theta}L(\theta|\mathbf{y})
+$$
+Note that directly maximising the likelihood is often not very feasible,
+and it can be simpler to work with the log-likelihood,
+e.g. 
+$$
+\begin{aligned}
+l(\theta|\mathbf{y}) &= \log(L(\theta|\mathbf{y}))\\
+&\sum_{i=1}^n\log(f(y_i;\theta))\end{aligned}
+$$
+Because the $\log$
+function is monotonic, the maxima of the log-likelihood is the
+maxima of the likelihood, and we can find the MLE via the log-likelihood,
+i.e. 
+$$
+\hat{\theta}=\max_{\Theta}l(\theta|\mathbf{y})
+$$
+To find the MLE, we take the log-likelihood and take the derivative with respect to the parameter of interest, set it equal to $0$ and solve for the parameter; in other words, the MLE is 
+$$
+\left\{\hat{\theta}:\frac{d}{d\theta}l(\theta|\mathbf{y})
+\Bigg|_{\theta = \hat{\theta}}= \:0\right\}
+$$
+
+:::{.boxed}
+###   Maximum Likelihood Estimators {.tabset .tabset-pills}
+
+####    Example
+
+The random variable $Y$ follows a gamma distribution with parameters $\alpha$ and $\beta$.
+$$
+f(y;\alpha,\beta) = \frac{\beta^\alpha y^{\alpha-1}}{\Gamma(\alpha)}e^{-\beta y}
+$$
+find the maximum likelihood estimators (MLEs) for $\alpha$ and $\beta$.
+
+####    Solution
+Given a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ from the Gamma probability distribution
+$$
+f(x;\alpha,\beta) = \frac{\beta^\alpha y^{\alpha-1}}{\Gamma(\alpha)}e^{-\beta y}
+$$
+The likelihood function is:
+$$
+L(\alpha,\beta|\mathbf{y})=\prod_{i=1}^n\frac{\beta^\alpha y_i^{\alpha-1}}{\Gamma(\alpha)}e^{-\beta y_i}
+$$
+and the log-likelihood function is:
+$$
+\begin{align}
+l(\alpha,\beta|\mathbf{y})&=\sum_{i=1}^n n\alpha\log(\beta)-(\alpha-1)\log(y_i)-\beta y_i-\log(\Gamma(\alpha))\\
+&=n\alpha\log(\beta)-(\alpha-1)\sum_{i=1}^n\log(y_i)-\beta\sum_{i=1}^ny_i-n\log(\Gamma(\alpha))
+\end{align}
+$$
+Notice that while it is possible to obtain a simple form of the partial derivative with respect to $\beta$, the partial derivative with respect to $\alpha$ involves the derivative of a gamma function, which does not have an easily evaluated form  (see [here](https://en.wikipedia.org/wiki/Gamma_function#The_log-gamma_function) and [here](https://en.wikipedia.org/wiki/Digamma_function) for more information)
+hence, we can only find the maximum likelihood estimators for the Gamma distribution numerically.  
+
+
+
+:::
+
+Given these three means of estimating parameters, each has its strengths and weaknesses.  The method of least squares forms the basis of linear modelling and is a useful and simple method.  The method of moments is slightly more complicated, but as in the examples, it can sometimes produce estimates that the other methods can't or can't without resorting to numerical methods. 
+
+# Assessing Estimators
+
+:::{.sidenote}
+**Note**:\
+Assume that the data, $\mathbf{y}$, are unobserved and randomly distributed according to $\mathbf{y} \overset{\text{iid}}{\sim} f(x;\theta)$ with parameter(s) $\mathbf{\theta}$ unknown.  For some function $g(\cdot)$ of the data the estimator can be defined as 
+
+$$
+\hat{\theta}(\mathbf{y}) = g(y_{1},y_{2},\ldots,y_{n})
+$$
+and $\hat{\theta}(\mathbf{y})$ is now a random variable, which we may also write as $\hat{\theta}_n$..
+<!--
+We are assessing the estimators' long-run performance or average performance as random variables *before* we observed the data.
+-->
+:::
+
+These three methods for finding estimators do not guarantee (given identical data) to yield the same value as an estimate of a parameter.  How we choose which technique to use depends on some criteria that we need to define and establish a priori based on the estimators' behaviour as random variables. All estimators are functions of data randomly distributed according to some distribution. Hence, all estimators are random variables, meaning that to evaluate estimators a priori, we deal with the estimators' asymptotic properties or their expected behaviour.    
+
+In general, there are two properties that we wish to assess to evaluate estimators: bias and variance.  We will initially determine bias and variance for a specific estimator; later, we will see some inherent properties of classes of estimators that determine these properties. 
+
+
+## Bias
+
+Bias is the difference between the expected value of our estimator and the true value of the parameter.  If the estimator's primary goal is to be correct, we would expect that it would be desirable that our estimator would (on average) share the same value as a parameter. Because our estimator is a function of data and thus a random variable, it is reasonable to assume that for a given sample of data, the estimator's value may exceed or fall short of the true value of the parameter. That is for some estimator $\hat{\theta}_n = g(y_1,y_2,\ldots,y_n)$ of the parameter $\theta$ there will be some difference. Ideally, if we averaged these differences over all possible samples, they would cancel out.
+$$
+\operatorname{E}\left(\hat{\theta}_n-\theta\right)=0\equiv \operatorname{E}\left(\hat{\theta}_n\right)-\theta.
+$$
+
+This result may not be the case depending on how we calculate the estimator; the estimator may be *biased* or tend to be larger or smaller than the parameter's true value.  So we formally define bias in terms of this average result
+$$
+\text{Bias} = \operatorname{E}\left(\hat{\theta}_{n}\right) - \theta
+$$
+or the difference between the expected value of our estimator and the true value of the parameter.  
+
+- If $\text{E}(\hat{\theta}_{n}) = \theta$, i.e.\ Bias $=0$, then the estimator $\hat{\theta}$ is *unbiased*.
+- If $\text{E}(\hat{\theta}_{n}) \neq \theta$, i.e.\ Bias $\neq 0$ then the estimator is *biased*.
+
+
+
+### Variance and Mean Squared Error
+
+:::{.sidenote}
+**The Decomposition of the Mean Squared Error:**\
+We can decompose the mean squared error can be into the sum of the variance of the estimator and the square of the bias
+$$
+MSE = \operatorname{Var}\left(\hat{\theta}_n\right)+\text{Bias}\left(\hat{\theta}_n\right)^2.
+$$
+So if we assess our estimators based on mean squared error, in some cases, it may be that the best estimator in terms of MSE is biased. This result is the *bias-variance* tradeoff. 
+:::
+
+Bias tells us if an estimator is "on target" and is one measure of estimators, but what if we have more than one unbiased estimator to choose from?  In this case, we might also want to consider the variance of the estimator.  Recall that variance is the expected squared distance between the estimator and its expected value
+$$
+\operatorname{Var}(\hat{\theta}_n)=\operatorname{E}\left[\left(\hat{\theta}_n-
+\operatorname{E}\left(\hat{\theta}_n\right)\right)^2\right].
+$$
+Given two unbiased estimators, it makes sense that the one with the smaller variance is preferred because, on average, the estimator with the smaller variance is closer to its expected value.  
+
+This property implies a general measure for assessing an estimator, the mean squared error.  The mean squared error (MSE) is a measure of how good an estimator performs; essentially, it is on average how far the estimator is from the true value of the parameter
+$$
+\text{MSE} = \operatorname{E}\left[\left(\hat{\theta}_{n} - \theta\right)^2\right].
+$$
+Note that this definition is slightly different from the definition of variance. In the case of unbiased estimators, it simply reduces to the variance, as $\operatorname{E}(\hat{\theta}_n)=\theta$.
+
+
+Instead, we can see that we can decompose the MSE into the sum of two parts, the variance and the square of the bias
+$$
+\text{MSE}=\operatorname{Var}\left(\hat{\theta_n}\right)+\text{Bias}\left(\hat{\theta}_n\right)^2
+$$
+
+:::{.boxed}
+$$
+\begin{aligned}
+\text{MSE} &= \operatorname{E}\left[\left(\hat{\theta}_n-\theta\right)^2\right]  \\
+ & =  \operatorname{E}\left[\left(\hat{\theta}_{n} - \operatorname{E}\left(\hat{\theta}_{n}\right) + \operatorname{E}\left(\hat{\theta}_{n}\right) - \theta\right)^2\right] \\
+ & = \operatorname{E}\left\{\left[
+ \left(\hat{\theta}_n-\operatorname{E}\left(\hat{\theta}_n\right)\right)+
+ \left(\operatorname{E}\left(\hat{\theta}_n\right)-\theta\right)
+ \right]^2\right\}\\
+ & = \operatorname{E}\left\{\left[\hat{\theta}_n-\operatorname{E}\left(\hat{\theta}_n\right)
+ \right]^2-
+ 2\left[\hat{\theta}_n-\operatorname{E}\left(\hat{\theta}_n\right)\right] \left[\operatorname{E}\left(\hat{\theta}_n\right)-\theta\right]+
+ \left[\operatorname{E}\left(\hat{\theta}_n\right)-\theta\right]^2\right\}
+ \\
+ & = \operatorname{E}\left\{\left[\hat{\theta}_n-\operatorname{E}\left(\hat{\theta}_n\right)
+ \right]^2+
+ \left[\operatorname{E}\left(\hat{\theta}_n\right)-\theta\right]^2\right\}
+ \\
+&= \text{Var}\left(\hat{\theta}_{n}\right) + \text{Bias}^2.
+\end{aligned}
+$$
+Note that because $\operatorname{E}\left(\hat{\theta}_n-\operatorname{E}\left(\hat{\theta}_n\right)\right)=0$ the centre term in the second to the last line disappears, leaving the first and last terms, the variance of $\hat{\theta}_n$ and the square of the bias.
+
+:::
+
+&nbsp;
+
+:::{.sidenote}
+**Why would we want a biased estimator?**:\
+While the MSE is a good overall measure, a biased estimator may have a smaller mean squared error than the unbiased estimator. Or it may not be possible to obtain an unbiased estimate.  These are often special cases where the bias may not be important, especially if it is very small or is measurable and corrected numerically or analytically. 
+<!--
+Examples of this include
+
+- Shrinkage estimators (ridge regression)
+- Sample variance
+- Limits of a uniform distribution
+-->
+:::
+
+Considering $\text{MSE} = \text{Var}\left(\hat{\theta}_{n}\right) + \text{Bias}^2$ we now have a basis for comparing all possible estimators,in general we want to use estimators which minimise the MSE, i.e.\
+
+Good estimators have:
+
+- Small variance
+- Small bias
+
+:::{.boxed}
+**Sample Variance**\
+Assume we have a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ from the random variable $\mathbf{y}$, with $\operatorname{E}(\mathbf{y})=\mu$ and $\operatorname{Var}(\mathbf{y})=\sigma^2$. The sample mean and variance are
+$$
+\begin{align}
+\bar{y}=&\frac{1}{n}\sum_{i=1}^ny_i\\
+s^2&=\frac{1}{n}\sum_{i=1}^n(y_i-\bar{y})^2.
+\end{align}
+$$
+
+The estimator $\bar{y}$ is an unbiased estimator of the mean $\mu$, but the estimator $s^2$ is a biased estimator of $\sigma^2$ because
+$$
+\begin{align}
+\operatorname{E}(s^2)&=\operatorname{E}\left(\frac{1}{n}\sum_{i=1}^n(y_i-\bar{y})^2\right)\\
+&=\frac1n\operatorname{E}\left\{\sum_{i=1}^n\left[(y_i-\mu)-(\bar{y}-\mu)\right]^2\right\}\\
+&=\frac1n\operatorname{E}\left\{\sum_{i=1}^n\left[(y_i-\mu)^2-
+2(y_i-\mu)(\bar{y}-\mu)+
+(\bar{y}-\mu)^2\right]\right\}\\
+&=\operatorname{E}\left[\frac1n\sum_{i=1}^n(y_i-\mu)^2-
+\frac{2(\bar{y}-\mu)}{n}\sum_{i=1}^n(y_i-\mu)+
+\frac1n\sum_{i=1}^n(\bar{y}-\mu)^2\right]\\
+&=\sigma^2-
+\operatorname{E}\left[\frac{2(\bar{y}-\mu)}{n}(n\bar{y}-n\mu)\right]+
+\operatorname{E}\left[
+\frac1n\sum_{i=1}^n(\bar{y}-\mu)^2\right]\\
+&=\sigma^2-2\operatorname{E}\left[
+(\bar{y}-\mu)^2\right]+\operatorname{E}\left[(\bar{y}-\mu)^2\right]\\
+&=\sigma^2-\operatorname{E}\left[(\bar{y}-\mu)^2\right]\\
+&=\sigma^2-\frac{\sigma^2}{n}\\
+&=\sigma^2\left(\frac{n-1}{n}\right)<\sigma^2
+\end{align}
+$$
+Note that $E\left[(\bar{y}-\mu)^2\right]=\operatorname{Var}(\bar{y})=\sigma^2/n$.
+
+The bias correction is to define 
+$$
+s^2=\frac{1}{n-1}\sum_{i=1}^n(y_i-\bar{y})^2
+$$
+which works out as unbiased because
+$$
+\operatorname{E}(s^2)=\operatorname{E}\left[\frac{1}{n-1}\sum_{i=1}^n(y_i-\bar{y})^2
+\right]=
+\frac{n}{n-1}\operatorname{E}\left[\frac1n\sum_{i=1}^n(y_i-\bar{y})^2
+\right]
+$$
+
+
+:::
+
+### Bias versus Variance
+
+:::{.sidenote}
+**Figure 1** shows graphically how bias and variance interact to effect estimators.  Unbiased and minimum variance estimators are preferred as they are most often "on target".  Unbiased but high variance estimators will be centred at the correct value but will often "miss".  Biased but low variance estimators will miss the true value, but can sometimes be "corrected" and are still useful. Worst are biased and high variance estimators, which may occasionally "hit the target" but are on average wrong and are of little help.   
+:::
+
+```{r stat-ml-ai, echo=FALSE,out.width="65%", out.height="75%",fig.show='hold',fig.align='left', fig.cap="Source: http://scott.fortmann-roe.com/docs/BiasVariance.html"}
+knitr::include_graphics("bias-variance.png")
+```
+
+## Consistency
+
+:::{.sidenote}
+**Example:**\
+Sample Variance and the Consistency of Biased Estimates\
+
+We can see that the variance estimator
+$$
+s^2=\frac1n\sum_{i=1}^n(y_i-\bar{y})^2
+$$
+is biased because
+$$
+\operatorname{E}(s^2)=\frac{n-1}{n}\sigma^2
+$$
+but by definition, it is consistent because
+$$
+\lim_{n\rightarrow\infty}\frac{n-1}{n}\sigma^2=\sigma^2.
+$$
+Hence we can say that all unbiased estimators are consistent, but not all consistent estimators are unbiased. 
+
+:::
+
+
+While bias is a property of the estimator with respect to its expectation with respect to the sampling distribution, the property of *consistency* describes the behaviour of the estimator in the limit as the sample size approaches infinity.  An estimator is said to be consistent if
+$$
+\lim_{n\rightarrow\infty}\left|\hat{\theta}_n-\theta\right|=0.
+$$
+
+Both of the traits of bias and consistency are important to evaluating estimators; it is important to understand the nuance of their slightly different meanings,
+
+If an estimator is unbiased, then
+$$
+\text{MSE}\left(\hat{\theta}_n\right)=\operatorname{Var}\left(\hat{\theta}_n\right)
+$$
+If an estimator is consistent, then 
+$$
+\text{MSE} \rightarrow 0 \text{ as } n \rightarrow \infty.
+$$
+We can think of unbiasedness and consistency in other terms as well.  An unbiased estimator will, on average, be equal to the true value of the parameter, regardless of sample size.  A consistent estimator will eventually recover the true value of the parameter with infinite data.
+
+### Fisher Information
+
+:::{.sidenote}
+The term *information* is not formally defined here, but it is used in the common form as meaning knowledge about a quantity's value.  The formal field of **information theory** does formalise the concept of information and draws on several probabilistic and statistical concepts to construct its framework.  While a full exploration of information and information theory is beyond the scope of this unit, you can find more information here [https://en.wikipedia.org/wiki/Information_theory](https://en.wikipedia.org/wiki/Information_theory).
+:::
+
+As we consider estimators and their properties, one question emerges: how much information can a random variable give us about a parameter?  One way we measure this is the Fisher Information. We compute the Fisher information (matrix in the case of more than one parameter) as a function of the probability density function (or probability mass function), resulting in a measure of how much information the random variable $X$ carries about an unknown parameter $\theta$. 
+
+:::{.sidenote}
+**Example:**\
+Consider the case of a random variable $Y\sim f(y;\theta)$ 
+$$
+f(y;\theta)=\frac{1}{\theta}e^{-y/\theta},\:y>0,\:\theta>0.
+$$
+find the Fisher information.
+:::
+Given a random variable $Y\sim f(y;\theta)$ the Fisher information is 
+
+$$
+\mathcal{I}(\theta) = \text{E}\left[\left( \frac{\partial}{\partial \theta} \log f(Y;\theta) \right)^2\right]
+$$
+If $f$ is twice differentiable with respect to $\theta$ and under some regularity conditions we can simplify this to:
+
+$$
+\mathcal{I}(\theta) = -\text{E}\left[\frac{\partial^2}{\partial \theta^2} \log f(y;\theta) \right]
+$$
+Where the expectation in both cases is over the probability distribution of $Y$.
+It is also possible to define the Fisher information in terms of the log-likelihood
+$$
+\begin{align}
+l(\theta|\mathbf{y})&=\log\left(\prod_{i=1}^nf(y_i;\theta\right)\\
+&=\sum_{i=1}^n\log\left(f(y_i;\theta)\right)
+\end{align}
+$$
+
+
+:::{.sidenote}
+**Fisher Information Matrix**\
+If $\theta=\mathbf{\theta}=(\theta_1,\theta_2,\ldots,\theta_p)$ then the Fisher information is a matrix 
+$$
+\mathcal{I}(\mathbf{\theta})=\left[\frac{\partial^2}{\partial\theta_i\partial\theta_j}\log\left(f(y;\boldsymbol{\theta})\right)\right]
+$$
+or
+$$
+\mathcal{I}_n(\mathbf{\theta})=\left[\frac{\partial^2}{\partial\theta_i\partial\theta_j} l(\boldsymbol{\theta}|\mathbf{y})\right]
+$$
+which is the Hessian matrix of the log-likelihood. 
+
+:::
+
+for $n$ observations $\mathbf{y}=(y_1,y_2,\dots,y_n)$ from the probability distribution $X \overset{\text{iid}}{\sim}f(x;\theta)$. In this case the Fisher information is 
+$$
+\mathcal{I}_{n}(\theta) = -\text{E}\left[\frac{\partial^2}{\partial \theta^2} l(\theta~\vert~\boldsymbol{y}) \right]
+$$
+
+where the expectation is taken with respect to $f(y;\theta)$. This definition of the Fisher Information is the negative of the expected value of the second derivative (or Hessian matrix) of the log-likelihood. Under the assumption of iid samples, the relationship between $\mathcal{I}(\theta)$ and $\mathcal{I}_n(\theta)$ is
+$$
+\mathcal{I}_{n}(\theta) = n\mathcal{I}(\theta)
+$$
+which follows from the definition of the likelihood and log-likelihood functions. 
+
+:::{.boxed}
+###   Fisher Information {.tabset .tabset-pills}
+
+####    Example
+
+Consider the case of a random variable $Y\sim f(y;\theta)$ 
+$$
+f(y;\theta)=\frac{1}{\theta}e^{-y/\theta},\:y>0,\:\theta>0.
+$$
+find the Fisher information.
+
+####    Solution
+
+For a random variable $Y\sim f(y;\theta)$ 
+$$
+f(y;\theta)=\frac{1}{\theta}e^{-y/\theta},\:y>0,\:\theta>0.
+$$
+We can find the Fisher information by noting that the density function $f$ is twice differentiable with respect to $\theta$
+$$
+\begin{align}
+\frac{\partial}{\partial\theta}\log\left(f(y;\theta)\right)&=\frac{\partial}{\partial\theta}\log\left(\frac{1}{\theta}e^{-y/\theta}\right)\\
+&=\frac{\partial}{\partial\theta}-\log(\theta)-\frac{y}{\theta}\\
+&=-\frac{1}{\theta}+\frac{y}{\theta^2}\\
+\frac{\partial^2}{\partial\theta^2}\log\left(f(y;\theta)\right)&=
+\frac{1}{\theta^2}-\frac{2y}{\theta^3}.
+\end{align}
+$$
+The Fisher information is then
+$$
+\begin{align}
+\mathcal{I}(\theta)&=-\operatorname{E}\left(\frac{\partial^2}{\partial\theta^2}\log\left(f(y;\theta)\right)\right)\\
+&=-\operatorname{E}\left(\frac{1}{\theta^2}-\frac{2y}{\theta^3}\right)\\
+&=-\frac{1}{\theta^2}+\frac{2}{\theta^3}\operatorname{E}\left(y\right)\\
+&=\frac{2\theta}{\theta^3}-\frac{1}{\theta^2}\\
+&=\frac{1}{\theta^2}.
+\end{align}
+$$
+
+
+
+
+:::
+
+####    Observed Fisher Information
+
+The expected fisher information relies on taking an expected value of either the log-density function or the log-likelihood, but we can also compute the **observed** Fisher information:
+
+$$
+\mathcal{J}(\hat{\theta}_{MLE})= - \left.\frac1n\frac{\partial^2}{\partial \theta^2}l(\theta|\mathbf{y})\right \rvert_{\theta = \hat{\theta}_{MLE}}
+$$
+This result is the same second derivative of the log-likelihood (or Hessian matrix). Still, instead of taking the expectation with respect to the probability distribution of $Y$, it is evaluated at $\theta=\hat{\theta}_{MLE}$ where $\hat{\theta}_{MLE}$ is the maximum likelihood estimator of $\theta$.  This result is especially useful numerically when we have a likelihood that we can't maximise analytically. We rely on numerical methods to find the MLEs; in these cases, most optimisation routines will return the Hessian matrix evaluated at the maxima. We will see how we can use this Hessian matrix to estimate the estimates' variance for inferential purposes. 
+
+## Cramér–Rao Lower Bound
+
+The Fisher information is a measure of how much the data can tell us about the parameter(s). Estimators are functions of the data, and it is reasonable to assume that there might be some loss of information when computing the estimator.  So, in choosing an estimator, we want to choose one that loses as little information as possible (ideally none).  This approach provides us with the Cramér-Rao Lower Bound.
+
+:::{.sidenote}
+**The Existence of the Cramér-Rao Lower Bound:**\
+For the Cramér-Rao lower bound to exist, the same regularity conditions for the Fisher information apply with the addition of the requirement that
+if $f(y;\theta)$ has bounded support in $y$, the bound must not depend on $\theta$.
+
+For example, if $Y\sim U(0,\theta),\:0<x<\theta$ then for any estimator of $\theta$, the Cramér-Rao lower bound does not exist because the support of $Y$ depends on $\theta$.  
+
+:::
+
+For a given probability density function, $f(y;\theta)$ under some regularity conditions
+
+$$
+\text{Var}(\hat{\theta}_{n}) \geq  \mathcal{I}_{n}(\theta)^{-1}
+$$
+In other words, the variance of any estimator has a lower bound defined by the inverse of the Fisher information computed using the log-likelihood.  Note that there are no conditions on the estimator $\hat{\theta}_n$ in terms of bias or consistency, but any **unbiased** estimator that attains the Cramér-Rao lower bound is said to be **efficient**, i.e.\ if 
+$$
+\operatorname{Var}\left(\hat{\theta}_n\right)=\mathcal{I}\left(\theta\right)^{-1}
+$$
+then $\hat{\theta}_n$ is said to be efficient. 
+<!--
+:::{.sidenote}
+**Example:**\
+ Efficiency example
+:::
+
+
+### MLE Consistency
+
+Consistency:
+
+$$
+\begin{aligned}
+\hat{\theta}_{n} &\overset{p}{\longrightarrow} \theta_{0} \quad n \rightarrow \infty \\
+&\Leftrightarrow \\
+\text{Pr}(\vert \hat{\theta}_{n} - \theta_{0} \vert &> \epsilon) \rightarrow 0 \quad n \rightarrow \infty
+\end{aligned}
+$$
+
+for  $\epsilon > 0$.
+
+- MLE are consistent estimators
+- Need a more general method than MSE
+- Now we will prove...
+-->
+<!---
+# Summary
+
+This week's readings have covered 
+Consider long run or average properties of estimators by taking expectations over unobserved data!
+
+Properties:
+
+- Bias
+- MSE
+- Consistency
+- Efficiency
+
+Tools:
+
+- Expectation/variance of estimator
+- Expected Fisher Information
+- Cramér–Rao lower bound
+- Observed Fisher Information 
+
+<!--Consistency of MLEs!-->
+

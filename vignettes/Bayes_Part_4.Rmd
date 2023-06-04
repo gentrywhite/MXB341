@@ -1,0 +1,806 @@
+---
+title: "Week 10"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Week 10}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(tidyverse)
+library(pracma)
+library(magrittr)
+```
+
+```{r, echo=FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("QUTReadings.css")
+
+```
+
+#   Beyond Metropolis-Hastings for Monte Carlo Markov Chain Sampling
+
+In order for the Metropolis-Hastings algorithm to work most efficiently the candidate distribution has to be as close as possible to the target distribution as possible without sacrificing coverage, thus ensuring that samples are drawn from the entirety of the target distribution space; this can be a challenge especially for high dimension target and candidate distributions. There are obvious inefficiencies built into the Metropolis-Hastings algorithm. Even if the candidate distribution was the target distribution the Metropolis-Hastings algorithm would still reget a substantial proportion of the candidate values. The use of a random-walk Metropolis-Hastings algorithm naturally produces correlated samples, reducing their utility for estimation and inference. 
+
+In some situations, other options can prove very useful. The
+Ratio-of-Uniforms method is a general technique for drawing samples from density functions known up to a proportionality constant for Monte Carlo integration.  While the ratio of uniforms method is now almost 50 years old, it is still a very efficient and useful means of generating samples. 
+Slice sampling and the slice sampler offers a very flexible alternative to the Metropolis-Hastings algorithm that can much more efficient and doesn't require specifying a candidate distribution. Both of these techniques are more sophisticated than the Metropolis-Hastings algorithm or the Accept-Reject algorithm, and a thorough exploration of
+their technical details is beyond the scope of this
+unit. Still, we present these in summary and students are encouraged to
+explore them independently for their reward. In both cases, the
+existence of pre-existing code or R packages will expedite their use.
+
+##    The Ratio of Uniforms Method
+
+:::{.sidenote}
+**Example:**\
+Consider data $\mathbf{y}=y_1,\ldots,y_n$ from the random variable $Y\sim Pois(\lambda)$ with the prior for $\lambda\sim Ga(1,1)$ and the prior for $\lambda$ where $\log(\lambda)=\eta$ where $\eta$ follows the prior distribution $\eta\sim N(0,1)$.  
+
+Use the ratio of uniforms algorithm to draw samples from the posterior $\pi(\eta|\mathbf{y})$.
+
+How does this compare to the results using the Metropolis-Hastings algorithms?
+
+:::
+
+The ratio of uniforms is an alternative method of generating random
+samples that is particularly useful in cases where a good candidate
+distribution is not readily available. 
+
+:::{.boxed}
+**The Ratio of Uniforms**\
+Given a bivariate sample $(u_1,u_2)$ from a uniform distribution where
+$$
+\left\{(u_1,u_2):0\leq U_1\leq\sqrt{h(u_1/u_2)}\right\}
+$$
+for any non-negative function $h(x)$, then 
+$$
+x=u_1/u_2 \sim f(x)=\frac{h(x)}{\int h(x)}.
+$$ 
+The immediate implication of this if
+$$
+h(x) = f(\mathbf{x}|\theta)\pi(\theta)
+$$ 
+then it is possible to draw samples from the posterior $\pi(\theta|\mathbf{x})$ by only
+generating uniform variates of $U_1$ and $U_2$. 
+:::
+
+The ratio of uniforms method offers a distinct advantage over other methods based on rejection sampling that require a specified candidate distribution. Like any rejection based method, there
+is some acceptance rate less than one that can hamper the efficiency of
+the sampling scheme. 
+
+:::{.boxed}
+**The Ratio of Uniforms Algorithm:**\
+
+1.  Generate the pair $(u_1,u_2)$ as a random sample from the rectangle
+    enclosing the area $$
+    0\leq u_1\leq\sqrt{h(u_1/u_2)}
+    $$
+
+2.  If 
+$$
+0\leq u_1\leq\sqrt{h(u_1/u_2)}
+$$ 
+let $x=u_1/u_2$ otherwise reject the sample $x=u_1/u_2$.
+:::
+
+In practice this requires finding the bounds of the rectangle given by
+$$
+0\leq u_1\leq b,\quad c\leq u_2\leq d
+$$
+where $b,c,d$ are given
+$$
+b=\sup_x\sqrt{h(x)},\quad c = \inf_x x\sqrt{h(x)}, \quad d = \sup_x x\sqrt{h(x)}.
+$$
+It is important to note that $h$ is proportional to the target density,
+not the log of the target density, as we have used in other methods, and
+that $b,c,d$ are the values of the functions not the locations of the
+$\sup$ and $\inf$. 
+
+
+Note that the ration of uniforms can be extended to draw samples from multivariate densities, this is not a trivial extension and it can becoime difficult to construct hypercubes that produce acceptable acceptance rates for samples.  For the purposes of the coded examples we restrict ourselves to the univariate case. 
+
+:::{.boxed}
+### Example {.tabset .tabset-pills}
+
+Consider data $\mathbf{y}=y_1,\ldots,y_n$ from the random variable $Y\sim Pois(\lambda)$ with the prior for $\lambda\sim Ga(1,1)$ and the prior for $\lambda$ where $\log(\lambda)=\eta$ where $\eta$ follows the prior distribution $\eta\sim N(0,1)$.  
+
+Let $\sum_{i=1}^ny_i=18$ and $n=10$.
+
+Use the ratio of uniforms algorithm to draw samples from the posterior $\pi(\eta|\mathbf{y})$.
+
+How does this compare to the results using the Metropolis-Hastings algorithms?
+
+####    Solution
+
+In the first case, we can find the posterior up to a proportionality constant and set up the equations for finding $b$, $c$ and $d$
+$$
+\begin{align}
+\pi(\lambda|\mathbf{y})&\propto\lambda^{\sum_{i=1}^ny_i}e^{-n\lambda}e^{-\lambda}\\
+&\propto\lambda^{\sum_{i=1}^ny_i}e^{-(n+1)\lambda}\\
+\sqrt{\pi(\lambda|\mathbf{y})}&\propto\lambda^{\frac{\sum_{i=1}^ny_i}{2}}e^{-\frac{(n+1)}{2}\lambda}\\
+\lambda\sqrt{\pi(\lambda|\mathbf{y})}&\propto\lambda^{\frac{\sum_{i=1}^ny_i}{2}+1}e^{-\frac{(n+1)}{2}\lambda}.
+\end{align}
+$$
+We can find $c$ by noting that $\pi(\lambda|\mathbf{y})>0$ thus $\inf_{\lambda}\lambda\sqrt{\pi(\lambda|\mathbf{y})}=0$.  We can use the $\log\left(\sqrt{\pi(\lambda|\mathbf{y}}\right)$ to find $b$ and $d$
+$$
+\begin{align}
+\frac{d}{d\lambda}\log\left(\sqrt{\pi(\lambda|\mathbf{y}}\right)&=\frac{d}{d\lambda}\frac{\sum_{i=1}^ny_i}{2}\log(\lambda)-\frac{n+1}{2}\lambda\\
+&=\frac{\sum_{i=1}^ny_i}{2}\frac{1}{\lambda}-\frac{n+1}{2}\\
+\frac{\sum_{i=1}^ny_i}{2}\frac{1}{\lambda}-\frac{n+1}{2}&=0\\
+\hat{\lambda}&=\frac{\sum_{i=1}^ny_i}{n+1}\\
+b&=\sqrt{\pi{\lambda|\mathbf{y}}}\Bigg\vert_\hat{\lambda} \\
+\end{align}
+$$
+
+$$
+\begin{align}
+\frac{d}{d\lambda}\log\left(\sqrt{\pi(\lambda|\mathbf{y}}\right)&=\frac{d}{d\lambda}\left(\frac{\sum_{i=1}^ny_i}{2}+1\right)\log(\lambda)-\left(\frac{n+1}{2}\right)\lambda\\
+&=\left(\frac{\sum_{i=1}^ny_i}{2}+1\right)\frac{1}{\lambda}-\left(\frac{n+1}{2}\right)\\
+\left(\frac{\sum_{i=1}^ny_i}{2}+1\right)\frac{1}{\lambda}-\left(\frac{n+1}{2}\right)&=0\\
+\hat{\lambda}&=\frac{\sum_{i=1}^ny_i+2}{n+1}\\
+d&=\lambda\sqrt{\pi(\lambda|\mathbf{y})}\Bigg\vert_{\hat{\lambda}}
+\end{align}
+$$
+For the case where 
+$$
+\log(\lambda)=\eta\mbox{ and }\eta\sim N(0,1)
+$$
+note that 
+$$
+\begin{align}
+\pi(\eta|\mathbf{y})&\propto \left(e^{\eta}\right)^{\sum_{i=1}^ny_i}e^{-ne^\eta}e^{-\eta^2/2}\\
+\log\left(\pi(\eta|\mathbf{y}\right)&\propto\eta\sum_{i=1}^ny_i-ne^{\eta}-\frac{\eta^2}{2}
+\end{align}
+$$ 
+there is no anlaytical solution to solve 
+$$
+\frac{d}{d\eta}\log\left(\pi(\eta|\mathbf{y}\right)=0
+$$
+
+thus the values for $b$, $c$, and $d$ need to be found numerically.
+
+In both cases given $b$, $c$, and $d$ we can implement the algorithm in code to draw the samples. 
+
+#### Code
+
+For the case where $\lambda\sim Ga(1,1)$:
+
+```{r eval = FALSE, warning=FALSE}
+library(MXB341)
+
+y<-18
+n<-10
+
+##  For the case where \lambda~Ga(1,1)
+
+lam_b<-y/(n+1)
+lam_d<-(y+2)/(n+1)
+
+## sqrt(pi(\lambda|y))
+
+h_b<-function(x)
+{
+  ((x^y)*exp(-(n+1)*x))%>%sqrt()
+}
+
+## \lambda*sqrt(\pi(\lambda|y))
+
+h_d<-function(x)
+{
+  ((x^y)*exp(-(n+1)*x))%>%sqrt()*x
+}
+
+b<-h_b(lam_b)
+c<-0
+d<-h_d(lam_d)
+
+lambda<-numeric()
+while(length(lambda)<1000)
+{
+  u1<-runif(1,0,b)
+  u2<-runif(1,c,d)
+  if(u1<h_b(u2/u1))
+  {
+    lambda<-c(lambda,u2/u1)
+  }
+  else
+  {
+    lambda<-lambda
+  }
+}
+```
+
+$$
+\phantom{linebreak}
+$$  
+For the case where $\eta\sim N(0,1)$:\
+
+```{r eval = FALSE, warning=FALSE}
+
+##  For the case where log(\lambda)=\eta and \eta~N(0,1)
+
+## sqrt(pi(\eta|y))
+
+h_b<-function(x)
+{
+  (x*y-n*exp(x)-(x^2)/2)%>%exp()%>%sqrt()
+}
+
+## lambda*sqrt(\pi(\lambda|y))
+
+h_d<-function(x)
+{
+  (x*y-n*exp(x)-(x^2)/2)%>%exp()%>%sqrt()*x
+}
+
+b<-optimise(h_b, lower = -1, upper = 1, maximum = TRUE)$objective
+c<-optimise(h_d, lower = -1, upper = 1, maximum = FALSE)$objective
+d<-optimise(h_d, lower = -1, upper = 1, maximum = TRUE)$objective
+
+eta<-numeric()
+while(length(eta)<1000)
+{
+  u1<-runif(1,0,b)
+  u2<-runif(1,c,d)
+  if(u1<h_b(u2/u1))
+  {
+    eta<-c(eta,u2/u1)
+  }
+  else
+  {
+    eta<-eta
+  }
+}
+
+x<-seq(0,3,len=1000)
+g<-function(x)
+{
+(h_b(log(x))^2)/x
+}
+const<-integral(g,0,10)
+
+post<-function(x)
+{
+  g(x)/const
+}
+
+
+```
+
+####    Plot
+
+```{r echo = FALSE, warning=FALSE}
+
+
+y<-18
+n<-10
+
+##  For the case where \lambda~Ga(1,1)
+
+lam_b<-y/(n+1)
+lam_d<-(y+2)/(n+1)
+
+## sqrt(pi(\lambda|y))
+
+h_b<-function(x)
+{
+  ((x^y)*exp(-(n+1)*x))%>%sqrt()
+}
+
+## lambda*sqrt(\pi(\lambda|y))
+
+h_d<-function(x)
+{
+  ((x^y)*exp(-(n+1)*x))%>%sqrt()*x
+}
+
+b<-h_b(lam_b)
+c<-0
+d<-h_d(lam_d)
+
+lambda<-numeric()
+while(length(lambda)<1000)
+{
+  u1<-runif(1,0,b)
+  u2<-runif(1,c,d)
+  if(u1<h_b(u2/u1))
+  {
+    lambda<-c(lambda,u2/u1)
+  }
+  else
+  {
+    lambda<-lambda
+  }
+}
+
+
+##  For the case where log(\lambda)=\eta and \eta~N(0,1)
+
+## sqrt(pi(\eta|y))
+
+h_b<-function(x)
+{
+  (x*y-n*exp(x)-(x^2)/2)%>%exp()%>%sqrt()
+}
+
+## lambda*sqrt(\pi(\lambda|y))
+
+h_d<-function(x)
+{
+  (x*y-n*exp(x)-(x^2)/2)%>%exp()%>%sqrt()*x
+}
+
+b<-optimise(h_b, lower = -1, upper = 1, maximum = TRUE)$objective
+c<-optimise(h_d, lower = -1, upper = 1, maximum = FALSE)$objective
+d<-optimise(h_d, lower = -1, upper = 1, maximum = TRUE)$objective
+
+eta<-numeric()
+while(length(eta)<1000)
+{
+  u1<-runif(1,0,b)
+  u2<-runif(1,c,d)
+  if(u1<h_b(u2/u1))
+  {
+    eta<-c(eta,u2/u1)
+  }
+  else
+  {
+    eta<-eta
+  }
+}
+
+x<-seq(0,3,len=1000)
+g<-function(x)
+{
+(h_b(log(x))^2)/x
+}
+const<-integral(g,0,10)
+
+prior<-c(rep("Gamma Prior",1000),rep("Gaussian Prior",1000))
+density<-c(dgamma(x,shape = y+1, rate = n+1),g(x)/const)
+
+df_2<-tibble(y=c(lambda,exp(eta)),density,prior,x=rep(x,2))
+
+ggplot(df_2)+
+  geom_histogram(aes(x=y,y=..density..),binwidth = 0.1)+
+  geom_line(aes(x=x,y=density))+
+  facet_wrap(~prior)+
+  xlab(expression(lambda*"|y"))
+```
+The histograms for the two samples of $\lambda|\mathbf{y}$ look reasonable.  In this case the posterior mean for the $\lambda|\mathbf{y}$ with the Gamma prior is `r mean(lambda)%>%round(3)` and the posterior mean of $\lambda|\mathbf{y}$ with the Gaussian prior is `r exp(eta)%>%mean()%>%round(3)`.  Which agrees with the results using the Metropolis-Hastings algorithm.  
+
+
+:::
+
+##    Slice Sampling
+
+:::{.sidenote}
+Consider data $\mathbf{y}=y_1,\ldots,y_n$ from the random variable $Y\sim Pois(\lambda)$ with the prior for $\lambda\sim Ga(1,1)$ and the prior for $\lambda$ where $\log(\lambda)=\eta$ where $\eta$ follows the prior distribution $\eta\sim N(0,1)$.  
+
+Let $\sum_{i=1}^ny_i=18$ and $n=10$.
+
+Use the slice sampler algorithm to draw samples from the posterior $\pi(\eta|\mathbf{y})$.
+
+How does this compare to the results using the Metropolis-Hastings and ratio of uniforms algorithms?
+:::
+
+The ratio of uniforms algorithm is a Monte Carlo scheme, i.e.\ it draws samples from the target density directly but it has it's drawbacks.  The ratio of uniforms methods can be inefficient, especially in higher dimensions, where the sampling is done over hypercubes rather than a rectangle, as in the univariate case. 
+
+A second methods demonstrated here is the slice sampler. Slice sampling is a Markov Chain Monte Carlo Scheme that can prove more efficient than the Metropolis-Hastings algorithm, and only requires knowing the target density up to its proportionality constant.
+
+:::{.boxed}
+**The Slice Sampler:**\
+
+The basic algorithm for the slice sampler is simple, but you will
+quickly see that it can get complicated in actual implementation. For a
+target density $g(x)$ we can generate $T$ draws from $g$ as follows:
+
+1.  Choose and initial value for $x$, $x_0$ from the domain of $g$.
+
+```{r,echo=FALSE, warning=FALSE}
+x<-seq(-3,3,len=1000)
+y<-dnorm(x)
+df<-tibble(x,y)
+
+set.seed(14061972)
+
+x_0<-runif(1,-2,2)
+f0<-dnorm(x_0)
+
+ggplot(df)+
+  geom_line(aes(x=x,y=y))+
+  geom_point(data=tibble(x_0=x_0,y=0),aes(x=x_0,y=y),cex = 1)+
+  annotate("text",x = x_0,y = -0.02,label = expression(x[0]))
+
+
+```
+2.  For $t=0,\ldots, T$ generate a random value $y$, $y\sim U(0,g(x_t))$
+```{r echo=FALSE,warning=FALSE}
+
+set.seed(14061972)
+
+y0<-runif(1,0,f0)
+
+ggplot(df)+
+  geom_line(aes(x=x,y=y))+
+  geom_point(data=tibble(x_0=x_0,y=0),aes(x=x_0,y=y),cex = 1)+
+  annotate("text",x = x_0,y = -0.02,label = expression(x[0]))+
+  geom_segment(aes(x = x_0,y = 0,xend = x_0,yend = f0 ))+
+  geom_point(aes(x = x_0, y = y0))+
+  annotate("text", x = x_0-0.25, y =y0-0.01,label=expression(y[0]) )
+
+
+```
+
+3.  Draw a horizontal line from $y$ across the density $g$
+
+```{r echo = FALSE, warning=FALSE}
+set.seed(14061972)
+
+llim<-(sqrt(2*pi)*y0)%>%log()%>%multiply_by(-2)%>%sqrt()%>%multiply_by(-1)
+ulim<-(sqrt(2*pi)*y0)%>%log()%>%multiply_by(-2)%>%sqrt()  
+x1<-runif(1,llim,ulim)
+
+ggplot(df)+
+  geom_line(aes(x=x,y=y))+
+  geom_point(data=tibble(x_0=x_0,y=0),aes(x=x_0,y=y),cex = 1)+
+  annotate("text",x = x_0,y = -0.02,label = expression(x[0]))+
+  geom_segment(aes(x = x_0,y = 0,xend = x_0,yend = f0 ))+
+  geom_point(aes(x = x_0, y = y0))+
+  annotate("text", x = x_0-0.15, y =y0-0.025,label=expression(y[0]) )+
+  geom_segment(aes(x = llim, y=y0,xend = ulim, yend = y0 ))
+
+
+```
+
+4.  Draw $x_{t+1}$ a uniform random sample on the horizontal line
+    bounded by $g$.
+```{r echo = FALSE, warning=FALSE}
+set.seed(14061972)
+
+llim<-(sqrt(2*pi)*y0)%>%log()%>%multiply_by(-2)%>%sqrt()%>%multiply_by(-1)
+ulim<-(sqrt(2*pi)*y0)%>%log()%>%multiply_by(-2)%>%sqrt()  
+x1<-runif(1,llim,ulim)
+
+ggplot(df)+
+  geom_line(aes(x=x,y=y))+
+  geom_point(data=tibble(x_0=x_0,y=0),aes(x=x_0,y=y),cex = 1)+
+  annotate("text",x = x_0,y = -0.02,label = expression(x[0]))+
+  geom_segment(aes(x = x_0,y = 0,xend = x_0,yend = f0 ))+
+  geom_point(aes(x = x_0, y = y0))+
+  annotate("text", x = x_0-0.15, y =y0-0.025,label=expression(y[0]) )+
+  geom_segment(aes(x = llim, y=y0,xend = ulim, yend = y0 ))+
+  geom_point(aes(x = x1, y = y0))+
+  annotate("text", x1,-0.02, label = expression(x[1]))+
+  geom_segment(aes(x = x1, y = 0, xend = x1, yend = y0), linetype = "dashed")+
+  geom_point(aes(x1,0))
+
+```    
+
+5.  Return to Step 2 and repeat until $t=T$.
+
+The resulting samples $x_0,x_1,\ldots,x_T\sim g(x)$.
+
+:::
+
+From the algorithm definition, we can see where the slice sampler gets its name.  We are sampling uniformly along "slices" of the target density function. Because of this we are again in the position where we don't need to know the proportionality constant; we only need to know our a target function that is proportional to our posterior density in order to draw samples. 
+
+The challenge here is finding the endpoints of the horizontal line at
+$y$. Note that often the actual implementation uses the log-density
+functions to ease computation, which it is important to note is equivalent to using the density to generate samples. 
+
+When computing the endpoints isn't easy, there are a variety of methods
+that start with an initial width around $x_t$ and expanding the interval
+until it reaches beyond the bounds of the function and then shrinking it
+back to generate an acceptable value of $x_{t+1}$
+
+As with the ratio of uniforms method there are extension to the slice sampler to higher dimension multivariate parameter space.  For the purposes of this unit we will restrict our coded examples to the univariate case. 
+
+:::{.boxed}
+### Example {.tabset .tabset-pills}
+
+Consider data $\mathbf{y}=y_1,\ldots,y_n$ from the random variable $Y\sim Pois(\lambda)$ with the prior for $\lambda\sim Ga(1,1)$ and the prior for $\lambda$ where $\log(\lambda)=\eta$ where $\eta$ follows the prior distribution $\eta\sim N(0,1)$.  
+
+Let $\sum_{i=1}^ny_i=18$ and $n=10$.
+
+Use the slice sampler algorithm to draw samples from the posterior $\pi(\eta|\mathbf{y})$.
+
+How does this compare to the results using the Metropolis-Hastings and ratio of uniforms algorithms?
+
+#### Solution
+
+In this case we can work with  a function proportional to the the posterior 
+$$
+g(\eta)=\exp\left(\eta\sum_{i=1}^ny_i-ne^{\eta}-\frac{\eta^2}{2}\right).
+$$
+Then we can implement the slice sampler algorithm
+
+1.  Choose and initial value for $\eta$, $\eta_0$ from the domain of $g$. 
+2.  For $t=0,\ldots, T$ generate a random value $y$, $y\sim U(0,g(\eta_t))$
+3.  Draw a horizontal line from $y$ across the density $g$
+4.  Draw $\eta_{t+1}$ a uniform random sample on the horizontal line
+    bounded by $g$.
+5.  Return to Step 2 and repeat until $t=T$.
+
+we will implement this for $T=10,\!000$ as in the Metropolis-Hastings example. 
+Note that we are going to assume that an initial range to choose $\eta_0$ is $-3$ to $3$. 
+
+#### Code
+
+```{r,warning=FALSE,message=FALSE}
+library(rootSolve)
+
+y<-18
+n<-10
+
+g<-function(x){
+  (x*y-n*exp(x)-x^2/2)%>%exp()
+}
+
+m<-10000
+
+eta<-numeric(length = m)
+
+##  We generate the initial value for eta from its prior
+
+eta[1]<-rnorm(1)
+ 
+for( i in 2:m)
+{
+ y0<-runif(1,0,g(eta[i-1])) 
+ 
+ ## Use the uniroot.all function to find the points where g(x)==y0, we are setting some arbitrary limits of -2,and 3. 
+
+ ab<-uniroot.all(function(x) g(x)-y0,c(-2,3))
+ 
+ eta[i]<-runif(1,ab[1],ab[2])
+}
+
+
+```
+ Note that we use the `uniroot.all()` function from the `rootSolver` package to find the limits to sample $x_t$.  There are alternatives to this employed in other algorithms, which may be more computationally efficient. 
+
+#### Plot
+
+```{r echo=FALSE, warning=FALSE,message=FALSE}
+
+
+index<-1:m
+lambda_x<-seq(0,3,len=m)
+eta_x<-seq(-1,2,len=m)
+
+g<-function(x)
+{
+  (x*y-n*exp(x)-x^2/2)%>%exp()
+}
+
+g_l<-function(x)
+{
+  lambda<-log(x)
+g(lambda)/x
+}
+
+const_e<-integral(g,-3,3)
+const_l<-integral(g_l,0,10)
+
+
+density<-c(g(eta_x)/const_e,g_l(lambda_x)/const_l)
+
+parameter<-c(rep("eta",m),rep("lambda",m))
+
+df_3<-tibble(y=c(eta,exp(eta)),density,x=c(eta_x,lambda_x),seq=rep(index,2),parameter)
+
+ggplot(df_3)+
+  geom_line(aes(x=seq,y=y))+
+  facet_wrap(~parameter,labeller = label_parsed)
+
+ggplot(df_3)+
+  geom_histogram(aes(x=y,y=..density..),binwidth = 0.1)+
+  geom_line(aes(x=x,y=density))+
+  facet_wrap(~parameter, labeller=label_parsed)
+
+```
+These plots look quite reasonable, with no discernable pattern in the trace of the output and good results for the historgrams. 
+
+:::
+
+
+##   Hit and Run Sampling
+
+:::{.sidenote}
+**Example:**\
+Given some data $\mathbf{y}=(y_1,\ldots,y_n)$ from the random variable $Y\sim Be(\alpha,\beta)$.  For the data 
+```{r,echo=FALSE}
+set.seed(14061972)
+y<-rbeta(15,2.3,3.7)%>%round(2)
+```
+$y$=`r y`. and $n=15$
+
+Use the hit and run sampler to draw $10,\!000$ samples from the posterior $\pi(\alpha,\beta|\mathbf{y})$.
+
+:::
+
+The ratio of uniforms and the slice sampler offer improvements over the standard Metropolis-Hastings algorithm for generating samples from a target density function.  However we have only examined these techniques in the univariate case, which is often trivial.  In reality we are often looking for a means of drawing samples from a multivariate target density.  In this case we are going to examine a method that can prove useful in "converting" a multivariate sampling problem to a univariate sampling problem.  
+
+The Hit and Run sampler is a variation on the
+random walk Metropolis-Hastings algorithm that reduces the problem of
+identifying a good high-dimensional candidate distribution by taking
+steps of random direction and size in the target density domain. Once
+the random direction is selected, the Metropolis-Hastings algorithm is
+applied to the step size, requiring only a viable candidate distribution
+in one dimension.
+
+:::{.boxed}
+**The Hit and Run Sampler**\
+
+To draw a sample from a target distribution for a random vector
+$\mathbf{\theta}\in\mathbf{\Theta}$ of length $m$. At time step $t$:
+
+1.  Generate a random vector $\mathbf{r}$ of length $m$ from some
+    distribution such that $\mathbf{r}\in\mathbf{\Theta}$ in and $||\mathbf{r}||=1$,
+    e.g.\ if $\mathbf{\Theta} = \mathbb{R}^m$ then draw $\mathbf{r}$ from a unit
+    hyper-sphere of dimension $m$.
+
+2.  Generate $\lambda>0$ from some probability distribution and
+
+3.  Let $\mathbf{\theta}^{(t+1)}=\mathbf{\theta}^{(t)}+\lambda\mathbf{r}$ with
+    probability
+$$
+\alpha=\min\left(1,\frac{f(\mathbf{y}|\mathbf{\theta}^{(t)}+\lambda\mathbf{r})\pi(\mathbf{\theta}^{(t)}+\lambda\mathbf{r})}{f(\mathbf{y}|\mathbf{\theta}^{(t)})\pi(\mathbf{\theta}^{(t)})}\right).
+$$
+
+:::    
+
+The details of this are in some cases a little tricky, generating
+$\mathbf{r}$ over a bounded space can be a challenge, in this case it is
+easiest to implement the hit and run sampler when
+$\mathbf{\Theta}=\mathbb{R}^m$, in some cases it is reasonable to
+re-parametrise the target distribution to facilitate using the hit and
+run sampler. The distribution for $\lambda$ needs to be "tuned" in order
+to obtain a good acceptance rate.
+
+
+:::{.boxed}
+### Example {.tabset .tabset-pills}
+Given some data $\mathbf{y}=(y_1,\ldots,y_n)$ from the random variable $Y\sim Be(\alpha,\beta)$.  For the data 
+```{r,echo=FALSE}
+set.seed(14061972)
+y<-rbeta(15,2.3,3.7)%>%round(2)
+```
+$y$=`r y`. and $n=15$
+
+Use the hit and run sampler to draw $10,\!000$ samples from the posterior $\pi(\alpha,\beta|\mathbf{y})$.
+
+####    Solution
+
+Given the data and the probability density function the likelihood will be
+$$
+f(\mathbf{y}|\alpha,\beta)=\prod_{i=1}\frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}y^{\alpha-1}(1-y)^{\beta-1}
+$$
+But we will need to reparametrise the likelihood so that the parameter space is $\mathbb{R}^2$, let $\mathbf{\theta}=(\log(\alpha),\log(\beta))$, thus the likelihood is
+$$
+f(\mathbf{y}|\mathbf{\theta})=\prod_{i=1}\frac{\Gamma\left(e^{\theta_1}+e^{\theta_2}\right)}{\Gamma\left(e^{\theta_1}\right)\Gamma\left(e^{\theta_2}\right)}y^{e^{\theta_1}-1}(1-y)^{e^{\theta_2}-1}
+$$
+
+the log-likelihood is probably better to works with
+$$
+\begin{align}
+\log\left(f(\mathbf{y}|\mathbf{\theta})\right)&=\sum_{i=1}^n\log\left(\frac{\Gamma\left(e^{\theta_1}+e^{\theta_2}\right)}{\Gamma\left(e^{\theta_1}\right)\Gamma\left(e^{\theta_2}\right)}\right)+
+\left(e^{\theta_1}-1\right)\log(y_i)+\left(e^{\theta_2}-1)\log(1-y_i\right)\\
+&=n\log\left(\frac{\Gamma\left(e^{\theta_1}+e^{\theta_2}\right)}{\Gamma\left(e^{\theta_1}\right)\Gamma\left(e^{\theta_2}\right)}\right)\sum_{i=1}^n\left(e^{\theta_1}-1\right)\log(y_i)+\left(e^{\theta_2}-1\right)\sum_{i=1}^n\log(1-y_i).
+\end{align}
+$$
+We need a prior distribution for $\mathbf{\theta}$ and we need to see what that equivalent prior would be for $\alpha$ and $\beta$.  Since $\mathbf{\theta}\in\mathbb{r}^2$ we can choose a flat prior
+$$
+\pi(\mathbf{\theta})\propto 1
+$$
+This is equivlent to
+$$
+\pi(\alpha,\beta)\propto\frac{1}{\alpha\beta}
+$$
+In both cases the priors are improper, but the resulting posterior is proper.  Note that the log of the prior then is $\log(\pi(\mathbf{\theta}))\propto 0$ so the log-posterior is proportional to the log-likelihood, i.e.\ $\log(\pi(\mathbf{\theta}|\mathbf{y}))\propto f(\mathbf{y}|\mathbf{\theta})$
+$$
+\log\left(\pi(\mathbf{\theta}|\mathbf{y})\right)\propto 
+n\log\left(\frac{\Gamma\left(e^{\theta_1}+e^{\theta_2}\right)}{\Gamma\left(e^{\theta_1}\right)
+\Gamma\left(e^{\theta_2}\right)}\right)\sum_{i=1}^n\left(e^{\theta_1}-1\right)\log(y_i)+
+\left(e^{\theta_2}-1\right)\sum_{i=1}^n\log(1-y_i).
+$$
+Now we need to set up the algorithm letting the log-target density $g(\mathbf{\theta})$ be 
+$$
+g(\mathbf{\theta})= n\log\left(\frac{\Gamma\left(e^{\theta_1}+e^{\theta_2}\right)}
+{\Gamma\left(e^{\theta_1}\right)\Gamma\left(e^{\theta_2}\right)}\right)\sum_{i=1}^n
+\left(e^{\theta_1}-1\right)\log(y_i)+\left(e^{\theta_2}-1\right)\sum_{i=1}^n\log(1-y_i).
+$$
+
+The resulting hit and run sampler will be set up to draw a sample of size $T$.
+ For $t=1,\ldots,T$, at time step $t$:
+
+1.  Generate a random vector $\mathbf{r}$ of length $2$ from some
+    distribution such that $\mathbf{r}\in \mathbf{\theta}$ and $||\mathbf{r}||=1$,
+   i.e.\ draw $\mathbf{r}$ from a unit
+    hyper-sphere of dimension $2$.
+
+2.  Generate $\lambda>0$ from some probability distribution and
+
+3.  Let $\mathbf{\theta}^{(t+1)}=\mathbf{\theta}^{(t)}+\lambda\mathbf{r}$ with
+    probability
+$$
+\alpha=\min\left(1,\frac{f(\mathbf{y}|\mathbf{\theta}^{(t)}+\lambda\mathbf{r})\pi(\mathbf{\theta}^{(t)}+\lambda\mathbf{r})}{f(\mathbf{y}|\mathbf{\theta}^{(t)})\pi(\mathbf{\theta}^{(t)})}\right).
+$$
+
+#### Code 
+
+```{r}
+
+set.seed(14061972)
+
+y<-c(0.58, 0.64, 0.57, 0.22, 0.92, 0.15, 0.41, 0.47, 0.5, 0.45, 0.57, 0.67, 0.2, 0.45, 0.26)
+n<-15
+
+##  Define g(\theta) using the dbeta() function in R
+
+g<-function(x)
+{
+dbeta(y,exp(x[1]),exp(x[2]),log=TRUE)%>%sum()
+}
+
+m<-10000
+theta<-matrix(NA,m,2)
+theta[1,]<-0
+
+for(i in 2:m)
+{
+  r<-rnorm(2)
+  r<-r/sqrt(sum(r^2))
+  l<-rexp(1)
+  gc<-g(theta[i-1,]+l*r)
+  u<-runif(1)
+  alpha<-exp(gc-g(theta[i-1,]))
+  if(u<alpha)
+  {
+    theta[i,]<-theta[i-1]+l*r
+  }
+  else
+  {
+    theta[i,]<-theta[i-1,]
+  }
+}
+
+alpha<-exp(theta[,1])
+beta<-exp(theta[,2])
+
+```
+
+####    Plot
+
+```{r,echo=FALSE}
+
+par_names<-c(rep("alpha",m),rep("beta",m))
+df_4<-tibble(pars=c(alpha,beta),par_names,index=rep(1:m,2))
+ggplot(df_4)+
+  geom_line(aes(x=index,y=pars))+
+  facet_wrap(~par_names,labeller = label_parsed)+
+  xlab("Iteration")+
+  ylab("")
+
+ggplot(df_4)+
+  geom_histogram(aes(x=pars,y=..density..),binwidth = 0.2)+
+  facet_wrap(~par_names,labeller=label_parsed)+
+  xlab("Parameters")
+
+mle<-optim(c(0,0),function(x) -g(x))$par%>%exp()
+
+```
+
+The trace plots show some evidence of autocorrelation, but otherwise seem fine. 
+Note that the MLE estimators are $\alpha=$ `r round(mle[1],1)` and $\beta=$ `r round(mle[2],1)`, and the actual values are $\alpha=2.3$ and $\beta=3.7$.  The posterior expected values are $E(\alpha|\mathbf{y})=$ `r round(mean(alpha),1)` and $E(\beta|\mathbf{y})=$ `r round(mean(beta),1)`.  So the results are pretty reasonable, but there appears to be some possible shrinkage due to the priors.
+
+:::
+

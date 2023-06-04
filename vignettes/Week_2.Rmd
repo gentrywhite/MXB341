@@ -1,0 +1,806 @@
+---
+title: "Week 2"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Week 2}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, echo=FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("QUTReadings.css")
+
+```
+
+\maketitle
+
+<br>
+
+# Maximum Likelihood Estimators
+The likelihood function and the maximum likelihood estimators form the basis of classical statistical inference.  Suppose we assume that each observation contains information about the parameters of its generating probability distribution. In that case, the likelihood function represents the link between the observed data and the parameter values. We choose values for our estimates of the parameters that maximise the likelihood function; hence we call them maximum likelihood estimates (MLE). But why are these the preferred (in most cases) estimators? It turns out that there are several properties of MLEs that facilitate inference and adhere to some fundamental ideas for evaluating estimators. A closer examination of MLEs helps illustrate these properties and some larger concepts around statistical modelling and inference.  
+
+##    The Likelihood Function
+
+:::{.sidenote}
+**Example:**
+
+The random variable $Y$ follows a geometric distribution with probability mass function
+$$
+p(y;p) = p(1-p)^{y-1},\: y = 1,2,3,\ldots,\: 0<p<1.   
+$$
+
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ what is the likelihood function?
+:::
+
+:::{.sidenote}
+**Example:**
+
+The random variable $Y$ follows a Rayleigh distribution with a probability density function
+$$
+f(y;\sigma^2) = \frac{y}{\sigma^2}e^{-\frac{y^2}{2\sigma^2}},\: y>0,\;\sigma^2>0.
+$$
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ what is the likelihood function?
+:::
+
+We define the likelihood function for discrete random variables as the product of each observation's probability. In the case of continuous random variables, we define the likelihood function as the product of the density function evaluated at each observation. For a set of observations $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ that follow a probability mass function $p(y;\theta)$ or a probability density function $f(y;\theta)$, then in the discrete case the likelihood for these data is
+$$
+L(\theta|\mathbf{y})=\prod_{i=1}^np(y_i;\theta)
+$$
+or in the continuous case
+$$
+L(\theta|\mathbf{y}) = \prod_{i=1}^nf(y_i;\theta).
+$$
+
+The likelihood, in this case, is explicitly defined as a function of the parameter(s) of interest $\theta$ and conditioned on the random sample $\mathbf{y}$, but that we do not consider $\theta$ to be a random variable, we assume that it is a fixed unknown quantity to be estimated. The likelihood function connects the information that we have from the observed data to our estimation process. In the case of maximum likelihood estimators (MLE), we choose as estimates values for the parameters that maximise the likelihood. But the additional characteristics of the likelihood function can also tell us more about the MLE. 
+
+:::{.boxed}
+###   Likelihood Functions {.tabset .tabset-pills}
+
+####    Example
+
+The random variable $Y$ follows a geometric distribution with probability mass function
+$$
+p(y;p) = p(1-p)^{y-1},\: y = 1,2,3,\ldots,\: 0<p<1.   
+$$
+
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ what is the likelihood function?
+
+#### Solution
+
+The random variable $Y$ follows a geometric distribution with probability mass function
+$$
+p(y;p) = p(1-p)^{y-1},\: y = 1,2,3,\ldots,\: 0<p<1.   
+$$
+
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ the likelihood function is 
+$$
+\begin{align}
+L(p|\mathbf{y})&=\prod_{i=1}^n p(1-p)^{y_i-1}\\
+&=p^n(1-p)^{\sum_{i=1}^n(y_i-1)}\\
+&=p^n(1-p)^{\sum_{i=1}^ny_i-n}\\
+&=\left(\frac{p}{1-p}\right)^n(1-p)^{\sum_{i=1}^ny_i}.
+\end{align}
+$$
+
+
+
+:::
+
+:::{.boxed}
+
+###   Likelihood Functions (cont'd) {.tabset .tabset-pills}
+
+####    Example
+
+The random variable $Y$ follows a Rayleigh distribution with a probability density function
+$$
+f(y;\sigma^2) = \frac{y}{\sigma^2}e^{-\frac{y^2}{2\sigma^2}},\: y>0,\;\sigma^2>0.
+$$
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ what is the likelihood function?
+
+#### Solution
+
+The random variable $Y$ follows a Rayleigh distribution with a probability density function
+$$
+f(y;\sigma^2) = \frac{y}{\sigma^2}e^{-\frac{y^2}{2\sigma^2}},\: y>0,\;\sigma^2>0.
+$$
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ the likelihood function is
+$$
+\begin{align}
+L(\sigma^2|\mathbf{y})&=\prod_{i=1}^n\frac{y_i}{\sigma^2}e^{-\frac{y_i^2}{2\sigma^2}}\\
+&=\left(\frac{1}{\sigma^2}\right)^ne^{-\frac{\sum_{i=1}^ny_i^2}{2\sigma^2}}\prod_{i=1}^ny_i.
+\end{align}
+$$
+
+
+
+:::
+
+The likelihood function can be difficult to work with for two specific reasons: first, the likelihood function is a product, and products of functions can present some computational difficulties, particularly when looking for maxima or minima; second, the likelihood function becomes numerically unstable as the sample size $n$ increases. By numerical stability we mean that in the discrete case since $p(y;\theta)<1,\:\forall x\in X$ then because
+$$
+L(\theta|\mathbf{y})=\prod_{i=1}^np(y_i;\theta)
+$$
+as $n\rightarrow \infty$ then $L(\theta|\mathbf{y})\rightarrow 0$.  While the constraint for the continuous case is that 
+$$
+\int_Yf(y;\theta)dy =1 
+$$
+and it is possible that for some values of $x\in X$ $f(y;\theta)\geq 1$, it is typical that the same limiting behaviour applies when 
+$$
+L(\theta|\mathbf{y})=\prod_{i=1}^nf(y_i;\theta).
+$$
+
+Thus it is preferable to work with the log of the likelihood function.  
+
+## The Log-Likelihood Function
+
+:::{.sidenote}
+**Example:**
+
+The random variable $X$ follows a geometric distribution with probability mass function
+$$
+p(y;p) = p(1-p)^{y-1},\: y = 1,2,3,\ldots,\: 0<p<1.   
+$$
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ find the log-likelihood function.
+
+:::
+
+:::{.sidenote}
+**Example:**
+
+The random variable $Y$ follows a Rayleigh distribution with a probability density function
+$$
+f(y;\sigma^2) = \frac{y}{\sigma^2}e^{-\frac{y^2}{2\sigma^2}},\: y>0,\;\sigma^2>0.
+$$
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ find the log-likelihood function.
+:::
+
+
+
+The log-likelihood function is the log of the likelihood function, and it offers several computational and numerical advantages. The log transformation is monotonic and thus preserves the likelihood function's properties to derive the maximum likelihood estimator and its properties. While the likelihood function approaches $0$ as the sample size $n$ increases, the magnitude of log-likelihood grows (albeit slowly).  We can also write the log-likelihood function as the sum of the log of the probability mass or density functions.  In this instance, optimisation of a sum via derivatives is computationally easier than for a product.  
+$$
+l(\theta|\mathbf{y})=\log\left(L(\theta|\mathbf{y})\right)
+$$
+because the likelihood is a product, by the properties of the log function, the log-likelihood (shown here for the discrete case) is a sum 
+$$
+l(\theta|\mathbf{y})=\sum_{i=1}^n\log\left(p(y_i;\theta)\right)
+$$
+or in the continuous case
+$$
+l(\theta|\mathbf{y})=\sum_{i=1}^n\log\left(f(y_i;\theta)\right).
+$$
+
+:::{.boxed}
+
+###   Log-likelihood Functions {.tabset .tabset-pills}
+
+####    Example
+
+The random variable $X$ follows a geometric distribution with probability mass function
+$$
+p(y;p) = p(1-p)^{y-1},\: y = 1,2,3,\ldots,\: 0<p<1.   
+$$
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ find the log-likelihood function.
+
+
+####    Solution
+
+The random variable $X$ follows a geometric distribution with probability mass function
+$$
+p(y;p) = p(1-p)^{y-1},\: y = 1,2,3,\ldots,\: 0<p<1.   
+$$
+
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ the log-likelihood function is 
+$$
+\begin{align}
+l(p|\mathbf{y})&=\log\left(\prod_{i=1}^n p(1-p)^{y_i-1}\right)\\
+&=\sum_{i=1}^n\left(\log(p)+(y_i-1)\log(1-p)\right)\\
+&=n\log(p)+\log(1-p)\sum_{i=1}^n(y_i-1)\\
+&=n\log(p)+\log(1-p)\left(\sum_{i=1}^ny_i-n\right)\\
+&=n\left(\log(p)-\log(1-p)\right)+\log(1-p)\sum_{i=1}^ny_i\\
+&=n\log\left(\frac{p}{1-p}\right)+\log(1-p)\sum_{i=1}^ny_i.
+\end{align}
+$$
+
+
+
+:::
+
+:::{.boxed}
+
+###   Log-likelihood Functions (cont'd) {.tabset .tabset-pills}
+
+####    Example
+
+The random variable $Y$ follows a Rayleigh distribution with a probability density function
+$$
+f(y;\sigma^2) = \frac{y}{\sigma^2}e^{-\frac{y^2}{2\sigma^2}},\: y>0,\;\sigma^2>0.
+$$
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ find the log-likelihood function.
+
+####    Solution
+
+The random variable $Y$ follows a Rayleigh distribution with a probability density function
+$$
+f(y;\sigma^2) = \frac{y}{\sigma^2}e^{-\frac{y^2}{2\sigma^2}},\: y>0,\;\sigma^2>0.
+$$
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ the log-likelihood function is
+$$
+\begin{align}
+l(\sigma^2|\mathbf{y})&=\log\left(\prod_{i=1}^n\frac{y_i}{\sigma^2}e^{-\frac{y_i^2}{2\sigma^2}}\right)\\
+&=\sum_{i=1}^n\left(\log(y_i)-2\log(\sigma)-\frac{y_i^2}{2\sigma^2}\right)\\
+&=\sum_{i=1}^n\log(y_i)-2n\log(\sigma)-\frac{1}{2\sigma^2}\sum_{i=1}^ny_i^2.
+\end{align}
+$$
+
+
+
+:::
+
+## Score Function
+
+:::{.sidenote}
+**Example:**
+
+The random variable $X$ follows a geometric distribution with probability mass function
+$$
+p(y;p) = p(1-p)^{y-1},\: y = 1,2,3,\ldots,\: 0<p<1.   
+$$
+
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ find the score function $S(p)$ and the MLE $\hat{p}$.
+
+:::
+
+:::{.sidenote}
+**Example:**
+
+The random variable $Y$ follows a Gaussian distribution with a probability density function
+$$
+f(y;\mu,\sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(y-\mu)^2}{2\sigma^2}},\: y\in\mathbb{R},\;\mu\in\mathbb{R},\;\sigma^2>0.
+$$
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ find the score function $S(\mu,\sigma^2)$ and the MLEs $\hat{\mu}$ and $\hat{\sigma}^2$.
+:::
+
+The score function is the first derivative (or gradient in the multivariate case) of the log-likelihood function with respect to the parameter(s).  By definition, the score function evaluated at any point in the parameter space is the sensitivity of the log-likelihood function with respect to infinitesimal changes to the parameter(s).  For a log-likelihood function $l(\theta|\mathbf{y})$ the score function is
+$$
+S(\theta)=\frac{d}{d\theta}l(\theta|\mathbf{y}).
+$$
+If the parameter $\theta$ is a vector, i.e. $\boldsymbol{\theta}=(\theta_1,\theta_2,\ldots,\theta_p)$ then the score function is a gradient, or vector of partial derivatives
+$$
+S(\boldsymbol{\theta})=\left(\frac{\partial}{\partial\theta_1}l(\boldsymbol{\theta}|\mathbf{y}),\frac{\partial}{\partial\theta_2}l(\boldsymbol{\theta}|\mathbf{y}),\ldots,\frac{\partial}{\partial\theta_p}l(\boldsymbol{\theta}|\mathbf{y})\right).
+$$
+
+The maximum likelihood estimator $\hat{\theta}$ is defined such 
+$$
+S(\hat{\theta})=0
+$$
+or equivalently the expression 
+$$
+\hat{\theta}=\left\{\theta\in\Theta:\frac{d}{d\theta}l(\theta|\mathbf{y})\bigg|_{\theta=\hat{\theta}}= 0\right\}
+$$
+gives a direct approach to finding the maximum likelihood estimator.
+
+:::{.boxed}
+
+###   Score Functions {.tabset .tabset-pills}
+
+####    Example
+
+The random variable $X$ follows a geometric distribution with probability mass function
+$$
+p(y;p) = p(1-p)^{y-1},\: y = 1,2,3,\ldots,\: 0<p<1.   
+$$
+
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ find the score function $S(p)$ and the MLE $\hat{p}$.
+
+####    Solution
+
+The random variable $X$ follows a geometric distribution with probability mass function
+$$
+p(y;p) = p(1-p)^{y-1},\: y = 1,2,3,\ldots,\: 0<p<1.   
+$$
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ the score function $S(p)$ is 
+$$
+\begin{align}
+S(p)&=\frac{d}{dp}l(p|\mathbf{y})\\
+&=\frac{d}{dp}n\left(\log(p)-\log(1-p)\right)+\log(1-p)\sum_{i=1}^ny_i\\
+&=\frac{n}{p}+\frac{n}{1-p}-\frac{\sum_{i=1}^ny_i}{1-p}.
+\end{align}
+$$
+The MLE $\hat{p}$ can be found by setting $S(p)=0$ and solving for $p$.  Rearranging the score function, we get
+$$
+\begin{align}
+\frac{n}{p}+\frac{n}{1-p}-\frac{\sum_{i=1}^ny_i}{1-p}&=0\\
+\frac{n}{p}&=\frac{\sum_{i=1}^ny_i-n}{1-p}\\
+\frac{1-p}{p}&=\frac{\sum_{i=1}^ny_i}{n}-1\\
+\frac{1}{p}-1&=\frac{\sum_{i=1}^ny_i}{n}-1\\
+\hat{p}&=\frac{1}{\bar{y}}
+\end{align}
+$$
+
+
+:::
+
+:::{.boxed}
+
+###   Score Functions (cont'd) {.tabset .tabset-pills}
+
+####    Example
+
+The random variable $Y$ follows a Gaussian distribution with a probability density function
+$$
+f(y;\mu,\sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(y-\mu)^2}{2\sigma^2}},\: y\in\mathbb{R},\;\mu\in\mathbb{R},\;\sigma^2>0.
+$$
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ find the score function $S(\mu,\sigma^2)$ and the MLEs $\hat{\mu}$ and $\hat{\sigma}^2$.
+
+####    Solution
+
+The random variable $Y$ follows a Gaussian distribution with a probability density function
+$$
+f(y;\mu,\sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(y-\mu)^2}{2\sigma^2}},\: y\in\mathbb{R},\;\mu\in\mathbb{R},\;\sigma^2>0.
+$$
+For a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ the score function $S(\mu,\sigma^2)$ is
+$$
+S(\mu,\sigma^2)=\left(\frac{\partial}{\partial\mu}l(\mu,\sigma^2|\mathbf{y}),\frac{\partial}{\partial\sigma^2}l(\mu,\sigma^2|\mathbf{y}).
+\right)
+$$
+The log-likelihood for the Gaussian distribution is 
+$$
+l(\mu,\sigma^2)=-\frac{n}{2}\log\left(2\pi\sigma^2\right)-\frac{\sum_{i=1}^n(y_i-\mu)^2}{2\sigma^2}.
+$$
+The score function is the $1\times 2$ vector of the partial derivatives (the gradient)
+$$
+\begin{align}
+\frac{\partial}{\partial\mu}l(\mu,\sigma^2|\mathbf{y})&=\frac{\sum_{i=1}^ny_i}{\sigma^2}-\frac{n\mu}{\sigma^2}\\
+\frac{\partial}{\partial\sigma^2}l(\mu,\sigma^2|\mathbf{y})&=-\frac{n}{2\sigma^2}+\frac{\sum_{i=1}^n(y_i-\mu)^2}{2\sigma^4}.
+\end{align}
+$$
+The MLEs $\hat{\mu}$ and $\hat{\sigma}^2$ are found by setting the score function to $\boldsymbol{0}$ and solving for $\mu$ and $\sigma^2$
+$$
+\begin{align}
+\frac{\sum_{i=1}^ny_i}{\sigma^2}-\frac{n\mu}{\sigma^2}&=0\\
+\frac{\sum_{i=1}^ny_i}{\sigma^2}&=\frac{n\mu}{\sigma^2}\\
+\hat{\mu}&=\frac{\sum_{i=1}^ny_i}{n}
+\end{align}
+$$
+and
+$$
+\begin{align}
+-\frac{n}{2\sigma^2}+\frac{\sum_{i=1}^n(y_i-\mu)^2}{2\sigma^4}&=0\\
+\frac{\sum_{i=1}^n(y_i-\mu)^2}{2\sigma^4}&=\frac{n}{2\sigma^2}\\
+\hat{\sigma}^2&=\frac{\sum_{i=1}^n(y_i-\mu)^2}{n}.
+\end{align}
+$$
+
+
+:::
+
+### Expected Value of Score Function 
+
+The score function is defined as a function of the parameter(s) $\theta$ but it is also a function of the random variable $X$ through the sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$.  As a result the expected value of the score function evaluated at $\theta=\theta^*$, the true value of $\theta$ is 0.  
+
+:::{.boxed}
+If we write the likelihood function $L(\theta|\mathbf{y})$ as a density function $f(\mathbf{y};\theta)$ then the score function $S(\theta)=\frac{\partial}{\partial\theta}\log(f(\mathbf{y};\theta))$ and the expectation is
+$$
+\begin{align}
+\operatorname{E}\left(S(\theta)|\theta=\theta^*\right)&=\int_\mathbf{y}f(\mathbf{y};\theta^*)\frac{\partial}{\partial\theta}\log(f(\mathbf{y};\theta^*))dy\\
+&=\int_{\mathbf{y}}f(\mathbf{y};\theta^*)\frac{1}{f(\mathbf{y};\theta^*)}\frac{\partial f(\mathbf{y};\theta^*)}{\partial \theta}dy\\
+&=\int_{\mathbf{y}}\frac{\partial f(\mathbf{y};\theta^*)}{\partial \theta}dy
+\end{align}
+$$
+The regularity assumptions implicit in the definition of the score function and likelihood (smoothness) allow for the interchange of derivative and integral, thus
+$$
+\begin{align}
+\int_{\mathbf{y}}\frac{\partial f(\mathbf{y};\theta^*)}{\partial \theta}dy&=
+\frac{\partial}{\partial\theta}\int_{\mathbf{y}}f(\mathbf{y};\theta^*)dy\\
+&=\frac{\partial}{\partial\theta}1\\
+&=0
+\end{align}
+$$  
+:::
+The implication is that given the process of repeatedly drawing samples and computing the score for $\theta=\theta^*$ the expected or long-run average of the score would approach $0$ asymptotically. 
+
+### Variance of Score Function and Fisher Information
+
+The variance of the score function (or covariance) can also be calculated and shown to be the negative of the expected value of the Hessian of the log-likelihood function, or the [Fisher Information](./Parameter_Estimation.html#fisher-information) $\mathcal{I}(\boldsymbol{\theta})$.
+$$
+\begin{align}
+\operatorname{Var}(S(\boldsymbol{\theta}))&=\operatorname{E}\left(S(\boldsymbol{\theta})S(\boldsymbol{\theta})^T\right)\\
+&=-\operatorname{E}\left(\frac{\partial^2S(\boldsymbol{\theta})}{\partial\boldsymbol{\theta}\partial\boldsymbol{\theta}^T}\right).
+\end{align}
+$$
+We can derive this variance from the expression for the expected value of the score function.
+
+:::{.boxed}
+$$
+\begin{align}
+0&=\frac{\partial}{\partial\boldsymbol{\theta}^T}\operatorname{E}\left(S(\boldsymbol{\theta}|\boldsymbol{\theta}=\boldsymbol{\theta}^*)\right)\\
+&=\frac{\partial}{\partial\boldsymbol{\theta}^T}\int_{\mathbf{y}}\frac{\partial\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}}f(\mathbf{y};\boldsymbol{\theta})dy\\
+&=\int_{\mathbf{y}}\frac{\partial}{\partial\boldsymbol{\theta}^T}\left[\frac{\partial\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}}f(\mathbf{y};\boldsymbol{\theta})\right] dy\\
+&=\int_{\mathbf{y}}\left(\frac{\partial^2\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}\boldsymbol{\theta}^T}f(\mathbf{y};\boldsymbol{\theta})+
+\frac{\partial\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}}
+\frac{\partial f(\mathbf{y};\boldsymbol{\theta})}{\partial\boldsymbol{\theta}^T}
+\right)dy\\
+&=\int_{\mathbf{y}}\frac{\partial^2\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}\boldsymbol{\theta}^T}f(\mathbf{y};\boldsymbol{\theta})dy+
+\int_{\mathbf{y}}
+\frac{\partial\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}}
+\frac{\partial L(\boldsymbol{\theta}|\mathbf{y})}{\partial\boldsymbol{\theta}^T}dy\\
+&=\int_{\mathbf{y}}\frac{\partial^2\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}\boldsymbol{\theta}^T}f(\mathbf{y};\boldsymbol{\theta})dy+
+\int_{\mathbf{y}}
+\frac{\partial\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}}
+\frac{\partial \log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}^T}f(\mathbf{y};\boldsymbol{\theta})dy\\
+&=\operatorname{E}\left(\frac{\partial^2\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}\partial\boldsymbol{\theta}^T}\right)+
+\operatorname{E}\left(
+\frac{\partial\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}}
+\left[
+\frac{\partial\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}}
+\right]^T
+\right)
+\end{align}
+$$
+thus we can see that 
+$$
+\begin{align}
+-\operatorname{E}\left(\frac{\partial^2\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}\partial\boldsymbol{\theta}^T}\right)&=
+\operatorname{E}\left(
+\frac{\partial\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}}
+\left[
+\frac{\partial\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}}
+\right]^T
+\right)\\
+-\operatorname{E}\left(\frac{\partial^2\log(L(\boldsymbol{\theta}|\mathbf{y}))}{\partial\boldsymbol{\theta}\partial\boldsymbol{\theta}^T}\right)&=\operatorname{E}\left(S(\boldsymbol{\theta})S(\boldsymbol{\theta})^T\right).
+\end{align}
+$$
+:::
+
+The score function's value is that it leads directly to the MLE and the Fisher Information and subsequent properties needed to evaluate estimators and inference.
+
+# Properties of Maximum Likelihood Estimators
+
+Previously we have looked at methods for [estimating parameters](./Week_1.html#parameter-estimation) and [assessing estimators](./Week_1.html#assessing-estimators). We are now going to look more closely at the properties of maximum likelihood estimators useful for identifying optimal estimators and creating a broader understanding of estimation and inference. 
+
+<!--
+:::{.sidenote}
+**Sufficient and Necessary**\
+The terms necessary and sufficient refer to formal logical concepts that describe a relationship between events. A **necessary** condition must be true for another condition to be true, while a **sufficient** condition will produce the other condition. 
+
+Consider the statement
+
+If $A$ then $B$
+$$
+A\rightarrow B
+$$
+
+$B$ is *necessary* for $A$ because the occurrence of $A$ guarantees $B$.
+
+
+$A$ is *sufficient* for $B$ because if $A$ occurs, it implies that $B$ occurs, but if $A$ doesn't occur, that doesn't mean $B$ doesn't occur. 
+
+The condition "if and only if" implies that a condition is both necessary and sufficient. 
+
+The presence of oxygen is necessary for a fire to be burning; a fire burning is sufficient for oxygen present. 
+
+
+:::
+-->
+
+## Sufficient Statistics
+
+:::{.sidenote}
+**Example:**\
+Consider a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ from a Bernoulli distribution. 
+
+Is the statistic $T(\mathbf{y})=\sum_{i=1}^ny_i$ sufficient for $p$?
+:::
+
+Statistics are functions of the data that summarise the information they contain; we are familiar with some sample statistics, including the sample mean and variance.
+A statistic (i.e. some quantity computed from observed data) is sufficient for some model or probability distribution and their unknown parameter(s) if there is no other statistic that we can compute which contains more information about the parameter.
+
+:::{.boxed}
+Given a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ of the random variable $X\sim f(y;\theta)$ the statistic $T(\mathbf{y})$ is *sufficient* for $\theta$ if
+$$
+f(\mathbf{y}|T(\mathbf{y}),\theta)=f(\mathbf{y}|T(\mathbf{y}))
+$$
+the probability distribution of the data $\mathbf{y}$ conditioned on the statistic $T(\mathbf{y})$ is independent of $\theta$.  
+:::
+
+More simply put sufficiency refers to the property of a statistic containing all the information in the data about the parameter value. 
+
+:::{.boxed}
+
+###   Sufficient Statistics {.tabset .tabset-pills}
+
+####    Example
+
+Consider a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ from a Bernoulli distribution. 
+
+Is the statistic $T(\mathbf{y})=\sum_{i=1}^ny_i$ sufficient for $p$?
+
+####    Solution
+
+
+Consider a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ from a Bernoulli distribution and the statistic $T(\mathbf{y})=\sum_{i=1}^ny_i$. Note that $T(\mathbf{y})$ is a random variable thus we can consider the probability $Pr(T=t)$ and find 
+$$
+Pr(\mathbf{y}|T=t)=\frac{Pr(\mathbf{y},T=t)}{Pr(T=t)}
+$$
+to determine if $T$ is a sufficient statistic.
+$$
+\begin{align}
+Pr(\mathbf{y},T(\mathbf{y})=t)
+&=\prod_{i=1}^np^{y_i}(1-p)^{1-y_i}\\
+&=p^{\sum_{i=1}^ny_i}(1-p)^{n-\sum_{i=1}^ny_i}\\
+&=p^t(1-p)^{n-t}
+\end{align}
+$$
+note that $Pr(\mathbf{y},T(\mathbf{y})=Pr(\mathbf{y})$ and that the sum of the outcomes independent identically distributed Bernoulli trials follows a Binomial distribution thus
+$$
+Pr(T(\mathbf{y})=t)={n\choose t}p^t(1-p)^{n-t}
+$$
+and 
+$$
+\begin{align}
+Pr(\mathbf{y}|T=t)&=\frac{Pr(\mathbf{y},T=t)}{Pr(T(\mathbf{y})=t)}\\
+&=\frac{p^t(1-p)^{n-t}}{{n\choose t}p^t(1-p)^{n-t}}\\
+&=\frac{1}{{n\choose t}}.
+\end{align}
+$$
+The conditional disribution $Pr(\mathbf{y}|T=t)$ is a function of $n$ and $T(\mathbf{y})$ but not of $p$, hence $T(\mathbf{y})$ is sufficient. 
+
+
+
+:::
+ 
+We defined the likelihood function as the "connection" between the data and the parameter value; in other words, the likelihood function gives us the means to convert raw data into information about the parameter. 
+
+The sufficiency property implies that we can write the likelihood as a function of sufficient statistic that contains all the data's information.  We will see this idea formalised shortly and serve as a powerful tool for aiding estimation and inference. 
+
+## Neyman-Fisher Factorisation Theorem
+
+:::{.sidenote}
+**Example:**\
+Consider a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ from a exponential distribution. 
+$$
+f(y;\lambda)=\lambda e^{-\lambda y}
+$$
+Use Neyman-Fisher Factorisation to show that $T(\mathbf{y})=\sum_{i=1}^ny_i$ is a sufficient statistic for $\lambda$.
+:::
+
+
+
+
+Using the formal definition of sufficiency and computing the conditional probability to identify sufficient statistics can be cumbersome or impractical.  Instead, we can use the *Neyman-Fisher* factorisation theorem, which provides a convenient expression for identifying sufficient statistics.
+
+:::{.boxed}
+If a given probability density $f(y;\theta)$ the statistic $T(y)$ is a sufficient statistic if and only the non-negative functions $g(\cdot)$ and $h(\cdot)$ can be found such that
+$$
+f(y;\theta)=h(y)g(T(y),\theta).
+$$
+:::
+
+
+The Neyman-Pearson Factorisation theorem is stated in terms of a probability distribution but extends to the likelihood and log-likelihood. The relationship between the parameter and the data is through the sufficient statistic; hence MLEs are functions of sufficient statistics.  
+
+:::{.boxed}
+If a given probability density $f(y;\theta)$ the statistic $T(y)$ is a sufficient statistic if and only the non-negative functions $g(\cdot)$ and $h(\cdot)$ can be found such that
+$$
+L(\theta|\mathbf{y})=h(\mathbf{y})g(T(\mathbf{y}),\theta).
+$$
+or
+$$
+l(\theta|\mathbf{y})=\log(h(\mathbf{y}))+\log(g(T(\mathbf{y}),\theta).
+)
+$$
+:::
+
+:::{.boxed}
+
+###   Neyman-Fisher Factorisation {.tabset .tabset-pills}
+
+####    Example
+
+Consider a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ from a exponential distribution. 
+$$
+f(y;\lambda)=\lambda e^{-\lambda y}
+$$
+Use Neyman-Fisher Factorisation to show that $T(\mathbf{y})=\sum_{i=1}^ny_i$ is a sufficient statistic for $\lambda$.
+
+####    Solution
+
+Consider a sample $\mathbf{y}=(y_1,y_2,\ldots,y_n)$ from a exponential distribution. 
+$$
+f(y;\lambda)=\lambda e^{-\lambda y}
+$$
+Use Neyman-Fisher Factorisation to show that $T(\mathbf{y})=\sum_{i=1}^ny_i$ is a sufficient statistic for $\lambda$.
+
+If we let $h(x)=1$ then
+$$
+\begin{align}
+f(y;\lambda)&=g(T(y),\lambda)\\
+&=\lambda e^{-\lambda y}.
+\end{align}
+$$
+We can see that $T(y)=y$ is a sufficient statistic; this extends to the likelihood and log-likelihood as described.
+
+The likelihood is
+$$
+\begin{align}
+L(\lambda|\mathbf{y})&=\prod_{i=1}^n\lambda e^{-\lambda y_i}\\
+&=\lambda^ne^{-\lambda\sum_{i=1}^ny_i}
+\end{align}
+$$
+and the log-likelihood is 
+$$
+\begin{align}
+l(\lambda|\mathbf{y})&=\log\left(\prod_{i=1}^n\lambda e^{-\lambda y_i}\right)\\
+&=n\log(\lambda)-\lambda\sum_{i=1}^ny_i.
+\end{align}
+$$
+Again with $h(\mathbf{y})=1$, by inspection it is clear that $T(\mathbf{y})=\sum_{i=1}^ny_i$ is a sufficient statistic. 
+
+
+
+:::
+The Neyman-Fisher Factorisation theorem provides a convenient means of identifying sufficient statistics. Heuristically makes sense that sufficiency is a desirable principle in estimators; the Rao-Blackwell theorem defines the formal advantage of this and its relationship to the property of efficiency.
+
+## Efficiency and Rao-Blackwellisation
+
+:::{.sidenote}
+**Efficiency**\
+The efficiency of $\tilde{\theta}$ an unbiased estimator of the parameter $\theta$ is
+$$
+e(\tilde{\theta})=\frac{\mathcal{I}_n^{-1}(\theta)}{\operatorname{Var}(\tilde{\theta})}
+$$
+Using the [Cramér–Rao Lower Bound](./Parameter_Estimation.html#cramérrao-lower-bound) we can prove that 
+$$
+e(\tilde{\theta})\leq 1.
+$$
+:::
+
+Estimators with minimal variance are preferred, and we can express this as a desire for the most efficient estimators possible.  While obtaining the most efficient estimator is a laudable goal, we can only ensure our estimator achieves this goal when we verify that a given estimator's variance obtains the Cramér–Rao Lower Bound.  Finding the variance for an estimator and comparing it to the Cramér–Rao Lower Bound can be difficult. In some cases, it is computationally easier to find estimators that don't achieve maximum efficiency.  In this case, is there a way we can improve these estimators?  
+
+The answer to this question we present the Rao-Blackwell theorem
+
+:::{.boxed}
+**The Rao-Blackwell Theorem**\
+
+Let $\hat{\theta}$ be an unbiased estimator of the parameter $\theta$ such that 
+$$
+\operatorname{E}\left(\hat{\theta}^2\right)<\infty
+$$
+and let $T$ be a sufficient statistic for $\theta$ and define $\tilde{\theta}=\operatorname{E}(\hat{\theta}|T)$.
+
+Then
+$$
+\operatorname{E}\left[(\tilde{\theta}-\theta)^2
+\right]\leq
+\operatorname{E}\left[(\hat{\theta}-\theta)^2
+\right]
+$$
+:::
+
+The gist of this is that estimators' efficiency can be improved (or not made worse) by conditioning on a sufficient statistic.  This procedure is *Rao-Blackwellisation*.
+
+:::{.boxed}
+**Proof of the Rao-Blackwell Theorem**\
+If 
+$$
+\operatorname{E}(\tilde{\theta})=\operatorname{E}\left[\operatorname{E}(\hat{\theta}|T)
+\right]
+$$
+then
+$$
+\operatorname{E}(\tilde{\theta})=\operatorname{E}(\hat{\theta}).
+$$
+Note that for two random variables $X$ and $Y$
+$$
+\operatorname{Var}(Y) = \operatorname{Var}\left[\operatorname{E}(Y|X)\right]+
+\operatorname{E}\left[\operatorname{Var}(Y|X)\right].
+$$
+Then
+$$
+\begin{align}
+\operatorname{Var}(\hat{\theta})&=\operatorname{Var}\left[\operatorname{E(\hat{\theta}|T)}\right]+
+\operatorname{E}\left[\operatorname{Var}(\hat{\theta}|T)\right]\\
+&=\operatorname{Var}(\tilde{\theta})+\operatorname{E}\left[\operatorname{Var}(\hat{\theta}|T)\right]
+\end{align}
+$$
+or
+$$
+\operatorname{Var}(\tilde{\theta})=\operatorname{Var}(\hat{\theta})-\operatorname{E}\left[\operatorname{Var}(\hat{\theta}|T)\right]
+$$
+We know that $\operatorname{E}\left[\operatorname{Var}(\hat{\theta}|T)\right]\geq0$ with the equality holding $\operatorname{E}\left[\operatorname{Var}(\hat{\theta}|T)\right]=0$ if $\operatorname{Var}(\hat{\theta}|T)=0$ which is true only if $\hat{\theta}$ is a function of the sufficient statistic $T$.
+:::
+
+&nbsp;
+
+:::{.sidenote}
+**Example:**\
+Consider data $\mathbf{y}=y_1,y_2,\ldots,y_n$ from $Y\sim Pois(\lambda)$ and $\hat{\theta}$ the unbiased estimator of $Pr(y=0)=e^{-\lambda}$ 
+$$
+\hat{\theta}=\left\{
+\begin{array} &
+1, & y_1=0 \\
+0, & \mbox{else}
+\end{array}
+\right.
+$$
+
+Use Rao-Blackwellisation to improve $\hat{\lambda}$.
+
+:::
+
+It may not seem immediately obvious how (or when) to apply this method to real-world problems of finding estimators.  But it is important to remember the basic principle is that conditioning on sufficient statistics improves estimates and that the expectation operator is just an integration (or summation) and can be widely applied.  
+
+Also, Rao-Blackwellisation is an *idempotent* operation; applying Rao-Blackwellisation to an estimator $\theta^*$ that has already been Rao-Blackwellised and can't be improved returns the improved estimator $\theta^*$. This property leads to the idea of using Rao-Blackwellisation as a means of updating or improving initial estimators.
+
+:::{.boxed}
+### Rao-Blackwellisation {.tabset .tabset-pills}
+
+####    Example
+
+Consider data $\mathbf{y}=y_1,y_2,\ldots,y_n$ from $Y\sim Pois(\lambda)$ and $\hat{\theta}$ the unbiased estimator of $Pr(y=0)=e^{-\lambda}$ 
+$$
+\hat{\theta}=\left\{
+\begin{array} &
+1, & y_1=0 \\
+0, & \mbox{else}
+\end{array}
+\right.
+$$
+
+Use Rao-Blackwellisation to improve $\hat{\lambda}$.
+
+#### Solution
+
+Consider data $\mathbf{y}=y_1,y_2,\ldots,y_n$ from $Y\sim Pois(\lambda)$ and $\hat{\theta}$ the unbiased estimator of $Pr(y=0)=e^{-\lambda}$ 
+$$
+\hat{\theta}=\left\{
+\begin{array} &
+1, & y_1=0 \\
+0, & \mbox{else}
+\end{array}
+\right.
+$$
+Use Rao-Blackwellisation to improve $\hat{\lambda}$.
+
+The sufficient statistic for in this case is $T(\mathbf{y})=\sum_{i=1}^ny_i$, thus the Rao-Blackwellised estimator is
+
+$$  
+\begin{align}
+\tilde{\theta}&=\operatorname{E}(\hat{\theta}|T(\mathbf{y})=t)\\
+&=\operatorname{E}(\mathbb{I}_{y_1=1}(y)|T(\mathbf{y})=t)\\
+&=Pr(y_1=0|t).
+\end{align}
+$$
+Using the definition of conditional probability 
+$$
+\begin{align}
+Pr(y_1=0|t)&=\frac{Pr(y_1=1,t)}{Pr(t)}\\
+&=\frac{e^{-\lambda}\left[\frac{\{(n-1)\lambda\}^te^{-(n-1)\lambda}}{t!}\right]}{\frac{(n\lambda)^te^{-n\lambda}}{t!}}\\
+&=\left(\frac{n-1}{n}\right)^t\\
+&=\left(1-\frac1n\right)^t
+\end{align}
+$$
+because $t=\sum_{i=1}^ny_i$ is an unbiased estimator of $\lambda$ as $n$ increases $t\rightarrow n\lambda$, thus  as $n$ increases the expression for the Rao-Blackwellised estimator $\tilde{\theta}$ is
+$$
+\begin{align}
+\tilde{\theta}&=\left(1-\frac1n\right)^{n\lambda}\approx e^{-\lambda}.
+\end{align}
+$$
+The implication of this is that by applying the Rao-Blackwell theorem, we improve estimators by conditioning the sufficient statistic, especially as $n$ increases. 
+
+
+
+
+:::
+
+We will see in later material that we can apply the idea of Rao-Blackwellisation more broadly to problems of inference. 

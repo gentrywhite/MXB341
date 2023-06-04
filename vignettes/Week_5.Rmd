@@ -1,0 +1,716 @@
+---
+title: "Week 5"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Week 5}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(tidyverse)
+library(pracma)
+```
+
+```{r, echo=FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("QUTReadings.css")
+
+```
+
+\maketitle
+
+<br>
+
+#   Point vs Interval Estimation
+
+:::{.sidenote}
+<center>
+![Statistician Jerzy Neyman.](440px-Jerzy_Neyman2.jpg){width=200px}
+
+</center>
+
+
+**Example:**\
+Consider expressing an estimate of the population mean $\mu$ two
+different ways $$\bar{y}\quad\mbox{ vs }\quad [\bar{y}-1,\bar{y}+1]$$ We
+have no confidence that $\bar{y}=\mu$, but the interval
+$\mu\in[\bar{y}-1,\bar{y}+1]$ inspires more confidence.  Statistician Jerzy Neyman first formalised this idea in 1937, but it wasn't fully understood or commonly used as a tool of inference until many years later. 
+:::
+
+Previously, we examined three approaches using data to find point estimators for the parameters of probabilistic models: least-squares, the method of moments, and maximum likelihood. We also discussed the benefits and limitations of each technique and defined some concepts for assessing estimators: bias, sufficiency, efficiency, Fisher information and the Cramér-Rao Lower Bound.  These methods for finding estimators result in *point estimators* or single values that estimate the parameter. We know that asymptotically the Law of Large numbers ensures that the estimator will converge to the true value
+$$
+\lim_{n\rightarrow\infty}Pr(|\bar{y}-\mu|>\epsilon)=0.
+$$  
+
+But we need to note that all point estimators are functions of the data, which arise as realisations of a random variable or process.  As a result, the point estimators are random variables. Thus,for any estimator $\hat{\theta}$ of the continuous parameter $\theta$ 
+$$
+Pr(\hat{\theta}=\theta)=0.
+$$
+In any given case, this situation poses a problem: how confident can we be in our estimators, and how do we measure and communicate that uncertainty? 
+
+Thus, while point estimators are convenient summaries parameters based on data, they fail to capture the entirety of the estimation process's nuances.  Interval estimators offer a more detailed picture, including both the point estimate and a measure of uncertainty or confidence in that estimate. 
+
+<!--
+:::{.sidenote}
+**Example:**\
+Consider expressing an estimate of the population mean $\mu$ two
+different ways $$\bar{y}\quad\mbox{ vs }\quad [\bar{y}-1,\bar{y}+1]$$ We
+have no confidence that $\bar{y}=\mu$, but the interval
+$\mu\in[\bar{y}-1,\bar{y}+1]$ inspires more confidence.   
+:::
+-->
+The concept of confidence, meaning a measure of reliability or certainty, is applied in this situation. Unfortunately, our confidence in an estimator is often confused confidence in the parameter, treating the parameter as a random quantity, which it is not. This confusion is understandable; we express our confidence in an estimator as a statement of probability with respect to the randomness that arises through the sampling and estimation processes, not the parameter value. We shall see this more clearly as we develop the technical details of the confidence interval.  
+
+
+
+##    Using the Sampling Distribution of </br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; the Maximum Likelihood Estimator
+
+:::{.sidenote}
+**What does "sufficiently large" mean, and what do we mean by "practically speaking"?**\
+The rule of thumb for assuming asymptotic normality for the sample mean is $n\geq 30$; this may vary for other parameters depending on the specific case but $n\geq 30$ is a safe place to start.  
+
+"Practically speaking" means that in any given situation, results from inference using the Gaussian approximation will rarely, if ever, be substantially or meaningfully different that results using the "exact" (i.e. unknown) sampling distribution of the MLE.
+
+:::{.quote}
+"In theory, there is no difference between theory and practice. In practice, there is." \
+--- Jan van de Snepscheut *(attributed)*
+
+:::
+:::
+
+When working with maximum likelihood estimators (MLE), we can show that under certain regularity conditions, the distribution of the MLE of a parameter $\hat{\theta}$ converges to a Gaussian distribution as the sample size $n$ approaches infinity
+$$
+\sqrt{\mathcal{I}_n(\theta)}(\hat{\theta}-\theta)\sim N(0,1)\text{ as }n\rightarrow\infty.    
+$$
+
+
+
+Practically speaking, if $n$ is sufficiently large, we can assume for making an inference that the MLE's follows a Gaussian distribution. Thus, we can use this fact to make statements of probability associated with the MLE. Note that we parameterise the sampling distribution for $\hat{\theta}$ by $\theta$, the parameter of interest.  This parameterisation can cause us to confuse the statement of probability about $\hat{\theta}$ for one about $\theta$.  It is important to remember that the parameter $\theta$ is not a random variable; it has a fixed (but unknown) value. Any statements of probability made using the MLE sampling distribution apply only to the MLE, though their interpretation in practical terms may be made relative to $\theta$.
+
+To illustrate this point, consider the Central Limit Theorem, which states that the MLE distribution will converge to a Gaussian distribution as the sample size $n$ approaches infinity.  
+$$
+\sqrt{n}(\bar{y}-\mu)\rightarrow N\left(0,\sigma_{MLE}^2\right).
+$$
+
+implying that 
+$$
+Z=\frac{\bar{y}-\mu}{\sigma/\sqrt{n}}\sim (N(0,1)
+$$
+then
+$$
+Pr\left(Z_{\alpha/2}\leq\frac{\bar{y}-\mu}{\sigma/\sqrt{n}}\leq Z_{1-\alpha/2}\right)=\alpha
+$$
+and the $(1-\alpha)\%$ Confidence Interval is defined as
+$$
+\bar{y}\pm Z_{1-\alpha/2}\frac{\sigma}{\sqrt{n}}.
+$$
+It is very important to note that the statement of probability that is
+the basis for the confidence interval is *not* a statement of
+probability regarding $\mu$, as $\mu$ is not a random variable.
+Therefore the statement
+$$
+Pr\left(Z_{\alpha/2}\leq\frac{\bar{y}-\mu}{\sigma/\sqrt{n}}\leq Z_{1-\alpha/2}\right)=1-\alpha
+$$
+does not imply that there is a $(1-\alpha)\%$ chance that $\mu$ is in
+the interval 
+$$
+\bar{y}\pm Z_{1-\alpha/2}\frac{\sigma}{\sqrt{n}}.
+$$ 
+There is a $(1-\alpha)\%$ chance that the constructed using this method "captured" $\mu$. Or that there is a $1-\alpha\%$ chance that the interval contains $\mu$. These semantics are a subtle but important distinction. Remember, $\mu$ is not a random
+variable, so the uncertainty involved is solely due to the estimation
+process and the probability distribution of $\bar{y}$. The resulting
+interval conveys the level of confidence regarding the
+estimation process and the resulting estimate; it doesn't make a probability
+statements about the parameter.
+
+#   Finding Confidence Intervals
+
+The method outlined above for deriving the confidence interval for the sample mean provides a general framework for deriving confidence intervals for any MLE (or another estimator with a known sampling distribution). Several specific methods can be useful in particular contexts. It is also helpful to point out here what the observant reader might have already noticed that the procedure for computing the sample mean's confidence interval has a similar flavour as that for deriving the rejection region of the hypothesis test of the population mean. This fact is an important observation to make and will help explore other properties of confidence intervals. 
+
+## Inverting Test Statistics {#inverting-test-statistics .unnumbered}
+
+There is an inherent connection between confidence intervals and
+hypothesis testing.  Both of these procedures rely on the sampling distribution of an estimator $\hat{\theta}$ for making inference about $\theta$ the parameter of interest. We will also see that the two procedures are, in a sense, complementary means of making an inference.  
+
+:::{.sidenote}
+**Example:**\
+Find the $1-\alpha\%$ confidence interval for $\bar{y}$ based on the hypothesis test of 
+$$
+H_0:\mu=0\qquad H_A:\mu\neq 0.
+$$
+:::
+
+Specifically, for a given point null hypothesis test with a Type I error rate of $\alpha$ and the hypotheses
+$$
+H_0:\theta = \theta_0\qquad H_A:\theta\neq\theta_0
+$$
+a rejection region $R$ is defined based on the sampling distribution of the estimator $\hat{\theta}$, the rejection region is defined as the disjoint region of $\theta\in\Theta$ that is far enough away from $\theta_0$ that the probability of observing the test statistic $\hat{\theta}$ given that $\theta=\theta_0$. The confidence interval $S$ is the complement of the rejection region $R$; in other words, it is a continuous region containing $\bar{y}$ computed assuming that $\theta=\theta_0$ and the decision to reject the null hypothesis occurs when $\theta_0\notin S$.  
+
+:::{.boxed}
+**The Confidence Interval for the Sample Mean:**\
+The procedure for testing the hypotheses 
+$$
+H_0:\mu=0\qquad H_A:\mu\neq 0.
+$$ 
+computes a rejection region $R$ such that 
+$$
+Pr(\bar{y}\in R|\mu = 0)=\alpha
+$$
+the rejection region based on the test statistic
+$$
+Z=\frac{\bar{y}-0}{\sigma/\sqrt{n}}
+$$
+is
+$$
+R=Z<Z_{\alpha/2}\cup Z>Z_{1-\alpha/2}
+$$
+where
+$$
+Pr(Z<Z_{\alpha/2})=\alpha/2\text{ and }Pr(Z>Z_{1-\alpha/2})=\alpha/2
+$$
+thus
+$$
+Pr(Z\in R)=\alpha.
+$$
+It is easy to see that 
+$$
+\begin{align}
+Pr(Z\in R^c)=&1-\alpha\\
+Pr\left(Z_{\alpha/2}\leq Z\leq Z_{1-\alpha/2}\right)=&1-\alpha\\
+Pr\left(Z_{\alpha/2}\leq \frac{\bar{y}-0}{\sigma/\sqrt{n}}\leq Z_{1-\alpha/2}\right)=&1-\alpha
+\end{align}
+$$
+Thus we can write the confidence interval
+$$
+\bar{y}\pm Z_{1-\alpha/2}\frac{\sigma}{\sqrt{n}}.
+$$
+:::
+
+We can conceptualise The $1-\alpha\%$ confidence interval as the bounds of the compliment to the rejection region $R$ for the hypothesis test with Type I error rate of $\alpha$,  i.e.\ we would reject the null hypothesis if the confidence interval did not contain $0$. 
+
+:::{.sidenote}
+**Example:**\
+Compute the confidence interval for the mean $\lambda$ of an exponential population where
+$$
+f(y;\lambda)=\frac{1}{\lambda}e^{-y/\lambda}
+$$ 
+by inverting the likelihood ratio test 
+<!--
+of
+$$
+H_0:\lambda=\lambda_0\qquad H_A:\lambda\neq\lambda_0.
+$$
+-->
+:::
+
+More generally, for the hypotheses
+$$
+H_0:\theta=\theta_0\qquad H_A:\theta\neq\theta_0
+$$
+we would reject the null hypothesis if the confidence interval did not contain $\theta_0$. We found the sample mean confidence interval by inverting the hypothesis test; we can apply this idea more broadly and invert the likelihood ratio test for more esoteric cases. 
+
+:::{.boxed}
+###  Inverting the Exponential Likelihood Ratio Test {.tabset .tabset-pills}
+
+#### Solution
+Given a random sample $y_1,\ldots,y_n$ the likelihood ratio test
+statistic is
+$$
+\Lambda(\mathbf{y})=\frac{\left(\frac{1}{\lambda_0}\right)^ne^{-\sum y_i/\lambda_0}}{\left(\frac{1}{\bar{y}}\right)^ne^{-\sum y_i/\bar{y}}}=
+\left(\frac{\sum_i^ny_i}{n\lambda_0}\right)^ne^ne^{-\sum y_i/\lambda_0}.
+$$
+The Acceptance Region (the complement to the Rejection Region) is
+$$
+A(\lambda_0)=\left\{\mathbf{y}:\left(\frac{\sum y_i}{\lambda_0}\right)^ne^{-\sum y_i/\lambda_0}\geq k\right\}
+$$
+where $k$ is chosen such that $Pr(\mathbf{y}\in A(\lambda_0))=1-\alpha$.
+This region is a subset of the sample space, and inverting the acceptance region
+yields the confidence interval (or set)
+$$
+C(\mathbf{y})=\left\{\lambda:\left(\frac{\sum y_i}{\lambda}\right)^ne^{-\sum y_i/\lambda}\geq k\right\}
+$$
+an interval in the parameter space of $\lambda$.
+
+We can redefine the confidence interval as
+$$
+C\left(\sum y_i\right)=\left\{\lambda:L\left(\sum y_i\right)\leq\lambda\leq U\left(\sum y_i\right)\right\}
+$$
+Note that $L$ and $U$ are functions determined by the constraint that
+$Pr(\lambda\in C(\mathbf{y}))=1-\alpha$ and
+$$
+\left(\frac{\sum y_i}{L\left(\sum y_i\right)}\right)^ne^{-\sum y_i/L\left(\sum y_i\right)}= \left(\frac{\sum y_i}{U\left(\sum y_i\right)}\right)^ne^{-\sum y_i/U\left(\sum y_i\right)}
+$$
+setting
+$$
+\frac{\sum y_i}{L\left(\sum y_i\right)}=a\quad \mbox{ and }\quad \frac{\sum y_i}{U\left(\sum y_i\right)}=b
+$$
+where $a>b$ are constants, then the constraint becomes
+$$
+a^ne^{-a}=b^ne^{-b}
+$$ 
+and
+$$
+C(\mathbf{y})=\left\{\lambda:\frac{1}{a}\sum y_i\leq \lambda \leq\frac{1}{b}\sum y_i\right\}
+$$
+Recall that $Pr(\lambda\in C(\mathbf{y}))=1-\alpha$, then
+$$
+Pr\left(\frac{1}{a}\sum y_i\leq \lambda \leq\frac{1}{b}\sum y_i\right)=Pr\left(b\leq\frac{\sum y_i}{\lambda}\leq a\right)=1-\alpha
+$$
+with the previous constraint and
+$$
+Pr\left(b\leq\frac{\sum y_i}{\lambda}\leq a\right)=\int_b^af(t)dt
+$$
+where $t=\sum y_i/\lambda$, values for $a$ and $b$ can be found
+numerically by noting that if $\sum y_i\sim Ga(n,\lambda)$ then
+$t\sim Ga(n,1)$.  
+
+For $\alpha = 0.1$ and a sample of size $n=10$ the resulting limits for the $90\%$ confidence interval are computed numerically using the \(\textsf{R}\) software package. 
+
+
+
+#### R Code
+
+```{r}
+##  Code to numerically find the limits a and b. Note that this requires a 
+##  a solver for a set of non-linear equations.
+
+##  The set of multivariate functions to solve for the limits a and b, 
+##  and the sample size n =10. Note that x=[a,b]
+
+f<-function(x,n,alpha)
+{
+  z<-rep(NA,2)
+  
+  ##  and are the solutions to the non-linear equations
+  
+  ans<-c(0,1-alpha)
+  
+  ##  Constraint 1 that a^n * exp(-a) = b^n * exp(-b)
+  
+  z[1]<-((x[1])^(n))*exp(-x[1])-x[2]^(n)*exp(-x[2])
+  
+  ##  Constraint 2 that the integral of the sampling distribution between b and a evaluates to 
+  ##  1-\alpha.
+  
+  z[2]<-pgamma(x[1],n,1)-pgamma(x[2],n,1)
+  
+  return(z-ans)
+}
+
+res<-fsolve(function(x) f(x,10,0.1),c(14,5))
+diff(res$x)%>%abs()
+
+a<-round(res$x[1],3)
+b<-round(res$x[2],3)
+
+```
+
+#### Plot
+
+```{r echo = FALSE}
+
+a <- 16.199
+b <- 5.629
+
+##  Now plot the results
+
+x <- seq(0,25,len = 250)
+
+df <- tibble(x = x,y = dgamma(x,10,1))
+
+ggplot(df)+
+  geom_line(aes(x = x, y = y))+
+  geom_ribbon(data = subset(df,x<b),aes(x = x, ymin = 0, ymax = y),
+                  fill="grey20", colour = NA, alpha = 0.5)+
+  geom_ribbon(data = subset(df,x>a), aes(x = x, ymin = 0, ymax = y),
+              fill="grey20",colour = NA, alpha = 0.5)+
+  ylab("Density")+
+  xlab(expression(sum(x[i])))+
+  labs(title = expression("Plot of Density Function for "*sum(x[i])%~%Ga(n,1)))+
+  theme(plot.title = element_text(hjust = 0.5))
+  
+set.seed(14061972)
+
+y<-rexp(10,1)
+
+```
+
+The limits for the $90\%$ confidence interval are a = `r a` and b = `r b`, and the confidence interval takes the form of 
+$$
+\left(\frac{\sum y_i}{`r paste(a)`},\frac{\sum y_i}{`r paste(b)`}\right).
+$$
+For a random sample of size $n=10$ from $x\sim \operatorname{Exp}(1)$, with $\sum y_i = `r round(sum(y),3)`$ the resulting estimate $\hat{\lambda}$=`r round(mean(y),3)`, and the resulting $90\%$ confidence interval is
+$$
+\begin{align}
+\left(\frac{\sum y_i}{`r paste(a)`},\frac{\sum y_i}{`r paste(b)`}\right)&=
+\left(\frac{`r round(sum(y),3)`}{`r paste(a)`},\frac{`r round(sum(y),3)`}{`r paste(b)`}\right)\\
+&=\left(`r round(sum(y)/a,3)`,`r round(sum(y)/b,3)`\right)
+\end{align}
+$$
+:::
+
+## Pivotal Quantities {#pivotal-quantities .unnumbered}
+
+The derivation of the confidence interval for $\mu$ from a Gaussian
+distribution where $x\sim N\left(\mu,\sigma^2\right)$ makes use of the sampling distribution of $\bar{y}$
+$$
+\bar{y}\sim N\left(\mu,\frac{\sigma^2}{n}\right)
+$$
+and takes advantage of the properties that for the random variable $Y$ with $\operatorname{E}(Y)=\mu$ and $\operatorname{Var}(Y)=\sigma^2$
+$$
+\begin{align}
+\operatorname{E}(Y-a)&=\mu-a\\
+\operatorname{Var}(Y+a)&=\sigma^2\\
+\operatorname{Var}(aY)&=a^2\sigma^2
+\end{align}
+$$
+hence
+$$
+\begin{align}
+\operatorname{E}(Y-\mu)&=0\\
+\operatorname{Var}\left(\frac{Y-\mu}{\sigma}\right)&=1
+\end{align}
+$$
+and the test statistic $Z\sim N(0,1)$
+$$
+Z=\frac{\bar{y}-\mu}{\sigma/\sqrt{n}}.
+$$ 
+ has a probability density function that does not depend on the parameters of the probability density function of the random variable $Y$. The quantity $Z$ is called a *pivotal quantity*, a pivotal quantity is defined $Q(\mathbf{y},\theta)$ is a pivotal quantity of $\theta$ if the probability distribution of $Q$ does not depend on $\theta$ the parameters of the probability distribution of $Y$.
+
+While the function $Q(\mathbf{y},\theta)$ will in most cases explicitly
+contain both parameters and statistics, for any set $A$,
+$Pr(Q(\mathbf{y},\theta)\in A)$ cannot depend on $\theta$. The technique of
+using pivotal quantities to construct confidence intervals relies on the
+ability to find the set $\{\theta:Q(\mathbf{y},\theta)\in A\}$ such that $A\in\Theta$ where $\Theta$ is the domain of $\theta$.
+
+:::{.sidenote}
+**Example:**\
+Show that given $y_1,\ldots,y_n\stackrel{iid}{\sim}Exp(\lambda)$, we can construct a pivotal quantity for $\lambda$ based on the sufficient statistic $T=\sum y_i$.
+:::
+
+In the case of location-scale probability distributions (i.e. pdfs that
+are parameterised in terms of location and scale) there are typically
+several pivotal quantities available. If we consider the sample
+$y_1,\ldots,y_n$ from the pdfs in the table below, and the sample mean
+$\bar{y}$ and sample standard deviation $s$ the resulting pivotal
+quantities are available. 
+
+:::{.table}
+  Form of pdf                                            Type of pdf      Pivotal quantity
+  ---------------------------                            -----------      ------------------
+  $f(x-\mu)$                                             Location         $\bar{y}-\mu$
+  $\frac{1}{\sigma}f\left(\frac{x}{\sigma}\right)$       Scale            $\frac{\bar{y}}{\sigma}$
+  $\frac{1}{\sigma}f\left(\frac{x-\mu}{\sigma}\right)$   Location-scale   $\frac{\bar{y}-\mu}{\sigma}$
+:::
+
+Proving these are pivotal quantities only
+requires showing that their pdfs do not depend on the parameters. This
+is illustrated by noting that if the sample
+$y_1,\ldots,y_n\sim N(\mu,\sigma^2)$ then the well-know result that
+$(\bar{y}-\mu)/s/\sqrt{n}\sim t_{n-1}$ where the $t$ distribution does
+not depend on $\mu$ or $\sigma^2$.
+
+:::{.boxed}
+
+### Using the Gamma Pivotal Quantity {.tabset .tabset-pills}
+
+#### Solution
+
+Given $y_1,\ldots,y_n\stackrel{iid}{\sim}Exp(\lambda)$ the resulting likelihood is
+$$
+\begin{align}
+L(\lambda|\mathbf{y})&=\prod_{i=1}^n\frac{1}{-\lambda}\exp(\lambda y_i)\\
+&=\left(\frac{1}{\lambda}\right)^n\exp\left(-\lambda\sum_{i=1}^ny_i\right)
+\end{align}
+$$
+which shows that $T=\sum y_i$ is a sufficient statistic for $\lambda$. The probability distribution of $T$ is derived from the probability distribution of $Y$.  Assume that $y_i\sim Exp(\lambda),\:\forall i=1,2,\ldots,n$ and let $Y=y_1+y_2$ then $Y\sim Ga(2,\lambda)$
+$$
+\begin{align}
+f_Y(y)&=\int_0^y\lambda e^{-\lambda(y-y_1)}\lambda e^{-\lambda y_1}dy_1\\
+&=\lambda^2e^{-\lambda y}\int_0^ydy_1\\
+&=\lambda^2 y e^{\lambda y}
+\end{align}
+$$
+which we can generalise to $T=y_3+Y$ where
+$$
+\begin{align}
+f_T(t)&=\int_0^t\lambda e^{-\lambda (t-y)}\lambda^2ye^{-\lambda y}dy\\
+&=\lambda^3e^{-\lambda t}\int_0^tydy\\
+&=\frac{\lambda^3}{2}t^2e^{-\lambda t}
+\end{align}
+$$
+by induction, we can see that $T=\sum y_i\sim Ga(n,\lambda)$. The Gamma distribution is a member of the scale family, and the pivot $T/\lambda\sim Ga(n,1)$ (or we can
+exploit the fact that the pivot $2T/\lambda\sim\chi^2_{2n}$) to construct a confidence interval.
+
+Hence we can construct the $1-\alpha\%$ confidence interval using the quantiles of the probability distribution of the pivotal quantity $Q(\mathbf{y},\lambda)$
+
+
+
+####   R Code
+
+```{r,eval = FALSE}
+
+a <- round(qgamma(0.95,10,1),3)
+b <- round(qgamma(0.05,10,1),3)
+
+##  Now plot the results
+
+x <- seq(0,25,len = 250)
+
+df <- tibble(x = x,y = dgamma(x,10,1))
+
+ggplot(df)+
+  geom_line(aes(x = x, y = y))+
+  geom_ribbon(data = subset(df,x<b),aes(x = x, ymin = 0, ymax = y),
+                  fill="grey20", colour = NA, alpha = 0.5)+
+  geom_ribbon(data = subset(df,x>a), aes(x = x, ymin = 0, ymax = y),
+              fill="grey20",colour = NA, alpha = 0.5)+
+  ylab("Density")+
+  xlab(expression(sum(x[i])))+
+  labs(title = expression("Plot of Density Function for "*sum(x[i])%~%Ga(n,1)))+
+  theme(plot.title = element_text(hjust = 0.5))
+  
+set.seed(14061972)
+
+y<-rexp(10,1)
+
+```
+
+####   Plot
+
+```{r,echo = FALSE}
+
+a <- round(qgamma(0.95,10,1),3)
+b <- round(qgamma(0.05,10,1),3)
+
+##  Now plot the results
+
+x <- seq(0,25,len = 250)
+
+df <- tibble(x = x,y = dgamma(x,10,1))
+
+ggplot(df)+
+  geom_line(aes(x = x, y = y))+
+  geom_ribbon(data = subset(df,x<b),aes(x = x, ymin = 0, ymax = y),
+                  fill="grey20", colour = NA, alpha = 0.5)+
+  geom_ribbon(data = subset(df,x>a), aes(x = x, ymin = 0, ymax = y),
+              fill="grey20",colour = NA, alpha = 0.5)+
+  ylab("Density")+
+  xlab(expression(sum(x[i])))+
+  labs(title = expression("Plot of Density Function for "*sum(x[i])%~%Ga(n,1)))+
+  theme(plot.title = element_text(hjust = 0.5))
+  
+set.seed(14061972)
+
+y<-rexp(10,1)
+
+```
+
+
+
+The limits for the $90\%$ confidence interval are $Q(\mathbf{y},\lambda)_{0.95}$ = `r a` and $Q(\mathbf{y},\lambda)_{0.05}$ = `r b`, see the Figure at right, and the confidence interval takes the form of 
+$$
+\left(\frac{\sum y_i}{Q(\mathbf{y},\lambda)_{0.95}},\frac{\sum y_i}{Q(\mathbf{y},\lambda)_{0.05}}\right).
+$$
+For a random sample of size $n=10$ from $x\sim \operatorname{Exp}(1)$, with $\sum y_i = `r round(sum(y),3)`$ the resulting estimate $\hat{\lambda}$=`r round(mean(y),3)`, and the resulting $90\%$ confidence interval is
+$$
+\begin{align}
+\left(\frac{\sum y_i}{`r paste(a)`},\frac{\sum y_i}{`r paste(b)`}\right)&=
+\left(\frac{`r round(sum(y),3)`}{`r paste(a)`},\frac{`r round(sum(y),3)`}{`r paste(b)`}\right)\\
+&=\left(`r round(sum(y)/a,3)`,`r round(sum(y)/b,3)`\right)
+\end{align}
+$$
+
+:::
+
+#    Evaluating Intervals Size </br>&nbsp;&nbsp;&nbsp;&nbsp; and Coverage Probability
+
+:::{.sidenote}
+**Example:**\
+Compute the confidence interval for the mean $\lambda$ of an exponential population where
+$$
+f(y;\lambda)=\frac{1}{\lambda}e^{-y/\lambda}
+$$ 
+by using the procedure for finding a minimum width confidence interval.  
+
+Do these procedures work?
+:::
+
+Suppose we conceive confidence intervals as the complement of hypothesis tests or the complement to the rejection region. In that case, as we compare different methods of constructing confidence intervals, it makes sense that the measure of a test, its power, has a complement for confidence intervals.  Power is a measure of a test's ability to detect the difference between the true parameter value and its hypothesised value. For a given Type I error rate $\alpha$, the best or most powerful test is the one with the largest rejection region; conversely, the "best confidence interval for a given confidence level $1-\alpha$ is the narrowest. As we have seen in the previous examples, finding the minimum width confidence interval is not always straightforward.  
+
+The following theorem guides finding the minimum
+width confidence interval.
+
+:::{.boxed}
+**Finding the Minimum Width Confidence Interval:**\
+
+Let $f(x)$ be a unimodal pdf with $f(y)>0\:\forall y\in Y$. If the interval $[a,b]$ satisfies the conditions
+
+1.  $\int_a^bf(y)dy = 1-\alpha$
+
+2.  $f(a)=f(b)$
+
+3.  $a\leq y^*\leq b\mbox{ where }y^*\mbox{ is the mode of }f(x)$.
+
+then $[a,b]$ is the shortest interval that satisfies the condition $1$.
+
+:::
+
+These conditions show that for symmetric distributions, like the Gaussian or Student's-$t$, we can show that the minimum width confidence interval based on the $\alpha/2$ and $1-\alpha/2$ quantiles, which we can find analytically with little effort.
+
+:::{.boxed}
+
+Let $y_1,\ldots,y_n\stackrel{iid}{\sim}N(\mu,\sigma^2)$ with a known
+$\sigma^2$. The pivot is then 
+$$
+Z=\frac{\bar{y}-\mu}{\sigma/\sqrt{n}}
+$$
+with $Z\sim N(0,1)$, and any $a$ and $b$ that satisfies
+$$
+Pr(a\leq Z \leq b)=1-\alpha
+$$ 
+gives a $1-\alpha\%$ confidence interval, if we choose $a=Z_{\alpha/2}$ and $b=Z_{1-\alpha/2}$ then the condition 
+$$
+Pr(a\leq Z \leq b)=1-\alpha
+$$
+is satisfied, note that $a=-b$.  We can also note that by symmetry
+$$
+\phi\left(Z_{\alpha/2}\right)=\phi\left(Z_{1-\alpha/2}\right)
+$$
+where $\phi(\cdot)$ is the standard normal probability density function.  Finally, the standard normal distribution mode is $0$, hence the condition that $a<y^*<b$, where $y^*=0$ is the mode of the density of $Z$, is satisfied.
+For any sampling distribution $\bar{y}\sim N\left(\mu,\sigma^2/n\right)$ the confidence interval of $\mu$ can be written as a linear function of $a$ and $b$
+$$
+\left\{\mu:\bar{y}+a\frac{\sigma}{\sqrt{n}}\leq \mu \leq \bar{y}+b\frac{\sigma}{\sqrt{n}}\right\},
+$$
+satisfing the conditions for finding the minimum width confidence interval.  
+
+:::
+
+For asymmetric or skewed distributions finding the points $a$ and $b$ that satisfy the theorem's conditions can be challenging. In cases where the resulting interval is a non-linear function of $a$ and $b$, the theorem's conditions will not apply, and attempting to do so (as we will see shortly) will not yield the desired results.  
+
+:::{.boxed}
+
+### Finding the Minimum Width Confidence Interval for $\hat{\lambda}$ {.tabset .tabset-pills}
+
+#### Solution
+
+Given $\sum y_i\sim Ga(n,\lambda)$ the pivot is $Y=y/\lambda$, and $Y\sim Ga(n,1)$.
+So we can find a confidence interval by finding $a$ and $b$ such that
+$$
+Pr(a\leq Y\leq b)=1-\alpha.
+$$ 
+and we can ensure the other conditions of the theorem hold using numerical optimisation with non-linear constraints. 
+
+
+
+#### R Code
+
+```{r}
+##  Code to numerically find the limits a and b for a minimum width 
+##  confidence interval. Note that this requires a constrained 
+##  optimisation routine.
+
+##  We want the minimum width confidence interval our objective function to 
+##  minimise is the difference a-b where x=[a,b].
+
+f<-function(x) x[1]-x[2]
+
+##  We define the linear constraints that a-b<=0 as Ax<=b
+
+A<-matrix(c(-1,1),1,2)
+b<-0
+
+##  And the non-linear constraints that the integral from b to a integrate to 1-\alpha
+
+h<-function(x,n,alpha) pgamma(x[1],n,1)-pgamma(x[2],n,1)-(1-alpha)
+
+##  The function fmincon() minimises multivariate functions with linear and 
+##  non-linear constraints
+
+res<-fmincon(c(4,1),f,heq = function(x) h(x,10,0.1),A=A,b=b)
+
+diff(res$par)%>%abs()
+
+a <- round(res$par[1],3)
+b <- round(res$par[2],3)
+
+```
+
+#### Plot
+
+```{r,echo = FALSE}
+
+a <- 14.938
+b <- 4.893
+
+##  Now plot the results
+
+x <- seq(0,25,len = 250)
+
+df <- tibble(x = x,y = dgamma(x,10,1))
+
+ggplot(df)+
+  geom_line(aes(x = x, y = y))+
+  geom_ribbon(data = subset(df,x<b),aes(x = x, ymin = 0, ymax = y),
+                  fill="grey20", colour = NA, alpha = 0.5)+
+  geom_ribbon(data = subset(df,x>a), aes(x = x, ymin = 0, ymax = y),
+              fill="grey20",colour = NA, alpha = 0.5)+
+  ylab("Density")+
+  xlab(expression(sum(x[i])))+
+  labs(title = expression("Plot of Density Function for "*sum(x[i])%~%Ga(n,1)))+
+  theme(plot.title = element_text(hjust = 0.5))
+  
+set.seed(14061972)
+
+y<-rexp(10,1)
+
+sy<-sum(y)
+
+```
+
+
+
+The limits for the $90\%$ confidence interval are $a$ = `r a` and $b$ = `r b`, see the Figure at right, and the confidence interval takes the form of 
+$$
+\left(\frac{\sum y_i}{a},\frac{\sum y_i}{b}\right).
+$$
+For a random sample of size $n=10$ from $x\sim \operatorname{Exp}(1)$, with $\sum y_i = `r round(sum(y),3)`$ the resulting estimate $\hat{\lambda}$=`r round(mean(y),3)`, and the resulting $90\%$ confidence interval is
+$$
+\begin{align}
+\left(\frac{\sum y_i}{`r paste(a)`},\frac{\sum y_i}{`r paste(b)`}\right)&=
+\left(\frac{`r round(sum(y),3)`}{`r paste(a)`},\frac{`r round(sum(y),3)`}{`r paste(b)`}\right)\\
+&=\left(`r round(sum(y)/a,3)`,`r round(sum(y)/b,3)`\right)
+\end{align}
+$$
+:::
+
+Results comparing the three methods for computing a $90\%$ confidence interval for the parameter $\lambda$ for a sample size of $n=10$ from an exponential distribution show that applying the minimum width theorem does yield the smallest interval for $a-b$.
+
+:::{.table}
+  Method                          $a$              $b$            Difference
+  ------------------------        ----------       ---------      -----------
+  Test Statistic Inversion        $16.199$         $5.629$          $10.57$ 
+  Pivotal Quantity                $15.705$         $5.425$          $10.28$
+  Minimum Width                   $14.938$         $4.893$          $10.05$    
+:::
+
+But the confidence interval for $\lambda$ is not a linear function of $a$ and $b$, instead the confidence intervals based on our sample where $\sum y_i=`r round(sum(y),3)`$ based on the three methods do not show the same results.
+
+:::{.table}
+  Method                          $\sum y_i/a$     $\sum y_i/b$    Difference
+  ------------------------        ------------     ------------    ----------
+  Test Statistic Inversion        $0.629$          $1.810$          $1.181$ 
+  Pivotal Quantity                $0.649$          $1.878$          $1.230$
+  Minimum Width                   $0.682$          $2.083$          $1.401$    
+:::
+
+Note that the interval based on $a$ and $b$ from the minimum width theorem is the widest because the actual interval is based on $1/a$ and $1/b$, a non-linear function.  The results based on inverting the test statistic from the likelihood ratio test is the narrowest interval. Without formal proof, we can intuit that this makes sense as the likelihood ratio test is the most powerful test for a given Type I error rate $\alpha$, making sure that it has the smallest "acceptance" region or confidence interval.
+
+

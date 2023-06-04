@@ -1,0 +1,31 @@
+
+Consider a data from a Poisson process (i.e.\ realisations of a Poisson random variable $X$) where
+$$
+Pr(X=x|\lambda)=\frac{\lambda^xe^{-\lambda}
+}{x!}
+$$
+Assume a prior for $\lambda$
+$$
+\pi(\lambda)=4\lambda e^{-2\lambda}.
+$$
+For the data $\mathbf{x}=(x_1,x_2,\ldots,x_n)$ i.e.\
+```{r ex4, exercise = TRUE}
+x<-c(2, 1, 4, 3, 4, 2, 1, 2, 0, 0)
+
+
+```
+
+a. Find the posterior distribution of $\lambda|\mathbf{x}$
+
+
+b. Find the $95\%$ credible interval $C$ for $\lambda$ and $\lambda|\mathbf{x}$
+
+c. Find
+$$
+Pr(\lambda)>1\text{ and } Pr(\lambda>1|\mathbf{x})
+$$
+
+d. Plot the prior and posterior of $\lambda$ together, comment?  How did the data effect the posterior compared to the prior.  Repeat this for 
+$$
+\pi(\lambda)=e^{-\lambda}
+$$

@@ -1,0 +1,114 @@
+---
+title: "Week 0"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Week 0}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r, echo = FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("QUTReadings.css")
+
+```
+
+#   Welcome to MXB341 
+
+MXB431 is an advanced unit in mathematical statistics covering the theory of point estimation and inference using both classical and Bayesian methods.  In this class, we will learn the "how" and "why" of many statistical techniques and methods you've may have seen before. 
+
+#### Readings and Videos
+
+*   Instead of a traditional two-hour lecture each week, there will be
+written notes or Readings posted on the unit "webpage", which you can access via Blackboard.
+*   These notes are electronic documents that may be updated and revised as needed for each week. 
+*   Readings contain examples with solutions (including videos).
+*   It is important that you read the notes and watch the videos actively. 
+*   Take notes of where you need more detail or explanation, and try on your own to solve the example problems. 
+*   Most importantly, feel free to post your questions or comments about the
+weeks readings and videos on the MXB341 Slack workspace.
+
+#### On-line Consultation {#on-line-consultation .unnumbered}
+
+*   Each week, there will be two one-hour consultation sessions.
+*   Tuesdays 3-4PM consultation will take place in person in GP E-410 and on-line via Zoom. 
+*   Fridays 4-5PM consultation will take place in person in GP S-520 and on line via Zoom.  
+*   The notes and comments you post on Slack will serve as a guide for the teaching staff in preparing for
+these consultation sessions; there will also be plenty of opportunities
+for you to ask questions and interact with the teaching staff.
+
+#### Workshops and Workshop Activities {#workshops-and-workshop-activities .unnumbered}
+
+*   Workshops will be held Fridays from 1-3 PM, both in-person in GP G-216 and concurrently on-line via Zoom.
+*   Workshops and Consultations their recordings will be available via Echo360.
+
+
+#### Communications {#communications .unnumbered}
+
+The most effective way to communicate with the teaching staff and fellow
+students depends on the situation.
+
+-   General questions about the readings, videos, workshops, assessment,
+    or general (or random) questions or comments about the unit should
+    be posted to the appropriate channel.
+
+-   Posting questions to the appropriate channel ensures that all students can benefit from the response. If you have a question or
+    comment, other people probably have the same questions or comment.
+    Posting these on channels can help your fellow students learn and
+    help the teaching staff create better resources or experiences so
+    that everyone can get the most out of MXB107.
+
+-   Email the teaching staff directly for questions about your
+    circumstances or academic performance. For example, questions about
+    how your assessment was marked, or other circumstances you wish to
+    discuss privately with the teaching staff should be communicated via
+    email.
+
+Please note that responses to emails will be as timely as possible, but
+responses to questions posted publicly may not be immediate. This delay
+in reply allows you and your fellow students to discuss problems and
+possible answers. Also, please note that teaching staff may have
+specific times allocated for responding to students' publicly posted
+questions, so that may result in a natural delay in replying to your
+post.
+
+Please maintain a respectful in any communication. It is a good idea to
+address the unit teaching staff and fellow students by their
+preferred name (and/or title) and use clear and precise language. Please
+note that the teaching staff may work across multiple units, so your
+emails should include your student id number and the unit code.
+
+### Zoom Guidelines {#zoom-guidelines .unnumbered}
+
+Much of the live on-line interactions will take place on Zoom; it is
+important to remember that you should view these experiences the same
+as classroom experiences, and you should expect the same level of
+respect and consideration for Zoom sessions as you would for the
+classroom. To facilitate this, here are a few guidelines:
+
+-   When joining a Zoom session, you will be in a waiting room and
+    then allowed to enter by the session host, your microphone will be
+    muted. Please keep your microphone muted unless you are contributing
+    to the session.
+
+-   Be respectful of bandwidth. Please join the session with your camera turned off. Keeping your camera off helps make
+    sure that everyone can benefit from the session regardless of the
+    quality of their connection.
+
+-   If you don't want to speak, please post your questions or comments so
+    that everyone can read them, the host will re-read your question or
+    comment aloud and respond.
+
+-   Please realise that using technology like Zoom as a part of the learning experience is still new, and there may be issues. Please be patient and know that your constructive feedback is
+    welcome and appreciated.
+
+

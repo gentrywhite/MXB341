@@ -1,0 +1,16 @@
+Given 
+```{r echo=FALSE}
+set.seed(14061972)
+
+x<-runif(20,-1,1)
+
+lambda<-exp(3.1*x-1.7)
+
+y<-rpois(20,lambda=lambda)
+
+```
+$y=$ `r round(y,2)`  and \
+$x =$ `r round(x,2)`
+
+(a) Fit a model assuming that $y_i\sim Pois(\lambda_i)$, $\log(\lambda_i)=\beta_0+\beta_1x_i$.
+(b) Plot the cummulative mean of the parameters and calculate the BGR for three chains.

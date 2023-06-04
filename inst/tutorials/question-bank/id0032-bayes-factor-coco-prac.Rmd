@@ -1,11 +1,12 @@
 In this question you will use Q2 and Q3 (theory) in order to choose between using a log-normal distribution with conjugate prior and an exponential distribution with Gamma prior using a Bayes factor. 
 
-```{r coco, fig.margin = TRUE, fig.cap = "Old girl Coco.", fig.width=0.3, fig.height=0.5, cache=TRUE, echo = FALSE}
+```{r coco, fig.margin = TRUE, fig.cap = "Old girl Coco.", fig.width=3, fig.height=5, cache=TRUE, echo = FALSE}
 library(png)
 library(grid)
 img <- readPNG("../figures/coco.png")
  grid.raster(img)
 ```
+
 
 Note the following about a Bayesian model for log-normal data with a Normal-Gamma prior:
 The model is defined by

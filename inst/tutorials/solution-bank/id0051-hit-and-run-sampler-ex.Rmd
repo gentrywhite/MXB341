@@ -1,0 +1,84 @@
+Given data from the OLS model
+$$
+f(\mathbf{y}|\beta_0,\beta_1)=\left(\frac{1}{2\pi\sigma^2}\right)^{n/2}\exp\left(-\frac{\sum_{i=1}^n(y_i-\beta_0-\beta_1x_i)^2}{2}\right)
+$$
+for the priors
+$$
+\begin{align}
+\pi(\beta_0,\beta_1)&\propto 1
+\end{align}
+$$
+Given some data 
+```{r echo=FALSE}
+set.seed(14061972)
+x<-runif(15,-3,3)
+y<-1.3-2.1*x+rnorm(15,sd=1)
+```
+$x=$ `r round(x,2)` $y=$ `r round(y,2)` implement a hit and run sampler scheme to draw 1000 samples from the posterior
+$$
+\pi(\beta_0,\beta_1|\mathbf{y})\propto f(\mathbf{y}|\beta_0,\beta_1)\pi(\beta_0,\beta_1).
+$$
+
+**Solution:**\
+
+```{r}
+
+##  Enter the data for y and x
+
+y<-c(-2.23,5.71,-2.27,6.42,8.14,-4.16,-3.43,2.24,4.32,7.64,-5.38,6.25,5.86,-0.54,1.99)
+x<-c(1.76,-2.02,2.10,-2.59,-2.98,2.75,1.70,-0.11,-1.70,-2.22,2.95,-2.43,-2.37,1.52,0.28)
+
+##  Set the desired number of samples
+
+N<-10000
+
+##  Create matix to store values for beta_0 and beta_1, and set the initial values.
+
+beta<-matrix(0,nrow = N, ncol = 2)
+beta[1,]<-c(1,-2)
+
+##  Define the function proportional to the posterior density
+
+f<-function(pars)
+{
+  m<-pars[1]+pars[2]*x
+  dnorm(y,mean=m,sd=1,log=TRUE)%>%sum()
+}
+
+## Start the iterations
+
+for(i in 2:N)
+{
+
+##  Sample a random vector in R^2    
+  r<-rnorm(2)
+##  Normalise the vector so that ||r||=1  
+  r<-r/sqrt(sum(r^2))
+##  Take step of some random size  
+  l<-rexp(1,0.2)
+##  Compute the value for the target density evaluated at the new proposed location (the step
+  ##  away from the current location).  
+  fc<-f(beta[i-1,]+l*r)
+##  generate u~U(0,1)  
+  u<-runif(1)
+##  Compute the acceptance probability  
+  alpha<-exp(fc-f(beta[i-1,]))
+##  if u<alpha accept the new valuem, else do nothing  
+  if(u<alpha)
+  {
+    beta[i,]<-beta[i-1]+l*r
+  }
+  else
+  {
+    beta[i,]<-beta[i-1,]
+  }
+}
+
+df<-tibble(pars=c(beta[,1],beta[,2]),names=c(rep("beta[0]",N),rep("beta[1]",N)),iteration=rep(1:N,2))
+ggplot(df)+
+  geom_point(aes(x=iteration,y=pars))+
+  facet_wrap(~names,labeller = label_parsed)
+ggplot(df)+
+  geom_histogram(aes(x=pars,y=..density..))+
+  facet_wrap(~names,labeller = label_parsed)
+```

@@ -4,7 +4,7 @@
 
 (b) Generate a grid of points for $\lambda,\tau$, then evaluate these points with the function in (a). Use the `crossing` function from package `tidyr`. An example of plotting a contour is given below.^[Hint: you may have to try several grids to get the correct confidence interval.]
     
-```{r prac-q1-contour-example, fig.margin = TRUE, fig.cap = "Example of contour plot.", eval = !params$show_solutions, echo=!params$show_solutions}
+```{r prac-q1-contour-example, fig.margin = TRUE, fig.cap = "Example of contour plot."}
   
   library(tidyr); library(dplyr); library(ggplot2)
   # Change "to" and "from" values

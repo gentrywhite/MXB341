@@ -1,0 +1,346 @@
+---
+title: "MXB341 Worksheet 11 - Bayesian Computation"
+output:
+  learnr::tutorial:
+    theme: yeti
+    includes:
+    css: ["css/QUT.css","css/QUTtutorial.css"]
+  progressive: true
+  allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+# if problems with knitting directory:
+# set Knit Directory = Document Directory
+
+# install libraries needed for worksheet
+knitr::opts_chunk$set(
+  fig.align = 'center',
+  collapse = TRUE,
+  comment = "#>"
+)
+
+library(learnr)
+library(kableExtra)
+library(pander)
+library(shiny)
+library(MXB341)
+
+
+```
+
+```{r, echo = FALSE}
+
+htmltools::includeHTML("header.html")
+htmltools::includeCSS("./css/QUTtutorial.css")
+htmltools::includeCSS("./css/QUT.css")
+
+```
+
+
+:::{.quote}
+
+"The impact of Gibbs sampling and MCMC was to change our entire method of thinking and attacking problems." 
+
+--- Robert Short
+\
+
+"These days the statistician is often asked such questions as 'Are you a Bayesian?' 'Are you a frequentist?' 'Are you a data analyst?' 'Are you a designer of experiments?'.  I will argue that the appropriate answer to ALL of these questions can be (and preferably should be) 'yes', and that we can see why this is so if we consider the scientific context for what statisticians do." 
+
+--- George E. P. Box
+
+:::
+
+
+Thus far we have seen examples of univariate sampling cases, and we have
+seen how we can use the hit and run sampler to draw samples from a
+multivariate posterior. In practice, most models used for data analysis
+have more than one parameter that requires inference, indeed more
+sophisticated models may include randowm effects with a hierarchical
+structure resulting in a high dimensioned parameter space. These models
+call for a more robust approach to drawing samples from the joint
+posterior.
+
+## Gibbs Sampling
+
+In general, when implementing Bayesian methods the preferred approach is
+to:
+
+1.  Find closed form solutions to the joint posterior.
+2.  Use Monte Carlo integration drawing independent samples directly
+    from the joint posterior
+3.  Implement a Monte Carlo Markov Chain (MCMC) scheme to draw sample
+    from the joint posterior
+
+The first case rarely ever occurs in practice and often only for trivial
+models. The second case is highly desireable, but often not oractical or
+possible. The third case is the most common situation an reuires
+implementing a Gibbs Sampling scheme. Gibbs sampling arises both as a
+special case of the Metropolis-Hastings algorithm and from the limiting
+properties of Markov chains. We can see the motivation for the Gibbs
+sampler by considering a model with a Gaussian likelihood. When both the mean and the variance are unknown we would need to sample
+from the joint posterior 
+$$
+\pi(\mu,\sigma^2|\mathbf{y})=\frac{f(\mathbf{y}|\mu,\sigma^2)\pi(\mu)\pi(\sigma^2)}{\int\int (\mathbf{y}|\mu,\sigma^2)\pi(\mu)\pi(\sigma^2)d\mu d\sigma^2}
+$$ 
+which doesn't have a nice closed form. Which motivates the Gibbs
+Sampling scheme:
+
+Given that the conditional posteriors 
+$$
+\begin{align}
+\pi(\mu|\sigma^2,\mathbf{y})&\propto f(\mathbf{y}|\mu,\sigma^2)\pi(\mu)\\
+\pi(\sigma^2|\mu,\mathbf{y})&\propto f(\mathbf{y}|\mu,\sigma^2)\pi(\sigma^2)
+\end{align}
+$$
+1.  Set initial values of $\mu_{(0)}$ and $\sigma^2_{(0)}$ and for
+    $i=1,\ldots,N$:
+
+2.  Draw $\sigma^2_{(i)}$ from $\pi(\sigma^2|\mu_{(i-1)},\mathbf{y})$
+
+3.  Draw $\mu_{(i)}$ from $\pi(\mu|\sigma^2_{(i)},\mathbf{y})$.
+
+::: {.boxed}
+**The Gibbs Sampler**
+
+Gibbs Sampling is a surprisingly simple and robust method for drawing
+posteriors from a target distribution. The basic steps are:
+
+Given a target distribution $g(\boldsymbol{\theta})$ where
+$\boldsymbol{\theta}=\theta_1,\ldots,\theta_p$. For $t = 1,\ldots,T$ we
+can draw $T$ samples from $g$ as follows
+
+1.  Derive the set of *full conditionals* 
+$$
+    \begin{align}
+    g(\theta_1|\boldsymbol{\theta}_{-1})\\
+    g(\theta_2|\boldsymbol{\theta}_{-2})\\
+    \vdots\\
+    g(\theta_p|\boldsymbol{\theta}_{-p})
+    \end{align}
+$$
+2.  Set the initial values for $\boldsymbol{\theta}^{(0)}$
+3.  For $t=1,\ldots,T$ draw samples as follows 
+$$
+    \begin{align}
+    \theta^{(t)}_1|&\theta_{2,\ldots,p}^{(t-1)}\\
+    \theta^{(t)}_2|&\theta_1^{(t)},\theta_{3,\ldots,p}^{(t-1)}\\
+    \theta^{(t)}_2|&\theta_{1,2}^{t},\theta_{4,\ldots,p}^{(t-1)}\\
+    \vdots&\\
+    \theta_p^{(t)}|&\theta_{1,\ldots,p-1}^{(t)}
+    \end{align}
+$$
+
+Under some specific regularity conditions the Gibbs Sampler will
+converge to the stationary target distribution. These conditions are
+*ergodicity*, or that sampler has the potential to full explore the
+domain of the posterior, and *irreducibility*, or that there is a
+non-zero probability that the chain can transition from one location to
+any other in the domain of the target density.
+:::
+
+## Bayesian Linear Regression Using Gibbs Sampling
+
+Linear regression is one of the first and most commonly used models in
+statistical inference and data analysis. Illustrating it in a Bayesian
+context is useful both because of the ubiquity of the model but also
+because it serves as a building block for learning how to implement more
+sophisticated hierarchical and generalised linear mixed-effects models
+that are common in many applications.
+
+:::{.boxed}
+**Bayesian Linear Regression**
+
+Consider the basic linear regression model: 
+$$
+y_i = \beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip}+\epsilon_i
+$$ 
+we can write that the individual $y_i$ follow a Gaussian distribution
+$$
+y_i\sim N(\beta_0+\beta_1x_{i1}+\beta_2x_{i2}+\cdots+\beta_px_{ip},\sigma^2)
+$$ 
+or we can write the joint probability distribution for the sample
+$\mathbf{y}=y_1,\ldots,y_n$ as the multivariate normal distribution 
+$$
+\mathbf{y}\sim MVN(\mathbf{X\beta},\mathbf{\Sigma})
+$$ 
+this is the likelihood for the joint sample. If we assume that the samples are independent $\mathbf{\Sigma}=\sigma^2\mathbf{I}$ . 
+
+The density function for the multivartiate normal (or the likelihood) is
+$$
+f(\mathbf{y}|\mathbf{\beta},\mathbf{\Sigma}) = (2\pi)^{-n/2}\det\left(\mathbf{\Sigma}\right)^{-1/2}\exp\left(\frac{1}{2}(\mathbf{y}-\mathbf{X\beta})^T\Sigma^{-1}(\mathbf{y}-\mathbf{X\beta})\right).
+$$ 
+Given some prior for $\mathbf{\beta},\sigma^2$ the posterior can be
+written as
+$$
+\pi(\mathbf{\beta},\sigma^2|\mathbf{y})\propto f(\mathbf{y}|\mathbf{\beta},\sigma^2)\pi(\mathbf{\beta},\sigma^2).
+$$ 
+We have previously seen that we can derive a Gibbs sampling scheme
+based on the full conditionals 
+$$
+\begin{aligned}
+\pi(\beta|\sigma^2,\mathbf{y})&\propto f(\mathbf{y}|\mathbf{\beta},\sigma^2)\pi(\mathbf{\beta})\\
+\pi(\sigma^2|\mathbf{\beta},\mathbf{y})&\propto f(\mathbf{y}|\mathbf{\beta},\sigma^2)\pi(\sigma^2).
+\end{aligned}
+$$
+
+For the conjugate priors 
+$$
+\begin{aligned}
+\pi(\mathbf{\beta})&\propto\exp\left(-\frac{1}{2}\mathbf{\beta}^T\mathbf{D}\mathbf{\beta}\right)\\
+\pi(\sigma^2)&=\left(\frac{1}{\sigma^2}\right)^{a-1}\exp\left(-\frac{b}{\sigma^2}\right)
+\end{aligned}
+$$ 
+the full conditionals are
+
+$$
+\begin{align}
+\pi(\boldsymbol{\beta}|\mathbf{y},\sigma^2)&\propto f(\mathbf{y}|\boldsymbol{\beta},\sigma^2)\pi(\boldsymbol{\beta})\\
+&\propto (2\pi\sigma^2)^{-n/2}\exp\left(\frac{1}{2\sigma^2}(\mathbf{y}-\mathbf{X\beta})^T(\mathbf{y}-\mathbf{X\beta})\right)\exp\left(-\frac{1}{2}\mathbf{\beta}^T\mathbf{D}\mathbf{\beta}\right)\\
+&\propto \exp\left(-\frac12\left\{(\frac{\mathbf{y}-\mathbf{X}\boldsymbol{\beta})^{T}(\mathbf{y}-\mathbf{X}\boldsymbol{\beta})}{\sigma^2}+\boldsymbol{\beta}^T\mathbf{D}\boldsymbol{\beta}\right\}\right)\\
+&\propto\exp\left(-\frac12\left\{\boldsymbol{\beta}^T\left(\frac{\mathbf{X}^T\mathbf{X}}{\sigma^2}+D\right)\boldsymbol{\beta}-2\mathbf{y}^T\mathbf{X}\boldsymbol{\beta}+\mathbf{y}^T\mathbf{y}\right\}\right)\\
+\pi(\sigma^2|\mathbf{y},\boldsymbol{\beta})&\propto f(\mathbf{y}|\boldsymbol{\beta}\sigma^2)\pi(\sigma^2)\\
+&\propto(2\pi\sigma^2)^{-n/2}\exp\left(\frac{1}{2\sigma^2}(\mathbf{y}-\mathbf{X\beta})^T(\mathbf{y}-\mathbf{X\beta})\right)\left(\frac{1}{\sigma^2}\right)^{\alpha-1}\exp\left(-\frac{b}{\sigma^2}\right)\\&\propto \left(\frac{1}{\sigma^2}\right)^{\frac{n}{2}+a-1}\exp\left(-\frac{1}{\sigma^2}\left\{\frac{(\mathbf{y}-\mathbf{X\beta})^T(\mathbf{y}-\mathbf{X\beta})}{2}+b\right\}\right)
+\end{align}
+$$
+esulting in the set of full conditionals
+$$
+\begin{align}
+\boldsymbol{\beta}|\mathbf{y},\sigma^2&\sim MNV\left\{\left(\frac{\mathbf{X}^T\mathbf{X}}{\sigma^2}+\mathbf{D}\right)^{-1}\frac{\mathbf{X}^T\mathbf{y}}{\sigma^2},\left(\frac{\mathbf{X}^T\mathbf{X}}{\sigma^2}+\mathbf{D}\right)^{-1}\right\}\\
+\sigma^2|\mathbf{y}\boldsymbol{\beta}&\sim InvGa\left(\frac{n}{2}+a,\frac{(\mathbf{y}-\mathbf{X\beta})^T(\mathbf{y}-\mathbf{X\beta})}{2}+b\right)
+\end{align}
+$$
+## Metropolis within Gibbs 
+
+In the previous example we showed ho to construct the Gibbs sampler for a simple case of linear regression using conjugate priors.  While the use of conjugate priors is possible in many cases, in others it may not be desirable.  For generalised linear models cojugate priors are not available.  In these cases the the updating step of the Gibbs sampler will need to use some method like the Metropolis_Hastings algorithm, this is referred to as Metropolis within Gibbs.  Alternatively, some other method like slice sampling could also be used.  
+
+###   Generalised Linear Models
+
+Generalised linear models are an extension to linear regression where for some random variable $Y\sim f(y)$ we describe some function of the expected value as a linear combination of covariates, i.e.\
+$$
+h\left\{\operatorname{E}(y_i)\right\}=\beta_0+\beta_1x_i.  
+$$
+The function $h$ is called a link function and is derived from the exponential family representation of the probability mass or density function. Fitting generalised linear models, either using classical or Bayesian methods is difficult. For classical methods there is no closed form for the maximum likelihood estimators, so these have to be found numberically.  In Bayesian methods it means that there is no conjugate prior for the regression parameters, and thus slice or Metropolis steps are needed in a Gibbs scheme to sample from the joint posterior.
+
+###   Generalised Linear Mixed Models
+
+Generalised linear mixed models (GLMMs) introduce an added level of hierarchy to a model by adding error to the mean of the likelihood, i.e.\ given a set of data from some non-Gaussian likelihood we now assume that 
+$$
+E(Y|\theta)=h(\theta)=\eta
+$$
+where 
+$$
+\eta_i\sim N(\beta_0+\beta_1x_i,\delta)
+$$
+the resulting *hierarchical* model is 
+\begin{eqnarray}
+f(\mathbf{y}|\boldsymbol{\eta})\\
+\pi(\boldsymbol{\eta}|\beta_0,\beta_1,\delta)\\
+\pi(\beta_0,\beta_1,\delta) 
+\end{eqnarray}
+
+
+# Theory questions
+
+
+
+## Question 1
+:::{.boxed}
+
+```{r theory-question-1, child='../question-bank/id0040-bayes-comp-reverse.Rmd', eval = TRUE}
+
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r theory-solution-1, child='../solution-bank/id0040-bayes-comp-reverse.Rmd', eval = TRUE}
+
+```
+:::
+
+
+
+## Question 2
+:::{.boxed}
+
+```{r theory-question-2, child='../question-bank/id0045-bayes-comp-conditionals-linear-reg.Rmd', eval = TRUE}
+
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r theory-solution-2, child='../solution-bank/id0045-bayes-comp-conditionals-linear-reg.Rmd', eval = TRUE}
+
+```
+:::
+
+# Practical questions
+
+## Question 3
+
+:::{.boxed}
+```{r prac-question-1, child='../question-bank/id0043-bayes-comp-reverse-prac.Rmd', eval = TRUE}
+
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r prac-solution-1, child='../solution-bank/id0043-bayes-comp-reverse-prac.Rmd', eval = TRUE}
+
+```
+:::
+
+###   Question 4
+
+:::{.boxed}
+```{r prac-question-2, child='../question-bank/id0052-bayes-comp-reverse-prac.Rmd', eval = TRUE}
+
+```
+:::
+
+<button class="solution">
+Solution
+</button>
+:::{.panel}
+```{r prac-solution-2, child='../solution-bank/id0052-bayes-comp-reverse-prac.Rmd', eval = TRUE}
+
+```
+:::
+
+
+
+
+
+```{r,echo=FALSE}
+htmltools::includeHTML("footer.html")
+```
+
+<!-- ## Question 6 -->
+
+<!-- ```{r prac-question-6, child='../question-bank/id0044-bayes-comp-rjags-airquality.Rmd', eval = TRUE} -->
+
+<!-- ``` -->
+
+<!-- ```{r prac-solution-6, child='../solution-bank/id0044-bayes-comp-rjags-airquality.Rmd', eval = params$show_solutions} -->
+
+<!-- ``` -->
+
+<!-- ## Question 7 -->
+
+<!-- ```{r prac-question-7, child='../question-bank/id0046-bayes-comp-conditionals-linear-reg-prac.Rmd', eval = TRUE} -->
+
+<!-- ``` -->
+
+<!-- ```{r prac-solution-7, child='../solution-bank/id0046-bayes-comp-conditionals-linear-reg-prac.Rmd', eval = params$show_solutions} -->
+
+<!-- ``` -->

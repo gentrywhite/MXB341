@@ -1,0 +1,106 @@
+Given 
+```{r echo=FALSE}
+set.seed(14061972)
+
+x<-runif(20,-1,1)
+
+lambda<-exp(3.1*x-1.7)
+
+y<-rpois(20,lambda=lambda)
+
+```
+$y=$ `r round(y,2)`  and \
+$x =$ `r round(x,2)`
+
+(a) Fit a model assuming that $y_i\sim Pois(\lambda_i)$, $\log(\lambda_i)=\beta_0+\beta_1x_i$.
+(b)   Plot the ACF and compute the effective sample size for each parameter.
+
+**Solution:**\
+Write a function to evaluate the model:
+```{r}
+library(mvtnorm)
+
+x<-c(0.59, -0.67, 0.7, -0.86, -0.99, 0.92, 0.57, -0.04, -0.57, -0.74, 0.98, -0.81, -0.79, 0.51, 0.09, 0.13, 0.28, 0.14, 0.37, 0.6)
+y<-c(4, 0, 2, 0, 0, 4, 2, 0, 0, 0, 4, 0, 0, 3, 0, 0, 0, 0, 0, 1 )
+
+X<-cbind(1,x)
+
+##  log-likelihood function
+
+log_like<-function(beta)
+{
+  nu<-X%*%beta%>%exp()
+  dpois(y,nu,log=TRUE)%>%sum()
+}
+
+bayes_pois<-function(x,y,init,n)
+{
+  
+  ##  Initialise beta
+
+  beta<-matrix(NA,ncol = 2, nrow = n)
+  beta[1,]<-init
+
+  ##  Set up MCMC
+
+  beta_cov<-crossprod(X)%>%solve()
+  beta_sd<-1
+
+  n.accept<-0
+
+  set.seed(14061972)
+
+  for(i in 2:n)
+  {
+    bc<-rmvnorm(1,beta[i-1,],beta_sd*beta_cov)%>%t()
+    alpha<-(log_like(bc)-log_like(beta[i-1,]))%>%exp()
+    u<-runif(1)    
+    if(u<alpha)
+    {
+      beta[i,]<-bc
+      n.accept%<>%+(1)
+    }
+    else
+    {
+      beta[i,]<-beta[i-1,]
+    }
+    accept.rate<-n.accept/i
+  
+    ##  Automatically tune the candidate distribution
+  
+    if(accept.rate<0.2|accept.rate>0.4)
+    {
+      beta_sd%<>%multiply_by(0.7+accept.rate)
+    }
+  }
+  return(list(beta = beta, accept.rate = accept.rate))
+}
+
+##  Then we can generate samples for computing ACF and ESS
+
+N<-10000
+
+out<-bayes_pois(x,y,c(0,0),N)
+
+library(mcmcse)
+
+acf_beta_0<-acf(out$beta[,1],plot = FALSE)$acf
+acf_beta_1<-acf(out$beta[,2],plot = FALSE)$acf
+lag<-rep(1:length(acf_beta_0),2)
+name<-c(rep("beta[0]",length(acf_beta_0)),rep("beta[1]",length(acf_beta_1)))
+
+df<-tibble(acf = c(acf_beta_0,acf_beta_1),lag,name)
+
+ggplot(df,aes(x = lag, y = acf))+
+  geom_bar(stat = "identity",alpha = 0.5)+
+  geom_hline(yintercept = 0.05,linetype = "dashed")+
+  facet_wrap(~name,labeller = label_parsed)
+
+ESS<-mcmcse::ess(out$beta)
+
+```
+
+The effective sample sizes for $\beta_0$ and $\beta_1$ are `r round(ESS,2)`.
+
+
+

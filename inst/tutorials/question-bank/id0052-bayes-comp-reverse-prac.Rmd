@@ -1,0 +1,23 @@
+Given 
+$$
+y=-3.48, -2.82, -1.96,  0.48, -2.59,  2.48,  3.06,  4.05,  3.80,  6.12,  5.98
+$$
+and
+$$
+x = -5, -4, -3, -2, -1,  0,  1,  2,  3,  4,  5
+$$
+Implement a Gibbs sampler for the model in question 2 (theory) using `R`. 
+
+(a) Write a one-dimensional MH sampler for the conditional distribution $(\sigma^2~\vert~\beta,\alpha, \boldsymbol{y})$ assuming that the prior 
+$$
+\pi(\sigma^2)=\frac{1}{(1+\sigma^2)^2}
+$$ 
+Check that it works.
+(b) Write a Gibbs sampler for $(\beta,\alpha~\vert~\sigma^2, \boldsymbol{y})$. Check that it works as expected.
+(c) Write a MH-within-Gibbs sampler for the full distribution using the solutions to (a) and (b). The Gibbs step for $\sigma^2$ should simply use the MH step in (a).
+
+Finally, comment on the performance of these algorithms
+
+
+
+
